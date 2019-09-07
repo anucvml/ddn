@@ -10,12 +10,12 @@ with open('LICENSE') as f:
 
 setup(
     name='ddn',
-    version='1.0.0',
+    version='0.1.0',
     description='Deep declarative networks',
     long_description=readme,
     author='Stephen Gould',
     author_email='stephen.gould@anu.edu.au',
-    url='https://deepdeclarativenetworks.com',
+    url='http://deepdeclarativenetworks.com',
     license=license,
     packages=['ddn']
 )
