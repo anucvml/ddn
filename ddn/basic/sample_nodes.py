@@ -21,11 +21,10 @@ class UnconstPolynomial(AbstractDeclarativeNode):
         return np.array([y_stationary[y_min_indx]]), None
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         if y is None:
-            y_star, _ = self.solve(x)
-        return np.array([-1.0 * (y_star ** 3.0 + 3.0 * x[0] * y_star ** 2.0) / \
-            (3.0 * x[0] * y_star ** 2.0 + 3.0 * x[0] ** 2.0 * y_star - 6.0)])
+            y, _ = self.solve(x)
+        return np.array([-1.0 * (y ** 3 + 3.0 * x[0] * y ** 2) / (3.0 * x[0] * y ** 2 + 3.0 * x[0] ** 2 * y - 6.0)])
 
 
 class LinFcnOnUnitCircle(EqConstDeclarativeNode):
@@ -50,7 +49,7 @@ class LinFcnOnUnitCircle(EqConstDeclarativeNode):
         return y_star, nu_star
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         return 1.0 / np.power(1 + x[0]**2.0, 1.5) * np.array([x[0], -1.0])
 
 
@@ -76,7 +75,7 @@ class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         return y_star, nu_star
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         return -1.0 * np.sign(x[0]) / np.sqrt(2.0) * np.ones((2,))
 
 
@@ -102,7 +101,7 @@ class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         return y_star, nu_star
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         return np.vstack( (np.abs(x[1]) / np.power(1 + x[0]**2.0, 1.5) * np.array([x[0], -1.0]),
              -1.0 * np.sign(x[1]) / np.sqrt(1.0 + x[0]**2.0) * np.array([1.0, x[0]])) ).T
 
@@ -128,7 +127,7 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
         return y_star, None
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         return 1.0 / np.power(np.dot(x, x), 1.5) * (np.dot(x, x) * np.eye(self.dim_x) - np.outer(x, x))
 
 
@@ -154,7 +153,7 @@ class QuadFcnOnBall(IneqConstDeclarativeNode):
         return y_star, None
 
     def exact_gradient(self, x, y=None):
-        """Computes the exact gradient of the optimal solution for testing."""
+        """Computes the analytic gradient of the optimal solution for testing."""
         x_norm_sq = np.dot(x, x)
         if (x_norm_sq < 1.0):
             return np.eye(self.dim_x)
