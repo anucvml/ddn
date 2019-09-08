@@ -99,5 +99,6 @@ if __name__ == '__main__':
     vizAndTestProblem(QuadFcnOnSphere(), r"minimize $1/2 y^Ty - x^Ty$ subject to $\|y\|^2 = 1$", x_indx=0, x_input=0.5 * np.ones((2,)))
     vizAndTestProblem(QuadFcnOnBall(), r"minimize $1/2 y^Ty - x^Ty$ subject to $\|y\|^2 \leq 1$", x_indx=0, x_input=0.5 * np.ones((2,)))
     vizAndTestProblem(CosineDistance(), r"minimize $x^T y / \|y\|$", x_indx=0, x_input=np.ones((2,)), x_min=0.5, x_max=2.5)
-    vizAndTestProblem(HuberRobustAverage(5), r"minimize $\sum_i \phi(y - x_i)$", x_indx=0, x_input=np.random.rand(5))
+    vizAndTestProblem(HuberRobustAverage(5), r"minimize $\sum_i \phi(y - x_i; 1)$", x_indx=0, x_input=np.random.rand(5))
+    vizAndTestProblem(HuberRobustAverage(5, 0.5), r"minimize $\sum_i \phi(y - x_i; 0.5)$", x_indx=0, x_input=np.random.rand(5))
     plt.show()

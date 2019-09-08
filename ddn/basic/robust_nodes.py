@@ -14,11 +14,12 @@ class HuberRobustAverage(NonUniqueDeclarativeNode):
     Solves for the one-dimensional robust average using the Huber penalty,
         minimize f(x, y) = \sum_{i=1}^{n} phi(y - x_i)
     where phi is the Huber function
-        phi(z) = 1/2 z^2 for |z| <= 1 and |z| - 1/2 otherwise
+        phi(z) = 1/2 z^2 for |z| <= alpha and alpha |z| - 1/2 alpha^2 otherwise
     """
-    def __init__(self, n):
+    def __init__(self, n, alpha=1.0):
         super().__init__(n, 1)
-        self.phi = lambda z: np.where(np.abs(z) <= 1.0, 0.5 * np.power(z, 2.0), np.abs(z) - 0.5)
+        self.alpha = alpha
+        self.phi = lambda z: np.where(np.abs(z) <= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * alpha ** 2)
 
     def objective(self, x, y):
         assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
@@ -38,5 +39,5 @@ class HuberRobustAverage(NonUniqueDeclarativeNode):
     def exact_gradient(self, x, y=None):
         if y is None:
             y, _ = self.solve(x)
-        dy = np.array([1.0 if np.abs(y - xi) <= 1.0 else 0.0 for xi in x])
+        dy = np.array([1.0 if np.abs(y - xi) <= self.alpha else 0.0 for xi in x])
         return dy.reshape((1, self.dim_x)) / np.sum(dy)
