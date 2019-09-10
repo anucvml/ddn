@@ -3,6 +3,10 @@
 # TEST FOR DEEP DECLARATIVE NODES
 # Stephen Gould <stephen.gould@anu.edu.au>
 #
+# When running from the command-line make sure that the "ddn" package has been added to the PYTHONPATH:
+#   $ export PYTHONPATH=${PYTHONPATH}:../../ddn
+#   $ python testBasicDeclNodes.py
+#
 
 import numpy as np
 

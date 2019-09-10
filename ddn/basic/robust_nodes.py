@@ -21,6 +21,8 @@ class RobustAverage(NonUniqueDeclarativeNode):
     """
     def __init__(self, n, penalty='huber', alpha=1.0):
         super().__init__(n, 1)
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+
         self.alpha = alpha
         self.alpha_sq = alpha ** 2
         self.penalty = penalty.lower()
@@ -45,11 +47,21 @@ class RobustAverage(NonUniqueDeclarativeNode):
         J = lambda y : self.objective(x, y)
         dJ = lambda y : self.fY(x, y)
 
-        # TODO: ransac for welsch and trunc-quad
-        result = opt.minimize(J, np.mean(x), args=(), method='L-BFGS-B', jac=dJ,
-                              options={'maxiter': 100, 'disp': False, 'gtol': self.eps})
+        result = opt.minimize(J, np.mean(x), args=(), method='L-BFGS-B', jac=dJ, options={'maxiter': 100, 'disp': False})
         if not result.success: print(result.message)
-        return result.x, None
+        y_star = result.x
+
+        # run with different intial guesses for non-convex penalties
+        if (self.penalty == 'welsch') or (self.penalty == 'trunc-quad'):
+            guesses = np.random.permutation(x)
+            if len(guesses) > 10: guesses = guesses[:10]
+            for x_init in guesses:
+                result = opt.minimize(J, x_init, args=(), method='L-BFGS-B', jac=dJ, options={'maxiter': 100, 'disp': False})
+                if not result.success: print(result.message)
+                if (result.x < y_star):
+                    y_star = result.x
+
+        return y_star, None
 
     def exact_gradient(self, x, y=None):
         """Computes the analytic gradient of the optimal solution for testing."""
@@ -62,6 +74,6 @@ class RobustAverage(NonUniqueDeclarativeNode):
             dy = np.array([1.0 if np.abs(y - xi) <= self.alpha else 0.0 for xi in x])
         elif (self.penalty == 'welsch'):
             z = np.power(x - y, 2.0)
-            dy = np.array([(self.alpha_sq - zi) / (self.alpha_sq * self.alpha_sq) * np.exp(-0.5 * zi / self.alpha_sq) for xi in x])
+            dy = np.array([(self.alpha_sq - zi) / (self.alpha_sq * self.alpha_sq) * np.exp(-0.5 * zi / self.alpha_sq) for zi in z])
 
         return dy.reshape((1, self.dim_x)) / np.sum(dy)
