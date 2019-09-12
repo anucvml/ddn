@@ -14,13 +14,13 @@ reference in your research please cite as:
   title     = {Deep Declarative Networks: A New Hope},
   eprint    = {arXiv:1909.04866},
   month     = {Sep},
-  year      = (2019}
+  year      = {2019}
 }
 ```
 
 ## Running code
 
-When running code from the commandline make sure you add the `ddn` package to your PYTHONPATH. For example:
+When running code from the command line make sure you add the `ddn` package to your PYTHONPATH. For example:
 
 ```
 export PYTHONPATH=${PYTHONPATH}:ddn
