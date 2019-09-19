@@ -4,7 +4,8 @@
 # y(x) = argmin_u f(x, u)
 #
 # where f(x, u) = sum_{i=1}^n phi(u - x_i; alpha)
-# with penalty function phi (quadratic, pseudo-huber, huber)
+# with penalty function phi in
+# {quadratic, pseudo-huber, huber, welsch, truncated quadratic}
 #
 # Dylan Campbell <dylan.campbell@anu.edu.au>
 # Stephen Gould <stephen.gould@anu.edu.au>
@@ -13,6 +14,8 @@
 import torch
 
 class Quadratic():
+    is_convex = True
+
     @staticmethod
     def phi(z, alpha = 1.0):
         """ Quadratic penalty function
@@ -43,6 +46,8 @@ class Quadratic():
         return Dy_at_x
 
 class PseudoHuber():
+    is_convex = True
+
     @staticmethod
     def phi(z, alpha = 1.0):
         """ Pseudo-Huber penalty function
@@ -78,6 +83,8 @@ class PseudoHuber():
         return Dy_at_x
 
 class Huber():
+    is_convex = True
+
     @staticmethod
     def phi(z, alpha = 1.0):
         """ Huber penalty function
@@ -115,6 +122,8 @@ class Huber():
         return Dy_at_x
 
 class Welsch():
+    is_convex = False
+
     @staticmethod
     def phi(z, alpha = 1.0):
         """ Welsch penalty function
@@ -151,6 +160,8 @@ class Welsch():
         return Dy_at_x
 
 class TruncatedQuadratic():
+    is_convex = False
+
     @staticmethod
     def phi(z, alpha = 1.0):
         """ Truncated quadratic penalty function
@@ -220,7 +231,11 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
         x = x.detach()
         x = x.flatten(end_dim=-3) if len(input_size) > 2 else x
         # Handle non-convex functions separately
-        if (method is Welsch) or (method is TruncatedQuadratic):
+        if method.is_convex:
+            # Use mean as initial guess
+            y = x.mean([-2, -1]).clone().requires_grad_()
+            y = RobustGlobalPool2dFn.runOptimisation(x, y, alpha_scalar)
+        else:
             # Use mean and median as initial guesses and choose the best
             # ToDo: multiple random starts
             y = x.mean([-2, -1]).clone().requires_grad_()
@@ -231,10 +246,6 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
             f_median = method.phi(y_median.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
             if f_median < f_mean:
                 y = y_median
-        else:
-            # Use mean as initial guess
-            y = x.mean([-2, -1]).clone().requires_grad_()
-            y = RobustGlobalPool2dFn.runOptimisation(x, y, alpha_scalar)
         y = y.detach()
         z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
         ctx.method = method
@@ -271,8 +282,8 @@ class RobustGlobalPool2d(torch.nn.Module):
                                           )
 
     def extra_repr(self):
-        return 'out_features={}, method={}, alpha={}'.format(
-            1, self.method, self.alpha
+        return 'method={}, alpha={}'.format(
+            self.method, self.alpha
         )
 
 """ Check gradients
