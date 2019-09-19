@@ -13,7 +13,7 @@ class AbstractDeclarativeNode:
     """
     A general deep declarative node defined by an unconstrained parameterized optimization problems of the form
         minimize (over y) f(x, y)
-    where x is given (as a vector) and f is a scalar-valued function. The derived class must implement the `objective`
+    where x is given (as a vector) and f is a scalar-valued function. Derived classes must implement the `objective`
     and `solve` functions.
     """
 
@@ -47,7 +47,7 @@ class AbstractDeclarativeNode:
         the case of a constrained problem and None otherwise.
         """
 
-        assert False, "Not Implemented"
+        raise NotImplementedError()
         return None, None
 
     def gradient(self, x, y_star=None):
@@ -91,7 +91,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
     def constraint(self, x, y):
         """Evaluates the equality constraint function on a given input-output pair."""
-        warnings.warn("objective function not implemented.")
+        warnings.warn("constraint function not implemented.")
         return 0.0
 
     def solve(self, x):
@@ -106,7 +106,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
             y_star, _ = self.solve(x)
         """
 
-        assert False, "Not Implemented"
+        raise NotImplementedError()
         return None, None
 
     def gradient(self, x, y_star=None, nu_star=None):
