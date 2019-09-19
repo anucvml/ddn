@@ -1,13 +1,13 @@
 # ImageNet Classification with Declarative Projection Nodes
 
-Modified PyTorch ImageNet example code, for testing declarative projection nodes.
+Modified PyTorch ImageNet example code for testing declarative projection nodes.
 
-This code can only be used on ResNet architectures, some minor modifications would be required to run on different architectures.
+This code can only be used on ResNet architectures; some minor modifications would be required to run on different architectures.
 
 For example, to train ResNet-18 from scratch with a radius-250 L1Sphere projection layer (before the final fully-connected layer and after a batch normalization layer without learnable affine parameters), use the following command:
 
 ```bash
-python3 main.py --arch resnet18 --gpu 0 --projection-type 'L1S' --radius 250.0 --log-dir './tests/L1S/' [imagenet-folder with train and val folders]
+python3 main.py --arch resnet18 --gpu 0 --projection-type 'L1S' --radius 250.0 --log-dir [log directory] [imagenet-folder]
 ```
 
 Further details (from the PyTorch example) are copied below. See [this permalink](https://github.com/pytorch/examples/tree/ee964a2eeb41e1712fe719b83645c79bcbd0ba1a/imagenet) for the original.
