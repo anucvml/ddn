@@ -4,7 +4,7 @@ Modified PyTorch ImageNet example code for testing declarative projection nodes.
 
 This code can only be used on ResNet architectures; some minor modifications would be required to run on different architectures.
 
-For example, to train ResNet-18 from scratch with a radius-250 L1Sphere projection layer (before the final fully-connected layer and after a batch normalization layer without learnable affine parameters), use the following command:
+The following command can be used to train ResNet-18 from scratch with a radius-250 L1Sphere projection layer (before the final fully-connected layer and after a batch normalization layer without learnable affine parameters):
 
 ```bash
 python3 main.py --arch resnet18 --gpu 0 --projection-type 'L1S' --radius 250.0 --log-dir [log directory] [imagenet-folder]
