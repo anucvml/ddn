@@ -9,3 +9,4 @@
 
 ### Euclidean projection:
 - [x] Add EuclideanProjection
+
