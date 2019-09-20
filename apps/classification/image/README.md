@@ -2,20 +2,6 @@
 
 Modified PyTorch ImageNet example code for testing declarative projection nodes.
 
-This code can only be used on ResNet architectures; some minor modifications would be required to run on different architectures.
-
-The following command can be used to train ResNet-18 from scratch with a radius-250 L1Sphere projection layer (before the final fully-connected layer and after a batch normalization layer without learnable affine parameters):
-
-```bash
-python3 main.py --arch resnet18 --gpu 0 --projection-type 'L1S' --radius 250.0 --log-dir [log directory] [imagenet-folder]
-```
-
-Further details (from the PyTorch example) are copied below. See [this permalink](https://github.com/pytorch/examples/tree/ee964a2eeb41e1712fe719b83645c79bcbd0ba1a/imagenet) for the original.
-
-# ImageNet training in PyTorch
-
-This implements training of popular model architectures, such as ResNet, AlexNet, and VGG on the ImageNet dataset.
-
 ## Requirements
 
 - Install PyTorch ([pytorch.org](http://pytorch.org))
@@ -28,36 +14,29 @@ This implements training of popular model architectures, such as ResNet, AlexNet
 To train a model, run `main.py` with the desired model architecture and the path to the ImageNet dataset:
 
 ```bash
-python main.py -a resnet18 [imagenet-folder with train and val folders]
+python main.py --arch resnet18 --projection-type [PROJECTION_TYPE] --radius [RADIUS] --log-dir [LOG_DIR] [imagenet-folder]
 ```
 
-The default learning rate schedule starts at 0.1 and decays by a factor of 10 every 30 epochs. This is appropriate for ResNet and models with batch normalization, but too high for AlexNet and VGG. Use 0.01 as the initial learning rate for AlexNet or VGG:
+This code can only be used on ResNet architectures; some minor modifications would be required to run on different architectures.
+
+The strings available for PROJECTION_TYPE are {'L1S', 'L1B', 'L2S', 'L2B', 'LInfS', 'LInfB', ''} and correspond to the following Euclidean projections:
+- L1S: L1-sphere
+- L1B: L1-ball
+- L2S: L2-sphere
+- L2B: L2-ball
+- LInfS: LInf-sphere
+- LInfB: LInf-ball
+- None: default, no projection
+
+The default learning rate schedule starts at 0.1 and decays by a factor of 10 every 30 epochs.
+
+For example, the following command can be used to train ResNet-18 from scratch with a radius-250 L1Sphere projection layer (before the final fully-connected layer and after a batch normalization layer without learnable affine parameters):
 
 ```bash
-python main.py -a alexnet --lr 0.01 [imagenet-folder with train and val folders]
+python3 main.py --arch resnet18 --gpu 0 --projection-type 'L1S' --radius 250.0 --log-dir [log directory] [imagenet-folder]
 ```
 
-## Multi-processing Distributed Data Parallel Training
-
-You should always use the NCCL backend for multi-processing distributed training since it currently provides the best distributed training performance.
-
-### Single node, multiple GPUs:
-
-```bash
-python main.py -a resnet50 --dist-url 'tcp://127.0.0.1:FREEPORT' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 [imagenet-folder with train and val folders]
-```
-
-### Multiple nodes:
-
-Node 0:
-```bash
-python main.py -a resnet50 --dist-url 'tcp://IP_OF_NODE0:FREEPORT' --dist-backend 'nccl' --multiprocessing-distributed --world-size 2 --rank 0 [imagenet-folder with train and val folders]
-```
-
-Node 1:
-```bash
-python main.py -a resnet50 --dist-url 'tcp://IP_OF_NODE0:FREEPORT' --dist-backend 'nccl' --multiprocessing-distributed --world-size 2 --rank 1 [imagenet-folder with train and val folders]
-```
+Further details (from the PyTorch example) are available at [this permalink](https://github.com/pytorch/examples/tree/ee964a2eeb41e1712fe719b83645c79bcbd0ba1a/imagenet).
 
 ## Usage
 
@@ -118,3 +97,7 @@ optional arguments:
                         Euclidean projection type {L1S, L1B, L2S, L2B, LInfS, LInfB, ''}
   --radius RADIUS       Lp-sphere or Lp-ball radius
 ```
+
+## Links
+- [PyTorch imagenet example repository](https://github.com/pytorch/examples/tree/ee964a2eeb41e1712fe719b83645c79bcbd0ba1a/imagenet)
+- [ResNet paper](https://arxiv.org/pdf/1512.03385)
