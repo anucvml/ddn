@@ -33,8 +33,8 @@ class UnconstPolynomial(AbstractDeclarativeNode):
         y_min_indx = np.argmin([self.objective(x, [y]) for y in y_stationary])
         return np.array([y_stationary[y_min_indx]]), None
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         if y is None:
             y, _ = self.solve(x)
         return np.array([-1.0 * (y ** 3 + 3.0 * x[0] * y ** 2) / (3.0 * x[0] * y ** 2 + 3.0 * x[0] ** 2 * y - 6.0)])
@@ -61,8 +61,8 @@ class LinFcnOnUnitCircle(EqConstDeclarativeNode):
         nu_star = -0.5 * np.sqrt(1 + x[0]**2.0)
         return y_star, nu_star
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         return 1.0 / np.power(1 + x[0]**2.0, 1.5) * np.array([x[0], -1.0])
 
 
@@ -87,8 +87,8 @@ class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         nu_star = 0.0 if x[0] == 0.0 else 0.5 / y_star[0]
         return y_star, nu_star
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         return -1.0 * np.sign(x[0]) / np.sqrt(2.0) * np.ones((2,))
 
 
@@ -113,8 +113,8 @@ class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         nu_star = 0.0 if x[1] == 0.0 else 0.5 / y_star[0]
         return y_star, nu_star
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         return np.vstack( (np.abs(x[1]) / np.power(1 + x[0]**2.0, 1.5) * np.array([x[0], -1.0]),
              -1.0 * np.sign(x[1]) / np.sqrt(1.0 + x[0]**2.0) * np.array([1.0, x[0]])) ).T
 
@@ -139,8 +139,8 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
         y_star = 1.0 / np.sqrt(np.dot(x, x)) * x
         return y_star, None
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         return 1.0 / np.power(np.dot(x, x), 1.5) * (np.dot(x, x) * np.eye(self.dim_x) - np.outer(x, x))
 
 
@@ -165,8 +165,8 @@ class QuadFcnOnBall(IneqConstDeclarativeNode):
         y_star = x.copy() if (x_norm_sq <= 1.0) else 1.0 / np.sqrt(x_norm_sq) * x
         return y_star, None
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         x_norm_sq = np.dot(x, x)
         if (x_norm_sq < 1.0):
             return np.eye(self.dim_x)
@@ -188,6 +188,6 @@ class CosineDistance(NonUniqueDeclarativeNode):
     def solve(self, x):
         return self.alpha * x.copy(), None
 
-    def exact_gradient(self, x, y=None):
+    def gradient(self, x, y=None):
         """Since D_{YY}^2 f is singular computes one possible gradient for testing."""
         return self.alpha * (np.eye(2, 2) - np.outer(x, x) / np.dot(x, x))

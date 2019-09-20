@@ -67,8 +67,8 @@ class RobustAverage(NonUniqueDeclarativeNode):
 
         return y_star, None
 
-    def exact_gradient(self, x, y=None):
-        """Computes the analytic gradient of the optimal solution for testing."""
+    def gradient(self, x, y=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
         if y is None:
             y, _ = self.solve(x)
 

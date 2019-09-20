@@ -80,6 +80,7 @@ class AbstractDeclarativeNode(AbstractNode):
         Computes the gradient of the output (problem solution) with respect to the problem
         parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
         the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+        Can be overridden by the derived class to provide a more efficient implementation.
         """
 
         # compute optimal value if not already done so
@@ -184,7 +185,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
         # check for invalid lagrangian (gradient of constraint zero at optimal point)
         if (abs(self.hY(x, y_star)) <= self.eps).all():
-            warnings.warn("gradient of constraint function vanishes a the optimum.")
+            warnings.warn("gradient of constraint function vanishes at the optimum.")
             return True
         return (abs(self.fY(x, y_star) - nu_star * self.hY(x, y_star)) <= self.eps).all()
 
