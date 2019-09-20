@@ -27,23 +27,42 @@ Point clouds of ModelNet40 models in HDF5 files will be automatically downloaded
 
 ## Usage
 
-ToDo
 ```
-    parser.add_argument('--batchsize', type=int, default=24, help='batch size in training')
-    parser.add_argument('--epoch',  default=200, type=int, help='number of epoch in training')
-    parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training, ignored for SGD')
-    parser.add_argument('--train_metric', action='store_true', help='whether evaluate on training dataset')
-    parser.add_argument('--optimizer', type=str, default='SGD', help='optimizer for training')
-    parser.add_argument('--pretrain', type=str, default=None,help='whether use pretrain model')
-    parser.add_argument('--decay_rate', type=float, default=1e-4, help='decay rate of learning rate')
-    parser.add_argument('--rotation',  default=None, help='range of training rotation')
-    parser.add_argument('--model_name', default='pointnet2', help='range of training rotation')
-    parser.add_argument('--input_transform', default=False, help="use input transform in pointnet")
-    parser.add_argument('--feature_transform', default=False, help="use feature transform in pointnet")
-    parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true', help="evaluation on test set only")
-    parser.add_argument('--outlier_fraction', type=float, default=0, help='fraction of data that is outliers')
-    parser.add_argument('--robust_type', dest='robust_type', type=str, default='', help="use robust pooling {Q, PH, H, W, TQ, ''}")
-    parser.add_argument('--alpha', dest='alpha', type=float, default=1.0, help="robustness parameter")
+usage: PointNet [-h] [--batchsize BATCHSIZE] [--epoch EPOCH]
+                [--learning_rate LEARNING_RATE] [--train_metric]
+                [--optimizer OPTIMIZER] [--pretrain PRETRAIN]
+                [--decay_rate DECAY_RATE] [--rotation ROTATION]
+                [--model_name MODEL_NAME] [--input_transform INPUT_TRANSFORM]
+                [--feature_transform FEATURE_TRANSFORM] [-e]
+                [--outlier_fraction OUTLIER_FRACTION]
+                [--robust_type ROBUST_TYPE] [--alpha ALPHA]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --batchsize BATCHSIZE
+                        batch size in training
+  --epoch EPOCH         number of epoch in training
+  --learning_rate LEARNING_RATE
+                        learning rate in training
+  --train_metric        whether evaluate on training dataset
+  --optimizer OPTIMIZER
+                        optimizer for training
+  --pretrain PRETRAIN   whether use pretrain model
+  --decay_rate DECAY_RATE
+                        decay rate of learning rate
+  --rotation ROTATION   range of training rotation
+  --model_name MODEL_NAME
+                        model to use
+  --input_transform INPUT_TRANSFORM
+                        use input transform in pointnet
+  --feature_transform FEATURE_TRANSFORM
+                        use feature transform in pointnet
+  -e, --evaluate        evaluation on test set only
+  --outlier_fraction OUTLIER_FRACTION
+                        fraction of data that is outliers
+  --robust_type ROBUST_TYPE
+                        use robust pooling {Q, PH, H, W, TQ, ''}
+  --alpha ALPHA         robustness parameter
 ```
 
 Further details (from the yanx27/Pointnet_Pointnet2_pytorch repository) are available at [this permalink](https://github.com/yanx27/Pointnet_Pointnet2_pytorch/tree/31deedb10b85ec30178df57a6389b2f326f7c970) for the PyTorch repository and 
