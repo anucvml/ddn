@@ -7,8 +7,6 @@ Modified PyTorch PointNet code for testing declarative robust pooling nodes.
 - Install PyTorch ([pytorch.org](http://pytorch.org))
 - `pip install -r requirements.txt`
 
-python3
-
 ## Training
 
 To train a model, run `main.py`:
@@ -16,6 +14,8 @@ To train a model, run `main.py`:
 ```bash
 python3 main.py --outlier_fraction [OUTLIER_FRACTION] --robust_type [PHI] --alpha [ALPHA]
 ```
+
+The default number of epochs is 60 and the learning rate starts at 0.01 and decays by a factor of 2 every 20 epochs.
 
 For example, to train PointNet from scratch on GPU 0 with 60% outliers and Huber pooling replacing max pooling, use the following command:
 
@@ -25,10 +25,9 @@ CUDA_VISIBLE_DEVICES=0 python3 main.py --outlier_fraction 0.6 --robust_type 'H' 
 
 Point clouds of ModelNet40 models in HDF5 files will be automatically downloaded (416MB) to the data folder. Each point cloud contains 2048 points uniformly sampled from a shape surface. Each cloud is zero-mean and normalized into an unit sphere. There are also text files in data/modelnet40_ply_hdf5_2048 specifying the ids of shapes in h5 files.
 
-The default number of epochs is 60 and the learning rate starts at 0.1 and decays by a factor of 10 every 30 epochs.
-
 ## Usage
 
+ToDo
 ```
     parser.add_argument('--batchsize', type=int, default=24, help='batch size in training')
     parser.add_argument('--epoch',  default=200, type=int, help='number of epoch in training')
@@ -47,12 +46,9 @@ The default number of epochs is 60 and the learning rate starts at 0.1 and decay
     parser.add_argument('--alpha', dest='alpha', type=float, default=1.0, help="robustness parameter")
 ```
 
-Further details (from the yanx27/Pointnet_Pointnet2_pytorch repository) are copied below. See [this permalink](https://github.com/yanx27/Pointnet_Pointnet2_pytorch/tree/31deedb10b85ec30178df57a6389b2f326f7c970) for the PyTorch repository and 
+Further details (from the yanx27/Pointnet_Pointnet2_pytorch repository) are available at [this permalink](https://github.com/yanx27/Pointnet_Pointnet2_pytorch/tree/31deedb10b85ec30178df57a6389b2f326f7c970) for the PyTorch repository and 
 [this permalink](https://github.com/charlesq34/pointnet/tree/539db60eb63335ae00fe0da0c8e38c791c764d2b) for the original TensorFlow repository.
 
-# Pytorch Implementation of PointNet and PointNet++ 
-
-This repo is implementation for [PointNet](http://openaccess.thecvf.com/content_cvpr_2017/papers/Qi_PointNet_Deep_Learning_CVPR_2017_paper.pdf) and [PointNet++](http://papers.nips.cc/paper/7095-pointnet-deep-hierarchical-feature-learning-on-point-sets-in-a-metric-space.pdf) in pytorch.
-
 ## Links
-[Official PointNet](https://github.com/charlesq34/pointnet)
+- [Official PointNet repository](https://github.com/charlesq34/pointnet)
+- [PointNet paper](http://openaccess.thecvf.com/content_cvpr_2017/papers/Qi_PointNet_Deep_Learning_CVPR_2017_paper.pdf)
