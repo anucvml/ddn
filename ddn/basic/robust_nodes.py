@@ -20,9 +20,7 @@ class RobustAverage(NonUniqueDeclarativeNode):
         'trunc-quad':   1/2 z^2 for |z| <= alpha and 1/2 alpha^2 otherwise
     """
     def __init__(self, n, penalty='huber', alpha=1.0):
-        super().__init__(n, 1)
-        self.eps = 1.0e-4 # relax tolerance on optimality test
-
+        assert (alpha > 0.0)
         self.alpha = alpha
         self.alpha_sq = alpha ** 2
         self.penalty = penalty.lower()
@@ -36,6 +34,9 @@ class RobustAverage(NonUniqueDeclarativeNode):
             self.phi = lambda z: np.minimum(0.5 * np.power(z, 2.0), 0.5 * self.alpha_sq)
         else:
             assert False, "unrecognized penalty function {}".format(penalty)
+
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+        super().__init__(n, 1)
 
     def objective(self, x, y):
         assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
