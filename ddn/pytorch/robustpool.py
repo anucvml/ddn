@@ -241,7 +241,7 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
             y = x.mean([-2, -1]).clone().requires_grad_()
             y = RobustGlobalPool2dFn.runOptimisation(x, y, method, alpha_scalar)
             y_median = x.flatten(start_dim=-2).median(dim=-1)[0].clone().requires_grad_()
-            y_median = RobustGlobalPool2dFn.runOptimisation(x, y_median, alpha_scalar)
+            y_median = RobustGlobalPool2dFn.runOptimisation(x, y_median, method, alpha_scalar)
             f_mean = method.phi(y.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
             f_median = method.phi(y_median.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
             if f_median < f_mean:

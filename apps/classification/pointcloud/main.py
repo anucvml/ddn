@@ -31,7 +31,7 @@ def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('PointNet')
     parser.add_argument('--batchsize', type=int, default=24, help='batch size in training')
-    parser.add_argument('--epoch',  default=200, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch',  default=60, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--train_metric', action='store_true', help='whether evaluate on training dataset')
     parser.add_argument('--optimizer', type=str, default='SGD', help='optimizer for training')
@@ -92,11 +92,14 @@ def main():
 
     '''CREATE DIRS'''
     experiment_dir = Path('./tests/')
-    experiment_dir.mkdir(exist_ok=True)
+    if not experiment_dir.exists():
+        experiment_dir.mkdir()
     type_dir = Path(str(experiment_dir) + '/' + type_string + '/')
-    type_dir.mkdir(exist_ok=True)
+    if not type_dir.exists():
+        type_dir.mkdir()
     outlier_dir = Path(str(type_dir) + '/' + outlier_string + '/')
-    outlier_dir.mkdir(exist_ok=True)
+    if not outlier_dir.exists():
+        outlier_dir.mkdir()
     checkpoints_dir = outlier_dir
 
     '''LOG'''
