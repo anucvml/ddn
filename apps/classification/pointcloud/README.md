@@ -12,8 +12,16 @@ Modified PyTorch PointNet code for testing declarative robust pooling nodes.
 To train a model, run `main.py`:
 
 ```bash
-python3 main.py --outlier_fraction [OUTLIER_FRACTION] --robust_type [PHI] --alpha [ALPHA]
+python3 main.py --outlier_fraction [OUTLIER_FRACTION] --robust_type [ROBUST_TYPE] --alpha [ALPHA]
 ```
+
+The strings available for ROBUST_TYPE are {'Q', 'PH', 'H', 'W', 'TQ', ''} and correspond to the following penalty functions:
+- Q: quadratic
+- PH: pseudo-Huber
+- H: Huber
+- W: Welsch
+- TQ: truncated quadratic
+- None: default, max-pooling
 
 The default number of epochs is 60 and the learning rate starts at 0.01 and decays by a factor of 2 every 20 epochs.
 
@@ -44,10 +52,10 @@ optional arguments:
   --epoch EPOCH         number of epoch in training
   --learning_rate LEARNING_RATE
                         learning rate in training
-  --train_metric        whether evaluate on training dataset
+  --train_metric        whether to evaluate on training dataset
   --optimizer OPTIMIZER
                         optimizer for training
-  --pretrain PRETRAIN   whether use pretrain model
+  --pretrain PRETRAIN   whether to use pretrained model
   --decay_rate DECAY_RATE
                         decay rate of learning rate
   --rotation ROTATION   range of training rotation
