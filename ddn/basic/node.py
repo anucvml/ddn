@@ -1,4 +1,6 @@
 # DEEP DECLARATIVE NODES
+# Defines the interface for data processing nodes and declarative nodes
+#
 # Stephen Gould <stephen.gould@anu.edu.au>
 # Dylan Campbell <dylan.campbell@anu.edu.au>
 #
@@ -7,9 +9,35 @@ import autograd.numpy as np
 from autograd import grad, jacobian
 import warnings
 
-# --- generic types of deep declarative nodes --------------------------------------------------------------------------
+class AbstractNode:
+    """
+    Minimal interface for generic data processing node that produces an output vector given an input vector.
+    """
 
-class AbstractDeclarativeNode:
+    def __init__(self, n=1, m=1):
+        """
+        Create a node
+        :param n: dimensionality of the input (parameters)
+        :param m: dimensionality of the output (optimization solution)
+        """
+        assert (n > 0) and (m > 0)
+        self.dim_x = n # dimensionality of input variable
+        self.dim_y = m # dimensionality of output variable
+
+    # TODO: rename to evaluate
+    def solve(self, x):
+        """Computes the output of the node given the input."""
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y = None):
+        """Computes the output of the node given input x and, optional, output y. If y is not provided then
+        it is recomputed from x."""
+        raise NotImplementedError()
+        return None
+
+
+class AbstractDeclarativeNode(AbstractNode):
     """
     A general deep declarative node defined by an unconstrained parameterized optimization problems of the form
         minimize (over y) f(x, y)
@@ -21,13 +49,10 @@ class AbstractDeclarativeNode:
 
     def __init__(self, n=1, m=1):
         """
-        Create an optimization problem instance.
-        :param n: dimensionality of the input (parameters)
-        :param m: dimensionality of the output (optimization solution)
+        Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+        partial derivatives of the objective function for use in computing gradients.
         """
-        assert (n > 0) and (m > 0)
-        self.dim_x = n # dimensionality of input variable
-        self.dim_y = m # dimensionality of output variable
+        super().__init__(n, m)
 
         # partial derivatives of objective
         self.fY = grad(self.objective, 1)

@@ -5,6 +5,19 @@
 
 from ddn.basic.node import *
 
+class SquaredErrorNode(AbstractNode):
+    """Computes the squared difference between the input and a given target vector."""
+    def __init__(self, n, x_target=None):
+        super().__init__(n, 1)
+        self.x_target = np.zeros((n,)) if x_target is None else x_target
+
+    def solve(self, x):
+        return 0.5 * np.sum(np.square(x - self.x_target)), None
+
+    def gradient(self, x, y):
+        return (x - self.x_target).T
+
+
 class UnconstPolynomial(AbstractDeclarativeNode):
     """Solves min. f(x, y) = xy^4 + 2x^2y^3 - 12y^2  from Gould et al., 2016. Takes smallest x over the three
     stationary points."""
