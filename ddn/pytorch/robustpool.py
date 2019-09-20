@@ -202,7 +202,7 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
     A function to globally pool a 2D response matrix using a robust penalty function
     """
     @staticmethod
-    def runOptimisation(x, y, alpha_scalar):
+    def runOptimisation(x, y, method, alpha_scalar):
         with torch.enable_grad():
             opt = torch.optim.LBFGS([y],
                                     lr=1, # Default: 1
@@ -234,12 +234,12 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
         if method.is_convex:
             # Use mean as initial guess
             y = x.mean([-2, -1]).clone().requires_grad_()
-            y = RobustGlobalPool2dFn.runOptimisation(x, y, alpha_scalar)
+            y = RobustGlobalPool2dFn.runOptimisation(x, y, method, alpha_scalar)
         else:
             # Use mean and median as initial guesses and choose the best
             # ToDo: multiple random starts
             y = x.mean([-2, -1]).clone().requires_grad_()
-            y = RobustGlobalPool2dFn.runOptimisation(x, y, alpha_scalar)
+            y = RobustGlobalPool2dFn.runOptimisation(x, y, method, alpha_scalar)
             y_median = x.flatten(start_dim=-2).median(dim=-1)[0].clone().requires_grad_()
             y_median = RobustGlobalPool2dFn.runOptimisation(x, y_median, alpha_scalar)
             f_mean = method.phi(y.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
