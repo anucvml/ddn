@@ -27,6 +27,9 @@ export PYTHONPATH=${PYTHONPATH}:ddn
 python tests/testBasicDeclNodes.py
 ```
 
+Example applications for image and point cloud classification can be found under the `apps` directory. See
+the `README` files therein for instructions on installation and how to run.
+
 ## License
 
 The `ddn` library is distributed under the MIT license. See the [LICENSE](LICENSE) file for details.
