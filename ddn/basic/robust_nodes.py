@@ -14,6 +14,7 @@ class RobustAverage(NonUniqueDeclarativeNode):
     Solves for the one-dimensional robust average,
         minimize f(x, y) = \sum_{i=1}^{n} phi(y - x_i; alpha)
     where phi(z; alpha) is one of the following robust penalties,
+        'quadratic':    1/2 z^2
         'pseudo-huber': alpha^2 (\sqrt(1 + (z/alpha)^2 - 1)
         'huber':        1/2 z^2 for |z| <= alpha and alpha |z| - 1/2 alpha^2 otherwise
         'welsch':       1 - exp(-z^2 / 2 alpha^2)
@@ -24,7 +25,9 @@ class RobustAverage(NonUniqueDeclarativeNode):
         self.alpha = alpha
         self.alpha_sq = alpha ** 2
         self.penalty = penalty.lower()
-        if (self.penalty == 'pseudo-huber'):
+        if (self.penalty == 'quadratic'):
+            self.phi = lambda z: 0.5 * np.power(z, 2.0)
+        elif (self.penalty == 'pseudo-huber'):
             self.phi = lambda z: self.alpha_sq * (np.sqrt(1.0 + np.power(z, 2.0) / self.alpha_sq) - 1.0)
         elif (self.penalty == 'huber'):
             self.phi = lambda z: np.where(np.abs(z) <= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * self.alpha_sq)
@@ -35,8 +38,8 @@ class RobustAverage(NonUniqueDeclarativeNode):
         else:
             assert False, "unrecognized penalty function {}".format(penalty)
 
+        super().__init__(n, 1) # make sure node is properly constructed
         self.eps = 1.0e-4 # relax tolerance on optimality test
-        super().__init__(n, 1)
 
     def objective(self, x, y):
         assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
@@ -69,7 +72,9 @@ class RobustAverage(NonUniqueDeclarativeNode):
         if y is None:
             y, _ = self.solve(x)
 
-        if (self.penalty == 'pseudo-huber'):
+        if (self.penalty == 'quadratic'):
+            dy = np.ones((1, self.dim_x))
+        elif (self.penalty == 'pseudo-huber'):
             dy = np.array([np.power(1.0 + np.power(y - xi, 2.0) / self.alpha_sq, -1.5) for xi in x])
         elif (self.penalty == 'huber') or (self.penalty == 'trunc-quad'):
             dy = np.array([1.0 if np.abs(y - xi) <= self.alpha else 0.0 for xi in x])
