@@ -53,7 +53,7 @@ class RobustAverage(NonUniqueDeclarativeNode):
 
         result = opt.minimize(J, np.mean(x), args=(), method='L-BFGS-B', jac=dJ, options={'maxiter': 100, 'disp': False})
         if not result.success: print(result.message)
-        y_star = result.x
+        y_star, J_star = result.x, result.fun
 
         # run with different intial guesses for non-convex penalties
         if (self.penalty == 'welsch') or (self.penalty == 'trunc-quad'):
@@ -62,8 +62,8 @@ class RobustAverage(NonUniqueDeclarativeNode):
             for x_init in guesses:
                 result = opt.minimize(J, x_init, args=(), method='L-BFGS-B', jac=dJ, options={'maxiter': 100, 'disp': False})
                 if not result.success: print(result.message)
-                if (result.x < y_star):
-                    y_star = result.x
+                if (result.fun < J_star):
+                    y_star, J_star = result.x, result.fun
 
         return y_star, None
 
