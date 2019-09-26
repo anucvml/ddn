@@ -26,13 +26,14 @@ class AbstractNode:
 
     # TODO: rename to evaluate
     def solve(self, x):
-        """Computes the output of the node given the input."""
+        """Computes the output of the node given the input. The second returned object provides context
+        for computing the gradient if necessary. Otherwise it's None."""
         raise NotImplementedError()
         return None, None
 
-    def gradient(self, x, y = None):
-        """Computes the output of the node given input x and, optional, output y. If y is not provided then
-        it is recomputed from x."""
+    def gradient(self, x, y=None, ctx=None):
+        """Computes the gradient of the node for given input x and, optional, output y and context cxt.
+        If y or ctx is not provided then they are recomputed from x as needed."""
         raise NotImplementedError()
         return None
 
@@ -68,14 +69,15 @@ class AbstractDeclarativeNode(AbstractNode):
         """
         Solves the optimization problem
             y \in argmin_u f(x, u)
-        and returns two outputs. The first is the optimal solution y and the second is the largrange multipliers in
-        the case of a constrained problem and None otherwise.
+        and returns two outputs. The first is the optimal solution y and the second contains the context for
+        computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
+        if no context is available/needed.
         """
 
         raise NotImplementedError()
         return None, None
 
-    def gradient(self, x, y_star=None):
+    def gradient(self, x, y=None, ctx=None):
         """
         Computes the gradient of the output (problem solution) with respect to the problem
         parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
@@ -84,16 +86,16 @@ class AbstractDeclarativeNode(AbstractNode):
         """
 
         # compute optimal value if not already done so
-        if y_star is None:
-            y_star, _ = self.solve(x)
-        assert self._check_optimality_cond(x, y_star)
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y)
 
         # TODO: replace with symmetric matrix solver
-        return -1.0 * np.linalg.solve(self.fYY(x, y_star), self.fXY(x, y_star))
+        return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
 
-    def _check_optimality_cond(self, x, y_star, nu_star=None):
+    def _check_optimality_cond(self, x, y, ctx=None):
         """Checks that the problem's first-order optimality condition is satisfied."""
-        return (abs(self.fY(x, y_star)) <= self.eps).all()
+        return (abs(self.fY(x, y)) <= self.eps).all()
 
 
 class EqConstDeclarativeNode(AbstractDeclarativeNode):
@@ -124,39 +126,38 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         """
         Solves the optimization problem
             y \in argmin_u f(x, u) subject to h(x, u) = 0
-        and returns the vector y. Optionally, also returns the Lagrange multiplier associated
-        with the equality constraint where the Lagrangian is defined as
-            L(x, y, nu) = f(x, y) - nu * h(x, y)
+        and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
+        equality constraint where the Lagrangian is defined as
+            L(x, y, nu) = f(x, y) - ctx['nu'] * h(x, y)
         Otherwise, should return None as second return variable.
-        If the calling function only cares about the optimal solution then call as
+        If the calling function only cares about the optimal solution (and not the context) then call as
             y_star, _ = self.solve(x)
         """
 
         raise NotImplementedError()
         return None, None
 
-    def gradient(self, x, y_star=None, nu_star=None):
+    def gradient(self, x, y=None, ctx=None):
         """Compute the gradient of the output (problem solution) with respect to the problem
         parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
         the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,)."""
 
         # compute optimal value if not already done so
-        if y_star is None:
-            y_star, nu_star = self.solve(x)
-        assert self._check_constraints(x, y_star), [x, y_star, abs(self.constraint(x, y_star))]
-        assert self._check_optimality_cond(x, y_star, nu_star), [x, y_star, nu_star]
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y), [x, y, abs(self.constraint(x, y))]
+        assert self._check_optimality_cond(x, y, ctx), [x, y, ctx]
 
-        if nu_star is None:
-            nu_star = self._get_nu_star(x, y_star)
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx['nu']
 
-        # return unconstrained gradient if undefined
-        if np.isnan(nu_star):
-            return -1.0 * np.linalg.solve(self.fYY(x, y_star), self.fXY(x, y_star))
+        # return unconstrained gradient if nu is undefined
+        if np.isnan(nu):
+            return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
 
-        H = self.fYY(x, y_star) - nu_star * self.hYY(x, y_star)
-        a = self.hY(x, y_star)
-        B = self.fXY(x, y_star) - nu_star * self.hXY(x, y_star)
-        C = self.hX(x, y_star)
+        H = self.fYY(x, y) - nu * self.hYY(x, y)
+        a = self.hY(x, y)
+        B = self.fXY(x, y) - nu * self.hXY(x, y)
+        C = self.hX(x, y)
         try:
             # TODO: replace with symmetric solver
             v = np.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1))
@@ -164,30 +165,28 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
             return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
         return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()
 
-    def _get_nu_star(self, x, y_star):
+    def _get_nu_star(self, x, y):
         """Compute nu_star if not provided by the problem's solver."""
-        indx = np.nonzero(self.hY(x, y_star))
+        indx = np.nonzero(self.hY(x, y))
         if len(indx[0]) == 0:
             return 0.0
-        return self.fY(x, y_star)[indx[0][0]] / self.hY(x, y_star)[indx[0][0]]
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
 
-    def _check_constraints(self, x, y_star):
+    def _check_constraints(self, x, y):
         """Check that the problem's constraints are satisfied."""
-        return abs(self.constraint(x, y_star)) <= self.eps
+        return abs(self.constraint(x, y)) <= self.eps
 
-    def _check_optimality_cond(self, x, y_star, nu_star=None):
+    def _check_optimality_cond(self, x, y, ctx=None):
         """Checks that the problem's first-order optimality condition is satisfied."""
-        if nu_star is None:
-            nu_star = self._get_nu_star(x, y_star)
-
-        if np.isnan(nu_star):
-            return (abs(self.fY(x, y_star)) <= self.eps).all()
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx['nu']
+        if np.isnan(nu):
+            return (abs(self.fY(x, y)) <= self.eps).all()
 
         # check for invalid lagrangian (gradient of constraint zero at optimal point)
-        if (abs(self.hY(x, y_star)) <= self.eps).all():
+        if (abs(self.hY(x, y)) <= self.eps).all():
             warnings.warn("gradient of constraint function vanishes at the optimum.")
             return True
-        return (abs(self.fY(x, y_star) - nu_star * self.hY(x, y_star)) <= self.eps).all()
+        return (abs(self.fY(x, y) - nu * self.hY(x, y)) <= self.eps).all()
 
 
 class IneqConstDeclarativeNode(EqConstDeclarativeNode):
@@ -203,18 +202,18 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
     def __init__(self, n, m):
         super().__init__(n, m)
 
-    def _get_nu_star(self, x, y_star):
+    def _get_nu_star(self, x, y):
         """Compute nu_star if not provided by the problem's solver."""
-        if np.all(np.abs(self.fY(x, y_star)) < self.eps):
+        if np.all(np.abs(self.fY(x, y)) < self.eps):
             return np.nan # flag that unconstrained gradient should be used
-        indx = np.nonzero(self.hY(x, y_star))
+        indx = np.nonzero(self.hY(x, y))
         if len(indx[0]) == 0:
             return 0.0 # still use constrained gradient
-        return self.fY(x, y_star)[indx[0][0]] / self.hY(x, y_star)[indx[0][0]]
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
 
-    def _check_constraints(self, x, y_star):
+    def _check_constraints(self, x, y):
         """Check that the problem's constraints are satisfied."""
-        return self.constraint(x, y_star) <= self.eps
+        return self.constraint(x, y) <= self.eps
 
 
 class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
@@ -231,29 +230,29 @@ class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
         assert A.shape[0] == b.shape[0], "dimension of A must match dimension of b"
         self.A, self.b = A, b
 
-    def gradient(self, x, y_star=None, nu_star=None):
+    def gradient(self, x, y=None, ctx=None):
         """Compute the gradient of the output (problem solution) with respect to the problem
         parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
         the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,)."""
 
         # compute optimal value if not already done so
-        if y_star is None:
-            y_star, nu_star = self.solve(x)
-        assert self._check_constraints(x, y_star)
-        assert self._check_optimality_cond(x, y_star, nu_star)
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y)
+        assert self._check_optimality_cond(x, y, ctx)
 
         # TODO: replace with symmetric matrix solver and avoid explicit inverse matrix computations
-        invH = np.linalg.inv(self.fYY(x, y_star))
+        invH = np.linalg.inv(self.fYY(x, y))
         invHAT = np.dot(invH, self.A.T)
         w = np.dot(np.dot(invHAT, np.linalg.inv(np.dot(self.A, invHAT))), invHAT.T) - invH
-        return np.dot(w, self.fXY(x, y_star))
+        return np.dot(w, self.fXY(x, y))
 
-    def _check_constraints(self, x, y_star):
+    def _check_constraints(self, x, y):
         """Check that the problem's constraints are satisfied."""
-        residual = np.dot(self.A, y_star) - self.b
+        residual = np.dot(self.A, y) - self.b
         return np.all(np.abs(residual) <= self.eps)
 
-    def _check_optimality_cond(self, x, y_star, nu_star=None):
+    def _check_optimality_cond(self, x, y, ctx=None):
         """Checks that the problem's first-order optimality condition is satisfied."""
         warnings.warn("optimality check not implemented yet")
         return True
@@ -267,7 +266,7 @@ class NonUniqueDeclarativeNode(AbstractDeclarativeNode):
     def __init__(self, n, m):
         super().__init__(n, m)
 
-    def gradient(self, x, y_star=None):
+    def gradient(self, x, y=None, ctx=None):
         """
         Computes the gradient of the output (problem solution) with respect to the problem parameters
         using a pseudo-inverse. The returned gradient is an ndarray of size (self.dim_y, self.dim_x).
@@ -275,8 +274,8 @@ class NonUniqueDeclarativeNode(AbstractDeclarativeNode):
         """
 
         # compute optimal value if not already done so
-        if y_star is None:
-            y_star, _ = self.solve(x)
-        assert self._check_optimality_cond(x, y_star), abs(self.fY(x, y_star))
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y, ctx), abs(self.fY(x, y))
 
-        return -1.0 * np.linalg.pinv(self.fYY(x, y_star)).dot(self.fXY(x, y_star))
+        return -1.0 * np.linalg.pinv(self.fYY(x, y)).dot(self.fXY(x, y))

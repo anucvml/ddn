@@ -20,14 +20,16 @@ class ComposedNode(AbstractNode):
         the dual variables from both nodes."""
         z, nuA = self.nodeA.solve(x)
         y, nuB = self.nodeB.solve(z)
-        return y, (nuA, nuB)
+        return y, {'nuA': nuB, 'nuB': nuB, 'z': z}
 
-    def gradient(self, x, y_star=None):
+    def gradient(self, x, y=None, ctx=None):
         """Overrides the gradient method to compute the composed gradient by the chain rule."""
 
         # we need to resolve for z since there is currently no way to store this
-        # TODO: update semantics of second returned variable from `solve` to store node-specific state
-        z, _ = self.nodeA.solve(x)
+        if ctx is None:
+            z, _ = self.nodeA.solve(x)
+        else:
+            z = ctx['z']
         Dz = self.nodeA.gradient(x, z)
-        Dy = self.nodeB.gradient(z, y_star)
+        Dy = self.nodeB.gradient(z, y)
         return np.dot(Dy, Dz)
