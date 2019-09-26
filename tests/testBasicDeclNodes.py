@@ -39,9 +39,10 @@ def computeValueAndGradients(node, x_indx=0, x_input=None, x_min=-2.0, x_max=2.0
     y, Dy_analytic, Dy_implicit = [], [], []
     for xi in x:
         x_input[x_indx] = xi
-        y.append(node.solve(x_input)[0])
-        Dy_analytic.append(node.gradient(x_input, y[-1]))
-        Dy_implicit.append(super(type(node), node).gradient(x_input, y[-1]))
+        yi, ctx = node.solve(x_input)
+        y.append(yi)
+        Dy_analytic.append(node.gradient(x_input, yi, ctx))
+        Dy_implicit.append(super(type(node), node).gradient(x_input, yi, ctx))
 
     return x, y, Dy_analytic, Dy_implicit
 

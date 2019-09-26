@@ -30,6 +30,6 @@ class ComposedNode(AbstractNode):
             z, _ = self.nodeA.solve(x)
         else:
             z = ctx['z']
-        Dz = self.nodeA.gradient(x, z)
-        Dy = self.nodeB.gradient(z, y)
+        Dz = self.nodeA.gradient(x, z).reshape(self.nodeA.dim_y, self.nodeA.dim_x)
+        Dy = self.nodeB.gradient(z, y).reshape(self.nodeB.dim_y, self.nodeB.dim_x)
         return np.dot(Dy, Dz)

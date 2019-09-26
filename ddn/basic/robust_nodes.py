@@ -20,6 +20,10 @@ class RobustAverage(NonUniqueDeclarativeNode):
         'welsch':       1 - exp(-z^2 / 2 alpha^2)
         'trunc-quad':   1/2 z^2 for |z| <= alpha and 1/2 alpha^2 otherwise
     """
+
+    # number of random restarts when solving non-convex penalties
+    restarts = 10
+
     def __init__(self, n, penalty='huber', alpha=1.0):
         assert (alpha > 0.0)
         self.alpha = alpha
@@ -58,7 +62,7 @@ class RobustAverage(NonUniqueDeclarativeNode):
         # run with different intial guesses for non-convex penalties
         if (self.penalty == 'welsch') or (self.penalty == 'trunc-quad'):
             guesses = np.random.permutation(x)
-            if len(guesses) > 10: guesses = guesses[:10]
+            if len(guesses) > self.restarts: guesses = guesses[:self.restarts]
             for x_init in guesses:
                 result = opt.minimize(J, x_init, args=(), method='L-BFGS-B', jac=dJ, options={'maxiter': 100, 'disp': False})
                 if not result.success: print(result.message)
