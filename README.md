@@ -19,11 +19,6 @@ reference in your research please cite as:
 }
 ```
 
-## Repository Structure
-
-The main library is under the `ddn` package; the `tutorials` directory presents a hands-on overview of
-the theory; and the `apps` directory contains reference implementations for PyTorch applications.
-
 ## Running code
 
 When running code from the command line make sure you add the `ddn` package to your PYTHONPATH. For example:
@@ -31,6 +26,13 @@ When running code from the command line make sure you add the `ddn` package to y
 ```
 export PYTHONPATH=${PYTHONPATH}:ddn
 python tests/testBasicDeclNodes.py
+```
+
+Tutorials should be opened in Jupyter notebook:
+
+```
+cd tutorials
+jupyter notebook
 ```
 
 Example applications for image and point cloud classification can be found under the `apps` directory. See

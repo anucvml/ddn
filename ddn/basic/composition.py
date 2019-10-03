@@ -11,6 +11,7 @@ class ComposedNode(AbstractNode):
     as such can be further composed with other nodes to form a chain."""
 
     def __init__(self, nodeA, nodeB):
+        assert (nodeA.dim_y == nodeB.dim_x)
         super().__init__(nodeA.dim_x, nodeB.dim_y)
         self.nodeA = nodeA
         self.nodeB = nodeB
