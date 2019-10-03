@@ -19,7 +19,7 @@ reference in your research please cite as:
 }
 ```
 
-## Organization
+## Repository Structure
 
 The main library is under the `ddn` package; the `tutorials` directory presents a hands-on overview of
 the theory; and the `apps` directory contains reference implementations for PyTorch applications.
