@@ -19,6 +19,11 @@ reference in your research please cite as:
 }
 ```
 
+## Organization
+
+The main library is under the `ddn` package; the `tutorials` directory presents a hands-on overview of
+the theory; and the `apps` directory contains reference implementations for PyTorch applications.
+
 ## Running code
 
 When running code from the command line make sure you add the `ddn` package to your PYTHONPATH. For example:
