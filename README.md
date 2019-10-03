@@ -35,8 +35,8 @@ cd tutorials
 jupyter notebook
 ```
 
-Example applications for image and point cloud classification can be found under the `apps` directory. See
-the `README` files therein for instructions on installation and how to run.
+Reference (PyTorch) applications for image and point cloud classification can be found under the `apps`
+directory. See the `README` files therein for instructions on installation and how to run.
 
 ## License
 
