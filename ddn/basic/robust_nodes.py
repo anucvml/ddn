@@ -15,7 +15,7 @@ class RobustAverage(NonUniqueDeclarativeNode):
         minimize f(x, y) = \sum_{i=1}^{n} phi(y - x_i; alpha)
     where phi(z; alpha) is one of the following robust penalties,
         'quadratic':    1/2 z^2
-        'pseudo-huber': alpha^2 (\sqrt(1 + (z/alpha)^2 - 1)
+        'pseudo-huber': alpha^2 (\sqrt(1 + (z/alpha)^2) - 1)
         'huber':        1/2 z^2 for |z| <= alpha and alpha |z| - 1/2 alpha^2 otherwise
         'welsch':       1 - exp(-z^2 / 2 alpha^2)
         'trunc-quad':   1/2 z^2 for |z| <= alpha and 1/2 alpha^2 otherwise

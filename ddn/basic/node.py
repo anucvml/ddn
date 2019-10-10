@@ -6,6 +6,7 @@
 #
 
 import autograd.numpy as np
+import scipy as sci
 from autograd import grad, jacobian
 import warnings
 
@@ -90,8 +91,7 @@ class AbstractDeclarativeNode(AbstractNode):
             y, ctx = self.solve(x)
         assert self._check_optimality_cond(x, y)
 
-        # TODO: replace with symmetric matrix solver
-        return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
+        return -1.0 * sci.linalg.solve(self.fYY(x, y), self.fXY(x, y), assume_a='pos')
 
     def _check_optimality_cond(self, x, y, ctx=None):
         """Checks that the problem's first-order optimality condition is satisfied."""
@@ -159,8 +159,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         B = self.fXY(x, y) - nu * self.hXY(x, y)
         C = self.hX(x, y)
         try:
-            # TODO: replace with symmetric solver
-            v = np.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1))
+            v = sci.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1), assume_a='pos')
         except:
             return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
         return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()
@@ -241,11 +240,15 @@ class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
         assert self._check_constraints(x, y)
         assert self._check_optimality_cond(x, y, ctx)
 
-        # TODO: replace with symmetric matrix solver and avoid explicit inverse matrix computations
-        invH = np.linalg.inv(self.fYY(x, y))
-        invHAT = np.dot(invH, self.A.T)
-        w = np.dot(np.dot(invHAT, np.linalg.inv(np.dot(self.A, invHAT))), invHAT.T) - invH
-        return np.dot(w, self.fXY(x, y))
+        # TODO: write test case for LinEqConstDeclarativeNode
+        # use cholesky to solve H^{-1}A^T and H^{-1}B
+        C, L = sci.linalg.cho_factor(self.fYY(x, y))
+        invHAT = sci.linalg.cho_solve((C, L), self.A.T)
+        invHB = sci.linalg.cho_solve((C, L), self.fXY(x, y))
+        # compute W = H^{-1}A^T (A H^{-1} A^T)^{-1} A
+        W = np.dot(invHAT, sci.linalg.solve(np.dot(self.A, invHAT), self.A))
+        # return H^{-1}A^T (A H^{-1} A^T)^{-1} A H^{-1} B - H^{-1} B
+        return np.dot(W, invHB) - invHB
 
     def _check_constraints(self, x, y):
         """Check that the problem's constraints are satisfied."""

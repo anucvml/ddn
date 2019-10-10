@@ -266,7 +266,7 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
             grad_input = method.Dy(z, alpha) * grad_output.unsqueeze(-1).unsqueeze(-1)
             # Unflatten:
             grad_input = grad_input.reshape(input_size)
-        return grad_input, None, None, None, None
+        return grad_input, None, None
 
 class RobustGlobalPool2d(torch.nn.Module):
     def __init__(self, method, alpha=1.0):
