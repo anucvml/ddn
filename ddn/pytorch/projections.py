@@ -184,20 +184,27 @@ class L2Sphere():
         """
         assert z > 0.0, "z must be strictly positive (%f <= 0)" % z
         w = z * v.div(v.norm(p=2, dim=-1, keepdim=True))
+        # ToDo: Check for div by zero
+        # v_norm = v.norm(p=2, dim=-1, keepdim=True)
+        # unit_vector = torch.ones_like(v).div(torch.ones_like(v).norm(p=2, dim=-1, keepdim=True))
+        # w = z * torch.where(v_norm <= 1e-9, unit_vector, v.div(v_norm))
         return w, None
 
     @staticmethod
     def gradient(grad_output, output, input, is_outside = None):
         # Compute vector-Jacobian product (grad_output * Dy(x))
+        # ToDo: Check for div by zero
         # 1. Flatten:
         output_size = output.size()
         output = output.flatten(end_dim=-2)
         input = input.flatten(end_dim=-2)
         grad_output = grad_output.flatten(end_dim=-2)
         # 2. Use implicit differentiation to compute derivative
-        ratio = output[:, 0:1].div(input[..., 0:1]) # 16x1
+        output_norm = output.norm(p=2, dim=-1, keepdim=True)
+        input_norm = input.norm(p=2, dim=-1, keepdim=True)
+        ratio = output_norm.div(input_norm)
         grad_input = ratio * (grad_output - output * (
-            output * grad_output).sum(-1, keepdim=True).div(output.pow(2).sum(-1, keepdim=True)))
+            output * grad_output).sum(-1, keepdim=True).div(output_norm.pow(2)))
         # 3. Unflatten:
         grad_input = grad_input.reshape(output_size)
         return grad_input
@@ -378,18 +385,28 @@ class EuclideanProjection(torch.nn.Module):
 """ Check gradients
 from torch.autograd import gradcheck
 
-method = L1Sphere
+# method = L1Sphere
 # method = L1Ball
 # method = L2Sphere
-# method = L2Ball
+method = L2Ball
 # method = LInfSphere
 # method = LInfBall
 
 radius = 100.0
+radius = 0.5
 
 projection = EuclideanProjectionFn.apply
 radius_tensor = torch.tensor([radius], requires_grad=False)
 input = (torch.randn(4, 2, 2, 100, dtype=torch.double, requires_grad=True), method, radius_tensor)
 test = gradcheck(projection, input, eps=1e-6, atol=1e-4)
 print("{}: {}".format(method.__name__, test))
+
+# Check projections
+features = torch.randn(1, 1, 1, 10, dtype=torch.double, requires_grad=True)
+input = (features, method, radius_tensor)
+print(features.abs().sum(dim=-1))
+print(features.norm(p=2, dim=-1))
+print(features.abs().max(dim=-1)[0])
+print(features)
+print(projection(*input))
 """
