@@ -1,5 +1,6 @@
 - [ ] Diagram immediately after each optimisation problem
-- [ ] Starting with a 1D example like the contour plot
+- [X] Starting with a 1D example like the contour plot
 - [ ] Linking the last two simple worked examples to Euclidean projection onto balls/spheres
 - [ ] Adding a PyTorch tutorial
 - [ ] Feedback from Itzik
+- [ ] Split first tutorial into two (one for unconstrained and one for the remainder)?
