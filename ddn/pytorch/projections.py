@@ -368,13 +368,12 @@ class EuclideanProjection(torch.nn.Module):
     def __init__(self, method, radius = 1.0):
         super(EuclideanProjection, self).__init__()
         self.method = method
-        self.radius = torch.tensor([radius])
-        self.register_buffer('radius_const', self.radius)
+        self.register_buffer('radius', torch.tensor([radius]))
 
     def forward(self, input):
         return EuclideanProjectionFn.apply(input,
                                            self.method,
-                                           self.radius.type(input.dtype).to(input.device),
+                                           self.radius
                                            )
 
     def extra_repr(self):
