@@ -272,13 +272,12 @@ class RobustGlobalPool2d(torch.nn.Module):
     def __init__(self, method, alpha=1.0):
         super(RobustGlobalPool2d, self).__init__()
         self.method = method
-        self.alpha = torch.tensor([alpha])
-        self.register_buffer('alpha_const', self.alpha)
+        self.register_buffer('alpha', torch.tensor([alpha]))
 
     def forward(self, input):
         return RobustGlobalPool2dFn.apply(input,
                                           self.method,
-                                          self.alpha.type(input.dtype).to(input.device),
+                                          self.alpha
                                           )
 
     def extra_repr(self):
@@ -293,8 +292,8 @@ alpha = 1.0
 # alpha = 0.2
 # alpha = 5.0
 
-method = Quadratic
-# method = PseudoHuber
+# method = Quadratic
+method = PseudoHuber
 # method = Huber
 # method = Welsch # Can fail gradcheck due to numerically-necessary gradient clipping
 # method = TruncatedQuadratic
