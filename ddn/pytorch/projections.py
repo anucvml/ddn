@@ -54,7 +54,25 @@ class Simplex():
         theta = (torch.gather(mu_cumulative_sum, -1, (rho - 1)) - z) / rho.type(v.dtype)
         # 4. Compute projection
         w = (v - theta).clamp(min = 0.0)
-        return w
+        return w, None
+
+    @staticmethod
+    def gradient(grad_output, output, input, is_outside = None):
+        # Compute vector-Jacobian product (grad_output * Dy(x))
+        # 1. Flatten:
+        output_size = output.size()
+        output = output.flatten(end_dim=-2)
+        input = input.flatten(end_dim=-2)
+        grad_output = grad_output.flatten(end_dim=-2)
+        # 2. Use implicit differentiation to compute derivative
+        # Select active positivity constraints
+        mask = torch.where(output > 0.0, torch.ones_like(input), torch.zeros_like(input))
+        masked_output = mask * grad_output
+        grad_input = masked_output - mask * (
+            masked_output.sum(-1, keepdim=True) / mask.sum(-1, keepdim=True))
+        # 3. Unflatten:
+        grad_input = grad_input.reshape(output_size)
+        return grad_input
 
 class L1Sphere(Simplex):
     @staticmethod
@@ -91,7 +109,7 @@ class L1Sphere(Simplex):
         # 1. Take the absolute value of v
         u = v.abs()
         # 2. Project u onto the positive simplex
-        beta = Simplex.project(u, z=z)
+        beta, _ = Simplex.project(u, z=z)
         # 3. Correct the element signs
         w = beta * v.sign()
         return w, None
@@ -384,28 +402,36 @@ class EuclideanProjection(torch.nn.Module):
 """ Check gradients
 from torch.autograd import gradcheck
 
-# method = L1Sphere
+# method = Simplex
+method = L1Sphere
 # method = L1Ball
 # method = L2Sphere
-method = L2Ball
+# method = L2Ball
 # method = LInfSphere
 # method = LInfBall
 
 radius = 100.0
-radius = 0.5
+# radius = 0.5
 
 projection = EuclideanProjectionFn.apply
 radius_tensor = torch.tensor([radius], requires_grad=False)
-input = (torch.randn(4, 2, 2, 100, dtype=torch.double, requires_grad=True), method, radius_tensor)
+features = torch.randn(4, 2, 2, 100, dtype=torch.double, requires_grad=True)
+input = (features, method, radius_tensor)
 test = gradcheck(projection, input, eps=1e-6, atol=1e-4)
 print("{}: {}".format(method.__name__, test))
 
 # Check projections
 features = torch.randn(1, 1, 1, 10, dtype=torch.double, requires_grad=True)
 input = (features, method, radius_tensor)
+print(features.sum(dim=-1))
 print(features.abs().sum(dim=-1))
 print(features.norm(p=2, dim=-1))
 print(features.abs().max(dim=-1)[0])
 print(features)
-print(projection(*input))
+output = projection(*input)
+print(output.sum(dim=-1))
+print(output.abs().sum(dim=-1))
+print(output.norm(p=2, dim=-1))
+print(output.abs().max(dim=-1)[0])
+print(output)
 """
