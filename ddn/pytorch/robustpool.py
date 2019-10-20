@@ -238,14 +238,13 @@ class RobustGlobalPool2dFn(torch.autograd.Function):
         else:
             # Use mean and median as initial guesses and choose the best
             # ToDo: multiple random starts
-            y = x.mean([-2, -1]).clone().requires_grad_()
-            y = RobustGlobalPool2dFn.runOptimisation(x, y, method, alpha_scalar)
+            y_mean = x.mean([-2, -1]).clone().requires_grad_()
+            y_mean = RobustGlobalPool2dFn.runOptimisation(x, y_mean, method, alpha_scalar)
             y_median = x.flatten(start_dim=-2).median(dim=-1)[0].clone().requires_grad_()
             y_median = RobustGlobalPool2dFn.runOptimisation(x, y_median, method, alpha_scalar)
-            f_mean = method.phi(y.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
-            f_median = method.phi(y_median.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum()
-            if f_median < f_mean:
-                y = y_median
+            f_mean = method.phi(y_mean.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum(-1).sum(-1)
+            f_median = method.phi(y_median.unsqueeze(-1).unsqueeze(-1) - x, alpha=alpha_scalar).sum(-1).sum(-1)
+            y = torch.where(f_mean <= f_median, y_mean, y_median)
         y = y.detach()
         z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
         ctx.method = method
@@ -292,8 +291,8 @@ alpha = 1.0
 # alpha = 0.2
 # alpha = 5.0
 
-# method = Quadratic
-method = PseudoHuber
+method = Quadratic
+# method = PseudoHuber
 # method = Huber
 # method = Welsch # Can fail gradcheck due to numerically-necessary gradient clipping
 # method = TruncatedQuadratic
