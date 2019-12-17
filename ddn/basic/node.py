@@ -25,7 +25,6 @@ class AbstractNode:
         self.dim_x = n # dimensionality of input variable
         self.dim_y = m # dimensionality of output variable
 
-    # TODO: rename to evaluate
     def solve(self, x):
         """Computes the output of the node given the input. The second returned object provides context
         for computing the gradient if necessary. Otherwise it's None."""
