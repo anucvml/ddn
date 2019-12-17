@@ -1,7 +1,8 @@
 # Deep Declarative Networks
 
 Deep Declarative Networks (DDNs) are a class of deep learning model that allows for optimization problems
-to be embedded within an end-to-end learnable network. This repository maintains code and
+to be embedded within an end-to-end learnable network. This repository maintains code,
+[tutorials](https://nbviewer.jupyter.org/github/anucvml/ddn/tree/master/tutorials/) and
 [resources](https://github.com/anucvml/ddn/wiki/Resources) for developing and understanding DDN models.
 
 You can find more details in [this paper](https://arxiv.org/abs/1909.04866), which if you would like to
@@ -28,12 +29,14 @@ export PYTHONPATH=${PYTHONPATH}:ddn
 python tests/testBasicDeclNodes.py
 ```
 
-Tutorials should be opened in Jupyter notebook:
+Interactive tutorials should be opened in Jupyter notebook:
 
 ```
 cd tutorials
 jupyter notebook
 ```
+
+or viewed using using [jupyter.org's notebook viewer](https://nbviewer.jupyter.org/github/anucvml/ddn/tree/master/tutorials/).
 
 Reference (PyTorch) applications for image and point cloud classification can be found under the `apps`
 directory. See the `README` files therein for instructions on installation and how to run.
