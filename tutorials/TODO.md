@@ -1,5 +1,0 @@
-- [ ] Diagram immediately after each optimisation problem
-- [X] Starting with a 1D example like the contour plot
-- [X] Linking the last two simple worked examples to Euclidean projection onto balls/spheres
-- [ ] Adding a PyTorch tutorial
-- [ ] Feedback from Itzik
