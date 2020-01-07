@@ -1,5 +1,8 @@
 # DEEP DECLARATIVE NODES
-# Defines the interface for data processing nodes and declarative nodes
+# Defines the interface for data processing nodes and declarative nodes. The implementation here is kept simple
+# with inputs and outputs assumed to be vectors. There is no distinction between data and parameters and no
+# concept of batches. For using deep declarative nodes in a network for end-to-end learning see code in the
+# `ddn.pytorch` package.
 #
 # Stephen Gould <stephen.gould@anu.edu.au>
 # Dylan Campbell <dylan.campbell@anu.edu.au>

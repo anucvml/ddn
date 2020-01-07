@@ -8,12 +8,12 @@
 #   $ python testBasicDeclNodes.py
 #
 
-import numpy as np
-
 from ddn.basic.node import *
+from ddn.basic.composition import *
 from ddn.basic.sample_nodes import *
 from ddn.basic.robust_nodes import *
 
+import numpy as np
 import unittest
 
 def computeValueAndGradients(node, x_indx=0, x_input=None, x_min=-2.0, x_max=2.0, x_num=51):
@@ -86,6 +86,22 @@ class TestBasicDeclNodes(unittest.TestCase):
         self.assertLess(np.max(np.abs(np.array(Da) - np.array(Di))), 1.0e-12)
         x, y, Da, Di = computeValueAndGradients(RobustAverage(5, 'pseudo-huber'), x_indx=0, x_input=np.random.rand(5))
         self.assertLess(np.max(np.abs(np.array(Da) - np.array(Di))), 1.0e-12)
+
+    def testComposedNode(self):
+        # TODO
+        pass
+
+    def testParallelNode(self):
+        # TODO
+        pass
+
+    def testSelectNode(self):
+        n = 10
+        x = np.random.randn(n)
+        y, _ = SelectNode(n, 5).solve(x)
+        np.testing.assert_array_almost_equal(x[5:], y)
+        y, _ = SelectNode(n, 5, 7).solve(x)
+        np.testing.assert_array_almost_equal(x[5:8], y)
 
 
 if __name__ == '__main__':
