@@ -13,8 +13,7 @@ class SquaredErrorNode(AbstractNode):
         super().__init__()
         self.x_target = x_target
 
-    def solve(self, xs):
-        x, = xs
+    def solve(self, x):
         return 0.5 * ((x - self.x_target) ** 2).sum(dim=-1), None
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -29,25 +28,22 @@ class UnconstPolynomial(AbstractDeclarativeNode):
     def __init__(self):
         super().__init__()
         
-    def objective(self, xs, y):
-        x, = xs
+    def objective(self, x, y):
         return (x * y ** 2.0 + 2 * x ** 2.0 * y - 12) * y ** 2.0
 
-    def solve(self, xs):
+    def solve(self, x):
         with torch.no_grad(): # Don't create graph for y
-            x, = xs
             delta = (9.0 * x ** 4.0 + 96.0 * x).sqrt()
             y_stationary = torch.cat((torch.zeros_like(x), (-3.0 * x ** 2.0 - delta) / (4.0 * x), (-3.0 * x ** 2.0 + delta) / (4.0 * x)), dim=-1)
-            y_min_indx = self.objective(xs, y_stationary).argmin(dim=-1)
+            y_min_indx = self.objective(x, y_stationary).argmin(dim=-1)
             y = torch.cat([torch.index_select(a, dim=0, index=i).unsqueeze(0) for a, i in zip(y_stationary, y_min_indx)])
         return y, None
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, = xs
         x = x.detach()
         if y is None:
-            y, ctx = self.solve(xs)
+            y, ctx = self.solve(x)
         y = y.detach()
         if v is None:
             v = torch.ones_like(y)
@@ -58,14 +54,13 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
     def __init__(self):
         super().__init__()
         
-    def objective(self, xs, y):
-        x, alpha = xs
+    def objective(self, x, alpha, y):
         alpha2 = alpha * alpha
         z = y.unsqueeze(-1).unsqueeze(-1) - x
         phi = alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2) / alpha2) - 1.0)
         return phi.sum(dim=(-2,-1)) # b
 
-    def runOptimisation(self, xs, y):
+    def runOptimisation(self, x, alpha, y):
         with torch.enable_grad():
             opt = torch.optim.LBFGS([y],
                                     lr=1, # Default: 1
@@ -78,28 +73,26 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
                                     )
             def reevaluate():
                 opt.zero_grad()
-                f = self.objective(xs, y).sum() # sum over batch elements
+                f = self.objective(x, alpha, y).sum() # sum over batch elements
                 f.backward()
                 return f
             opt.step(reevaluate)
         return y
 
-    def solve(self, xs):
+    def solve(self, x, alpha):
         with torch.no_grad(): # Don't create graph for y
-            x, alpha = xs
             x = x.detach()
             y = x.mean([-2, -1]).clone().requires_grad_()
-            y = self.runOptimisation((x, alpha), y)
+            y = self.runOptimisation(x, alpha, y)
             y = y.detach()
             z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
             ctx = {'z': z}
         return y, ctx
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, alpha, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, alpha = xs
         if y is None:
-            y, ctx = self.solve(xs)
+            y, ctx = self.solve(x, alpha)
         if v is None:
             v = torch.ones_like(y)
         z = ctx['z'] # b x n1 x n2
@@ -118,26 +111,22 @@ class LinFcnOnUnitCircle(EqConstDeclarativeNode):
     def __init__(self):
         super().__init__()
 
-    def objective(self, xs, y):
-        x, = xs
+    def objective(self, x, y):
         return y[:, 0] + y[:, 1] * x[:, 0]
 
-    def equality_constraints(self, xs, y):
-        x, = xs
+    def equality_constraints(self, x, y):
         return torch.einsum('bm,bm->b', (y, y)) - 1.0
 
-    def solve(self, xs):
+    def solve(self, x):
         with torch.no_grad(): # Don't create graph for y
-            x, = xs
             x_aug = torch.cat((torch.ones_like(x), x), dim=-1) # bx2
             t = torch.sqrt(1.0 + torch.pow(x, 2.0))
             y = -1.0 * x_aug / t # bx2
             ctx = {'nu': -0.5 * t} # b
         return y, ctx
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, = xs
         x = x.detach()
         if v is None:
             v = x.new_ones(x.size(0), 2) # bx2
@@ -155,25 +144,21 @@ class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
     def __init__(self):
         super().__init__()
 
-    def objective(self, xs, y):
-        x, = xs
+    def objective(self, x, y):
         return y[:, 0] + y[:, 1]
 
-    def equality_constraints(self, xs, y):
-        x, = xs
+    def equality_constraints(self, x, y):
         return torch.einsum('bm,bm->b', (y, y)) - torch.einsum('b,b->b', (x[:, 0], x[:, 0]))
 
-    def solve(self, xs):
+    def solve(self, x):
         with torch.no_grad(): # Don't create graph for y
-            x, = xs
             y = -1.0 * torch.abs(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
             nu = torch.where(x[:, 0] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
             ctx = {'nu': nu}
         return y, ctx
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, = xs
         x = x.detach()
         if v is None:
             v = x.new_ones(x.size(0), 2) # bx2
@@ -190,25 +175,21 @@ class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
     def __init__(self):
         super().__init__()
 
-    def objective(self, xs, y):
-        x, = xs
+    def objective(self, x, y):
         return y[:, 0] + torch.einsum('b,b->b', (x[:, 0], y[:, 1]))
 
-    def equality_constraints(self, xs, y):
-        x, = xs
+    def equality_constraints(self, x, y):
         return torch.einsum('bm,bm->b', (y, y)) - torch.einsum('b,b->b', (x[:, 1], x[:, 1]))
 
-    def solve(self, xs):
+    def solve(self, x):
         with torch.no_grad(): # Don't create graph for y
-            x, = xs
             y = -1.0 * torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
             nu = torch.where(x[:, 1] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
             ctx = {'nu': nu}
         return y, ctx
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, = xs
         x = x.detach()
         if v is None:
             v = x.new_ones(x.size(0), 2) # bx2
@@ -227,23 +208,19 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
     def __init__(self):
         super().__init__()
 
-    def objective(self, xs, y):
-        x, = xs
+    def objective(self, x, y):
         return 0.5 * torch.einsum('bm,bm->b', (y, y)) - torch.einsum('bm,bm->b', (y, x))
 
-    def equality_constraints(self, xs, y):
-        x, = xs
+    def equality_constraints(self, x, y):
         return torch.einsum('bm,bm->b', (y, y)) - 1.0
 
-    def solve(self, xs):
+    def solve(self, x):
         with torch.no_grad(): # Don't create graph for y
-            x, = xs
             y = x / torch.sqrt(torch.einsum('bm,bm->b', (x, x))).unsqueeze(-1)
         return y, None
 
-    def gradient(self, xs, y=None, v=None, ctx=None):
+    def gradient(self, x, y=None, v=None, ctx=None):
         """Override base class to compute the analytic gradient of the optimal solution."""
-        x, = xs
         x = x.detach()
         if v is None:
             v = torch.ones_like(x) # bxm
@@ -252,3 +229,4 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
         eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
         Dy_at_x = (torch.einsum('b,bmn->bmn', (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum('bm,bm->b', (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1)
         return torch.einsum('bm,bmn->bn', (v, Dy_at_x)),
+
