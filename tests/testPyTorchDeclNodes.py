@@ -18,16 +18,16 @@ from ddn.pytorch.node import *
 from ddn.pytorch.sample_nodes import *
 
 def test_node(node, xs):
-	y, ctx = node.solve(xs)
+	y, ctx = node.solve(*xs)
 	y.requires_grad = True
-	fxy = node.objective(xs, y)
+	fxy = node.objective(*xs, y)
 
 	print("Input:\n{}".format(xs[0].detach()))
 	print("Output:\n{}".format(y.detach()))
 	print("Fn Value:\n{}".format(fxy.detach()))
 
-	Dys = super(type(node), node).gradient(xs, y=None, v=None, ctx=None) # call parent gradient method
-	Dys_analytic = node.gradient(xs, y=None, v=None, ctx=None)
+	Dys = super(type(node), node).gradient(*xs, y=None, v=None, ctx=None) # call parent gradient method
+	Dys_analytic = node.gradient(*xs, y=None, v=None, ctx=None)
 	print("Dy:", Dys[0])
 	print("Dy analytic:", Dys_analytic[0])
 	print("Autograd and analytic gradients agree?", torch.allclose(Dys[0], Dys_analytic[0], rtol=0.0, atol=1e-12))
@@ -38,7 +38,7 @@ def test_node(node, xs):
 	Dy = grad(y, xs[0], grad_outputs=torch.ones_like(y))[0]
 	# print("Output:   {}".format(y.detach()))
 	print("Dy:\n{}".format(Dy))
-	test = gradcheck(DL, xs, eps=1e-6, atol=1e-6, rtol=1e-6, raise_exception=False)
+	test = gradcheck(DL, xs, eps=1e-6, atol=1e-5, rtol=1e-5, raise_exception=False)
 	print("gradcheck passed:", test)
 
 # Polynomial
@@ -87,3 +87,4 @@ node = QuadFcnOnSphere()
 x = torch.randn(3, 4, dtype=torch.double, requires_grad=True)
 xs = (x,)
 test_node(node, xs)
+
