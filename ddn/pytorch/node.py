@@ -78,8 +78,6 @@ class AbstractDeclarativeNode(AbstractNode):
         Lagrange multipliers in the case of a constrained problem, or None
         if no context is available/needed.
         Multiple input tensors can be passed as arguments.
-        Implementation should wrap function contents in "with torch.no_grad():"
-        to prevent graph creation
         """
         raise NotImplementedError()
         # Todo: LBFGS fall-back solver
@@ -113,7 +111,7 @@ class AbstractDeclarativeNode(AbstractNode):
         """
         # Compute optimal value if have not already done so:
         if y is None:
-            y, ctx = self.solve(*xs)
+            y, ctx = torch.no_grad()(self.solve)(*xs)
             y.requires_grad = True
         # Set incoming gradient v = J_Y(x,y) to one if not specified:
         if v is None:
@@ -209,7 +207,7 @@ class AbstractDeclarativeNode(AbstractNode):
                 jacobians[j].append(gradients[j])
         jacobians = [torch.stack(jacobian, dim=1).reshape(
             y.shape + xs[i].shape[1:]
-            ) for i, jacobian in enumerate(jacobians)] # bxm1xm2x...xn1xn2
+            ) if jacobian[0] is not None else None for i, jacobian in enumerate(jacobians)] # bxm1xm2x...xn1xn2
         return tuple(jacobians)
 
     def _split_inputs(self, xs):
@@ -349,8 +347,6 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         (and not the context) then call as
             y_star, _ = self.solve(x)
         Multiple input tensors can be passed as arguments.
-        Implementation should wrap function contents in "with torch.no_grad():"
-        to prevent graph creation
         """
         raise NotImplementedError()
         return None, None
@@ -384,7 +380,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
         # Compute optimal value if have not already done so:
         if y is None:
-            y, ctx = self.solve(*xs)
+            y, ctx = torch.no_grad()(self.solve)(*xs)
             y.requires_grad = True
         # Set incoming gradient v = J_Y(x,y) to one if not specified:
         if v is None:
@@ -599,7 +595,7 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
 
         # Compute optimal value if have not already done so:
         if y is None:
-            y, ctx = self.solve(*xs)
+            y, ctx = torch.no_grad()(self.solve)(*xs)
             y.requires_grad = True
         # Set incoming gradient v = J_Y(x,y) to one if not specified:
         if v is None:
@@ -693,7 +689,7 @@ class DeclarativeFunction(torch.autograd.Function):
     """
     @staticmethod
     def forward(ctx, problem, *inputs):
-        output, solve_ctx = problem.solve(*inputs)
+        output, solve_ctx = torch.no_grad()(problem.solve)(*inputs)
         ctx.save_for_backward(output, *inputs)
         ctx.problem = problem
         ctx.solve_ctx = solve_ctx
