@@ -32,11 +32,10 @@ class UnconstPolynomial(AbstractDeclarativeNode):
         return (x * y ** 2.0 + 2 * x ** 2.0 * y - 12) * y ** 2.0
 
     def solve(self, x):
-        with torch.no_grad(): # Don't create graph for y
-            delta = (9.0 * x ** 4.0 + 96.0 * x).sqrt()
-            y_stationary = torch.cat((torch.zeros_like(x), (-3.0 * x ** 2.0 - delta) / (4.0 * x), (-3.0 * x ** 2.0 + delta) / (4.0 * x)), dim=-1)
-            y_min_indx = self.objective(x, y_stationary).argmin(dim=-1)
-            y = torch.cat([torch.index_select(a, dim=0, index=i).unsqueeze(0) for a, i in zip(y_stationary, y_min_indx)])
+        delta = (9.0 * x ** 4.0 + 96.0 * x).sqrt()
+        y_stationary = torch.cat((torch.zeros_like(x), (-3.0 * x ** 2.0 - delta) / (4.0 * x), (-3.0 * x ** 2.0 + delta) / (4.0 * x)), dim=-1)
+        y_min_indx = self.objective(x, y_stationary).argmin(dim=-1)
+        y = torch.cat([torch.index_select(a, dim=0, index=i).unsqueeze(0) for a, i in zip(y_stationary, y_min_indx)])
         return y, None
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -47,7 +46,7 @@ class UnconstPolynomial(AbstractDeclarativeNode):
         y = y.detach()
         if v is None:
             v = torch.ones_like(y)
-        return torch.einsum('bm,bm->bm', (v, -1.0 * (y ** 3 + 3.0 * x * y ** 2) / (3.0 * x * y ** 2 + 3.0 * x ** 2 * y - 6.0))), # return a tuple
+        return torch.einsum('bm,bm->bm', (v, -1.0 * (y ** 3 + 3.0 * x * y ** 2) / (3.0 * x * y ** 2 + 3.0 * x ** 2 * y - 6.0))),
 
 class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
     """"""
@@ -80,13 +79,12 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
         return y
 
     def solve(self, x, alpha):
-        with torch.no_grad(): # Don't create graph for y
-            x = x.detach()
-            y = x.mean([-2, -1]).clone().requires_grad_()
-            y = self.runOptimisation(x, alpha, y)
-            y = y.detach()
-            z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
-            ctx = {'z': z}
+        x = x.detach()
+        y = x.mean([-2, -1]).clone().requires_grad_()
+        y = self.runOptimisation(x, alpha, y)
+        y = y.detach()
+        z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
+        ctx = {'z': z}
         return y, ctx
 
     def gradient(self, x, alpha, y=None, v=None, ctx=None):
@@ -118,11 +116,10 @@ class LinFcnOnUnitCircle(EqConstDeclarativeNode):
         return torch.einsum('bm,bm->b', (y, y)) - 1.0
 
     def solve(self, x):
-        with torch.no_grad(): # Don't create graph for y
-            x_aug = torch.cat((torch.ones_like(x), x), dim=-1) # bx2
-            t = torch.sqrt(1.0 + torch.pow(x, 2.0))
-            y = -1.0 * x_aug / t # bx2
-            ctx = {'nu': -0.5 * t} # b
+        x_aug = torch.cat((torch.ones_like(x), x), dim=-1) # bx2
+        t = torch.sqrt(1.0 + torch.pow(x, 2.0))
+        y = -1.0 * x_aug / t # bx2
+        ctx = {'nu': -0.5 * t} # b
         return y, ctx
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -151,10 +148,9 @@ class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         return torch.einsum('bm,bm->b', (y, y)) - torch.einsum('b,b->b', (x[:, 0], x[:, 0]))
 
     def solve(self, x):
-        with torch.no_grad(): # Don't create graph for y
-            y = -1.0 * torch.abs(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
-            nu = torch.where(x[:, 0] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
-            ctx = {'nu': nu}
+        y = -1.0 * torch.abs(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+        nu = torch.where(x[:, 0] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {'nu': nu}
         return y, ctx
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -182,10 +178,9 @@ class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
         return torch.einsum('bm,bm->b', (y, y)) - torch.einsum('b,b->b', (x[:, 1], x[:, 1]))
 
     def solve(self, x):
-        with torch.no_grad(): # Don't create graph for y
-            y = -1.0 * torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
-            nu = torch.where(x[:, 1] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
-            ctx = {'nu': nu}
+        y = -1.0 * torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+        nu = torch.where(x[:, 1] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {'nu': nu}
         return y, ctx
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -215,8 +210,7 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
         return torch.einsum('bm,bm->b', (y, y)) - 1.0
 
     def solve(self, x):
-        with torch.no_grad(): # Don't create graph for y
-            y = x / torch.sqrt(torch.einsum('bm,bm->b', (x, x))).unsqueeze(-1)
+        y = x / torch.sqrt(torch.einsum('bm,bm->b', (x, x))).unsqueeze(-1)
         return y, None
 
     def gradient(self, x, y=None, v=None, ctx=None):
@@ -230,3 +224,35 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
         Dy_at_x = (torch.einsum('b,bmn->bmn', (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum('bm,bm->b', (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1)
         return torch.einsum('bm,bmn->bn', (v, Dy_at_x)),
 
+class QuadFcnOnBall(IneqConstDeclarativeNode):
+    """
+    Solves the (inequality constrained) problem
+        minimize   f(x, y) = 0.5 * y^Ty - x^T y
+        subject to h(y) = \|y\|^2 <= 1
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return 0.5 * torch.einsum('bm,bm->b', (y, y)) - torch.einsum('bm,bm->b', (y, x))
+
+    def inequality_constraints(self, x, y):
+        return torch.einsum('bm,bm->b', (y, y)) - 1.0
+
+    def solve(self, x):
+        x_norm_sq = torch.einsum('bm,bm->b', (x, x)).unsqueeze(-1) # bx1
+        y = torch.where(x_norm_sq <= 1.0, x.clone(), x / torch.sqrt(x_norm_sq))
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        """Override base class to compute the analytic gradient of the optimal solution."""
+        x = x.detach()
+        if v is None:
+            v = torch.ones_like(x) # bxm
+        x_inner = torch.einsum('bm,bm->b', (x, x))
+        x_outer = torch.einsum('bm,bn->bmn', (x, x))
+        eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+        Dy_at_x = torch.where(x_inner.unsqueeze(-1).unsqueeze(-1) <= 1.0, eye_batch,
+            (torch.einsum('b,bmn->bmn', (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum('bm,bm->b', (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1))
+        return torch.einsum('bm,bmn->bn', (v, Dy_at_x)),
