@@ -18,7 +18,7 @@ from ddn.pytorch.node import *
 from ddn.pytorch.sample_nodes import *
 
 def test_node(node, xs):
-	y, ctx = node.solve(*xs)
+	y, ctx = torch.no_grad()(node.solve)(*xs)
 	y.requires_grad = True
 	fxy = node.objective(*xs, y)
 
@@ -28,8 +28,8 @@ def test_node(node, xs):
 
 	Dys = super(type(node), node).gradient(*xs, y=None, v=None, ctx=None) # call parent gradient method
 	Dys_analytic = node.gradient(*xs, y=None, v=None, ctx=None)
-	print("Dy:", Dys[0])
-	print("Dy analytic:", Dys_analytic[0])
+	# print("Dy:\n{}".format(Dys[0].detach()))
+	# print("Dy analytic:\n{}".format(Dys_analytic[0].detach()))
 	print("Autograd and analytic gradients agree?", torch.allclose(Dys[0], Dys_analytic[0], rtol=0.0, atol=1e-12))
 
 	node.gradient = super(type(node), node).gradient # Use generic gradient for gradcheck
@@ -37,7 +37,7 @@ def test_node(node, xs):
 	y = DL(*xs)
 	Dy = grad(y, xs[0], grad_outputs=torch.ones_like(y))[0]
 	# print("Output:   {}".format(y.detach()))
-	print("Dy:\n{}".format(Dy))
+	print("Dy:\n{}".format(Dy.detach()))
 	test = gradcheck(DL, xs, eps=1e-6, atol=1e-5, rtol=1e-5, raise_exception=False)
 	print("gradcheck passed:", test)
 
@@ -88,3 +88,11 @@ x = torch.randn(3, 4, dtype=torch.double, requires_grad=True)
 xs = (x,)
 test_node(node, xs)
 
+# QuadFcnOnBall:
+print("\nQuadFcnOnBall:\n")
+node = QuadFcnOnBall()
+x = torch.randn(3, 4, dtype=torch.double, requires_grad=True)
+# Force at least one xi to be ||xi|| < 1.0
+x[1, :] = x[1, :] / torch.sqrt(torch.einsum('bm,bm->b', (x, x))[1]) / 1.1
+xs = (x,)
+test_node(node, xs)
