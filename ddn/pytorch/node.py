@@ -12,12 +12,12 @@ class AbstractNode:
     """Minimal interface for generic data processing node
     that produces an output vector given an input vector.
     """
-    b = None
-    m = None
-    n = None
 
     def __init__(self):
         """Create a node"""
+        self.b = None
+        self.m = None
+        self.n = None
 
     def solve(self, *xs):
         """Computes the output of the node given the inputs.
