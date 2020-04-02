@@ -56,12 +56,12 @@ class AbstractDeclarativeNode(AbstractNode):
     where x is given (as a vector) and f is a scalar-valued function.
     Derived classes must implement the `objective` and `solve` functions.
     """
-    eps = 1.0e-12 # Tolerance to check that optimality conditions are satisfied
-
-    def __init__(self):
+    def __init__(self, eps=1e-12, gamma=None):
         """Create a declarative node
         """
         super().__init__()
+        self.eps = eps # tolerance to check if optimality conditions satisfied
+        self.gamma = gamma # damping factor: H <-- H + gamma * I
 
     def objective(self, *xs, y):
         """Evaluates the objective function on a given input-output pair.
@@ -122,6 +122,9 @@ class AbstractDeclarativeNode(AbstractNode):
         # Form H:
         H = fYY
         H = 0.5 * (H + H.transpose(1, 2)) # Ensure that H is symmetric
+        if self.gamma is not None:
+            H += self.gamma * torch.eye(
+                self.m, dtype=H.dtype, device=H.device).unsqueeze(0)
 
         # Solve u = -H^-1 v:
         v = v.view(self.b, -1, 1)
@@ -341,10 +344,10 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
     `solve` functions.
     """
 
-    def __init__(self):
+    def __init__(self, eps=1e-12, gamma=None):
         """Create an equality constrained declarative node
         """
-        super().__init__()
+        super().__init__(eps=eps, gamma=gamma)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -417,6 +420,9 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         H = fYY - sum(torch.einsum('b,bmn->bmn', (nu[:, i], hiYY))
             for i, hiYY in enumerate(hYY))
         H = 0.5 * (H + H.transpose(1, 2)) # Ensure that H is symmetric
+        if self.gamma is not None:
+            H += self.gamma * torch.eye(
+                self.m, dtype=H.dtype, device=H.device).unsqueeze(0)
 
         # Solve u = -H^-1 v (bxm) and t = H^-1 A^T (bxmxp):
         A = hY.detach() # Shares storage with hY
@@ -539,10 +545,10 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
     `inequality_constraints` and `solve` functions.
     """
 
-    def __init__(self):
+    def __init__(self, eps=1e-12, gamma=None):
         """Create an inequality constrained declarative node
         """
-        super().__init__()
+        super().__init__(eps=eps, gamma=gamma)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -717,10 +723,10 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
     where x is given, and A and d are independent of x. Derived classes must
     implement the objective and solve functions.
     """
-    def __init__(self):
+    def __init__(self, eps=1e-12, gamma=None):
         """Create a linear equality constrained declarative node
         """
-        super().__init__()
+        super().__init__(eps=eps, gamma=gamma)
 
     def linear_constraint_parameters(self, y):
         """Defines the linear equality constraint parameters A and d, where the
@@ -778,9 +784,14 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
             warnings.warn("Constraints not satisfied exactly:\n{}".format(
                 h.detach().squeeze().cpu().numpy()))
 
-        # Solve u = -H^-1 v (bxm) and t = H^-1 A^T (bxmxp):
+        # Form H:
         H = fYY
         H = 0.5 * (H + H.transpose(1, 2)) # Ensure that H is symmetric
+        if self.gamma is not None:
+            H += self.gamma * torch.eye(
+                self.m, dtype=H.dtype, device=H.device).unsqueeze(0)
+
+        # Solve u = -H^-1 v (bxm) and t = H^-1 A^T (bxmxp):    
         v = v.view(self.b, -1, 1) # bxmx1
         u, t = self._solve_linear_system(H, (-1.0 * v, A.transpose(-2, -1)))
         u = u.squeeze(-1) # bxm
