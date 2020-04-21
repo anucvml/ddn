@@ -127,7 +127,7 @@ class AbstractDeclarativeNode(AbstractNode):
                 self.m, dtype=H.dtype, device=H.device).unsqueeze(0)
 
         # Solve u = -H^-1 v:
-        v = v.view(self.b, -1, 1)
+        v = v.reshape(self.b, -1, 1)
         u = self._solve_linear_system(H, -1.0 * v) # bxmx1
         u = u.squeeze(-1) # bxm
 
@@ -140,7 +140,7 @@ class AbstractDeclarativeNode(AbstractNode):
                 gradient = x_split[0].new_zeros(self.b, n) # bxn
                 for i, Bi in enumerate(fXY(x_split)):
                     gradient[:, i] = torch.einsum('bm,bm->b', (Bi, u))
-                gradients.append(gradient.view(x_size))
+                gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)
         return tuple(gradients)
@@ -170,12 +170,12 @@ class AbstractDeclarativeNode(AbstractNode):
         """
         v = torch.zeros_like(y) # v: bxm1xm2x...
         b = v.size(0)
-        v = v.view(b, -1) # v: bxm
+        v = v.reshape(b, -1) # v: bxm
         m = v.size(-1)
         jacobians = [[] for x in xs]
         for i in range(m):
             v[:, i] = 1.0
-            gradients = self.gradient(*xs, y=y, v=v.view_as(y), ctx=ctx)
+            gradients = self.gradient(*xs, y=y, v=v.reshape_as(y), ctx=ctx)
             v[:, i] = 0.0
             for j in range(len(xs)):
                 jacobians[j].append(gradients[j])
@@ -195,7 +195,7 @@ class AbstractDeclarativeNode(AbstractNode):
             v = torch.ones_like(y)
 
         self.b = y.size(0)
-        self.m = y.view(self.b, -1).size(-1)
+        self.m = y.reshape(self.b, -1).size(-1)
 
         # Split each input x into a tuple of n tensors of size bx1:
         # Required since gradients can only be computed wrt individual
@@ -214,9 +214,9 @@ class AbstractDeclarativeNode(AbstractNode):
         xs_split, xs_sizes, xs_n = [], [], []
         for x in xs: # Loop over input tuple
             if isinstance(x, torch.Tensor) and x.requires_grad:
-                xs_split.append(x.view(self.b, -1).split(1, dim=-1))
+                xs_split.append(x.reshape(self.b, -1).split(1, dim=-1))
                 xs_sizes.append(x.size())
-                xs_n.append(x.view(self.b, -1).size(-1))
+                xs_n.append(x.reshape(self.b, -1).size(-1))
             else:
                 xs_split.append((x,))
                 xs_sizes.append(None) # May not be a tensor
@@ -230,7 +230,7 @@ class AbstractDeclarativeNode(AbstractNode):
         xs = []
         for x_split, x_size in zip(xs_split, xs_sizes): # Loop over input tuple
             if len(x_split) > 1:
-                xs.append(torch.cat(x_split, dim=-1).view(x_size))
+                xs.append(torch.cat(x_split, dim=-1).reshape(x_size))
             else:
                 xs.append(x_split[0])
         return tuple(xs)
@@ -241,7 +241,7 @@ class AbstractDeclarativeNode(AbstractNode):
 
         # Compute partial derivative of f wrt y at (xs,y):
         fY = grad(f, y, grad_outputs=torch.ones_like(f), create_graph=True
-            )[0].view(self.b, -1) # bxm
+            )[0].reshape(self.b, -1) # bxm
         if not fY.requires_grad: # if fY is independent of y
             fY.requires_grad = True
         
@@ -320,9 +320,9 @@ class AbstractDeclarativeNode(AbstractNode):
             If x is not in graph for y[:, 0], then x is not in the graph for
             y[:, i], for all i
         """
-        y = y.view(self.b, -1) # bxm
+        y = y.reshape(self.b, -1) # bxm
         m = y.size(-1)
-        n = x.view(self.b, -1).size(-1)
+        n = x.reshape(self.b, -1).size(-1)
         jacobian = y.new_zeros(self.b, m, n) # bxmxn
         for i in range(m):
             grad_outputs = torch.zeros_like(y, requires_grad=False) # bxm
@@ -331,7 +331,7 @@ class AbstractDeclarativeNode(AbstractNode):
                 create_graph=create_graph, allow_unused=True) # bxn1xn2x...
             if yiX is None: # grad returns None instead of zero
                 return None # If any are None, all are None
-            jacobian[:, i:(i+1), :] = yiX.view(self.b, -1).unsqueeze(1) # bx1xn
+            jacobian[:, i:(i+1), :] = yiX.reshape(self.b, -1).unsqueeze(1) # bx1xn
         return jacobian # bxmxn
 
 class EqConstDeclarativeNode(AbstractDeclarativeNode):
@@ -426,7 +426,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
         # Solve u = -H^-1 v (bxm) and t = H^-1 A^T (bxmxp):
         A = hY.detach() # Shares storage with hY
-        v = v.view(self.b, -1, 1) # bxmx1
+        v = v.reshape(self.b, -1, 1) # bxmx1
         u, t = self._solve_linear_system(H, (-1.0 * v, A.transpose(-2, -1)))
         u = u.squeeze(-1) # bxm
 
@@ -454,7 +454,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
                     Ci = hX(x_split[i])
                     if Ci is not None:
                         gradient[:, i] -= torch.einsum('bp,bp->b', (Ci, s))
-                gradients.append(gradient.view(x_size))
+                gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)
         return tuple(gradients)
@@ -703,7 +703,7 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
                     g.detach().squeeze().cpu().numpy()))
             # Identify active constraints:
             mask = g.isclose(torch.zeros_like(g), rtol=0.0, atol=self.eps)
-            g = g.masked_select(mask).view(self.b, -1) if mask.any() else None
+            g = g.masked_select(mask).reshape(self.b, -1) if mask.any() else None
 
             if h is None:
                 constraint_set = g # bxq
@@ -792,7 +792,7 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
                 self.m, dtype=H.dtype, device=H.device).unsqueeze(0)
 
         # Solve u = -H^-1 v (bxm) and t = H^-1 A^T (bxmxp):    
-        v = v.view(self.b, -1, 1) # bxmx1
+        v = v.reshape(self.b, -1, 1) # bxmx1
         u, t = self._solve_linear_system(H, (-1.0 * v, A.transpose(-2, -1)))
         u = u.squeeze(-1) # bxm
 
@@ -815,7 +815,7 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
                 gradient = x_split[0].new_zeros(self.b, n)
                 for i, Bi in enumerate(fXY(x_split)):
                     gradient[:, i] = torch.einsum('bm,bm->b', (Bi, uts))
-                gradients.append(gradient.view(x_size))
+                gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)
         return tuple(gradients)
