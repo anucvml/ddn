@@ -20,7 +20,7 @@ from ddn.pytorch.sample_nodes import *
 def test_node(node, xs):
 	y, ctx = torch.no_grad()(node.solve)(*xs)
 	y.requires_grad = True
-	fxy = node.objective(*xs, y)
+	fxy = node.objective(*xs, y=y)
 
 	print("Input:\n{}".format(xs[0].detach()))
 	print("Output:\n{}".format(y.detach()))
