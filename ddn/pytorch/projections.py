@@ -12,6 +12,7 @@
 #
 
 import torch
+import torch.nn.functional as F
 
 class Simplex():
     @staticmethod
@@ -106,12 +107,16 @@ class L1Sphere(Simplex):
             selection algorithm instead of sorting.
         """
         assert z > 0.0, "z must be strictly positive (%f <= 0)" % z
+        # # 1. Replace v = 0 with v = [1, 0, ..., 0]
+        # mask = torch.isclose(v, torch.zeros_like(v), rtol=0.0, atol=1e-12).sum(dim=-1, keepdim=True) == v.size(-1)
+        # unit_vector = F.one_hot(v.new_zeros(1, dtype=torch.long), num_classes=v.size(-1)).type(v.dtype)
+        # v = torch.where(mask, unit_vector, v)
         # 1. Take the absolute value of v
         u = v.abs()
         # 2. Project u onto the positive simplex
         beta, _ = Simplex.project(u, z=z)
         # 3. Correct the element signs
-        w = beta * v.sign()
+        w = beta * torch.where(v < 0, -torch.ones_like(v), torch.ones_like(v))
         return w, None
 
     @staticmethod
@@ -201,11 +206,12 @@ class L2Sphere():
             O(n)
         """
         assert z > 0.0, "z must be strictly positive (%f <= 0)" % z
+        # Replace v = 0 with unit vector:
+        mask = torch.isclose(v, torch.zeros_like(v), rtol=0.0, atol=1e-12).sum(dim=-1, keepdim=True) == v.size(-1)
+        unit_vector = torch.ones_like(v).div(torch.ones_like(v).norm(p=2, dim=-1, keepdim=True))
+        v = torch.where(mask, unit_vector, v)
+        # Compute projection:
         w = z * v.div(v.norm(p=2, dim=-1, keepdim=True))
-        # ToDo: Check for div by zero
-        # v_norm = v.norm(p=2, dim=-1, keepdim=True)
-        # unit_vector = torch.ones_like(v).div(torch.ones_like(v).norm(p=2, dim=-1, keepdim=True))
-        # w = z * torch.where(v_norm <= 1e-9, unit_vector, v.div(v_norm))
         return w, None
 
     @staticmethod
@@ -300,7 +306,7 @@ class LInfSphere():
         u = torch.where(u.gt(z), z, u)
         u = torch.where(u.ge(u.max(dim=-1, keepdim=True)[0]), z, u)
         # 3. Correct the element signs
-        w = u * v.sign()
+        w = u * torch.where(v < 0, -torch.ones_like(v), torch.ones_like(v))
         return w, None
 
     @staticmethod
@@ -351,7 +357,7 @@ class LInfBall(LInfSphere):
         z = torch.tensor(z, dtype=v.dtype, device=v.device)
         u = torch.where(u.gt(z), z, u)
         # 3. Correct the element signs
-        w = u * v.sign()
+        w = u * torch.where(v < 0, -torch.ones_like(v), torch.ones_like(v))
         return w, is_outside
 
     @staticmethod
@@ -411,6 +417,7 @@ method = L1Sphere
 # method = LInfBall
 
 radius = 100.0
+radius = 1.0
 # radius = 0.5
 
 projection = EuclideanProjectionFn.apply
