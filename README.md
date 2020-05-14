@@ -29,6 +29,7 @@ export PYTHONPATH=${PYTHONPATH}:ddn
 python tests/testBasicDeclNodes.py
 ```
 
+Documentation for the `ddn` package is provided in the `ddn` directory.
 Interactive tutorials should be opened in Jupyter notebook:
 
 ```
