@@ -41,6 +41,13 @@ def test_node(node, xs):
 	test = gradcheck(DL, xs, eps=1e-6, atol=1e-5, rtol=1e-5, raise_exception=False)
 	print("gradcheck passed:", test)
 
+def scalar_to_batched_tensor(a, batch_size, dtype=None, device=None, requires_grad=False):
+	a = torch.tensor([a], dtype=dtype, device=device, requires_grad=requires_grad).unsqueeze(0).expand(batch_size, -1) # bx1
+	if requires_grad:
+		return a.clone() # If you want the gradient of a, the copies of a cannot share memory
+	else:
+		return a
+
 # Polynomial
 print("\nPolynomial Example:\n")
 node = UnconstPolynomial()
@@ -54,9 +61,12 @@ test_node(node, xs)
 # PseudoHuberPool
 print("\nPseudoHuber Pooling Example:\n")
 node = GlobalPseudoHuberPool2d()
-x = torch.randn(2, 7, 7, dtype=torch.double, requires_grad=True)
+b = 2
+m = 7
+x = torch.randn(b, m, m, dtype=torch.double, requires_grad=True)
 alpha = 0.5
-alpha = torch.tensor([alpha], dtype=torch.double, requires_grad=False)
+alpha = scalar_to_batched_tensor(alpha, b, dtype=torch.double, requires_grad=False)
+# alpha = scalar_to_batched_tensor(alpha, b, dtype=torch.double, requires_grad=True)
 xs = (x, alpha)
 test_node(node, xs)
 
