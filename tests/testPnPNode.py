@@ -16,7 +16,7 @@ sys.path.append("../")
 from ddn.pytorch.pnp_node import *
 
 # Generate data
-b = 1
+b = 2
 n = 10
 theta = torch.randn(b, 6, dtype=torch.double)
 R = geo.angle_axis_to_rotation_matrix(theta[..., :3])
