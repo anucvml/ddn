@@ -103,6 +103,11 @@ class PnP(AbstractDeclarativeNode):
         K = K.detach() if K is not None else None
         theta = self._initialise_theta(p2d, p3d, w, K).requires_grad_()
         theta = self._run_optimisation(p2d, p3d, w, K, y=theta)
+        # # Alternatively, disentangle batch element optimisation:
+        # for i in range(p2d.size(0)):
+        #     Ki = K[i:(i+1),...] if K is not None else None
+        #     theta[i, :] = self._run_optimisation(p2d[i:(i+1),...],
+        #         p3d[i:(i+1),...], w[i:(i+1),...], Ki, y=theta[i:(i+1),...])
         return theta.detach(), None
 
     def _initialise_theta(self, p2d, p3d, w, K):
