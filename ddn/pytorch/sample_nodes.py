@@ -54,7 +54,7 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
         super().__init__()
         
     def objective(self, x, alpha, y):
-        alpha2 = alpha * alpha
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(x)
         z = y.unsqueeze(-1).unsqueeze(-1) - x
         phi = alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2) / alpha2) - 1.0)
         return phi.sum(dim=(-2,-1)) # b
@@ -94,7 +94,8 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
         if v is None:
             v = torch.ones_like(y)
         z = ctx['z'] # b x n1 x n2
-        w = torch.pow(1.0 + torch.pow(z, 2) / (alpha * alpha), -1.5)
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(z)
+        w = torch.pow(1.0 + torch.pow(z, 2) / alpha2, -1.5)
         w_sum = w.sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True).expand_as(w)
         Dy_at_x = torch.where(w_sum.abs() <= 1e-9, torch.zeros_like(w), w.div(w_sum))  # b x n1 x n2
         return torch.einsum('b,bmn->bmn', (v, Dy_at_x)), None
