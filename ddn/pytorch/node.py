@@ -250,8 +250,6 @@ class AbstractDeclarativeNode(AbstractNode):
         fYY = fYY.detach() if fYY is not None else y.new_zeros(
             self.b, self.m, self.m)
 
-        H = fYY.detach() if fYY is not None else 0.0 # Shares storage with fYY
-
         # Create function that returns generator expression for fXY given input:
         fXY = lambda x: (fXiY.detach().squeeze(-1)
             if fXiY is not None else torch.zeros_like(fY)
@@ -461,7 +459,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
     def _get_constraint_derivatives(self, xs, y):
         # Evaluate constraint function(s) at (xs,y):
-        h = self._get_constraint_set(xs, y) # bxp
+        h = torch.enable_grad()(self._get_constraint_set)(xs, y) # bxp
 
         # Compute partial derivative of h wrt y at (xs,y):
         hY = self._batch_jacobian(h, y, create_graph=True) # bxpxm
@@ -471,13 +469,15 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         # Compute 2nd-order partial derivative of h wrt y at (xs,y):
         p = h.size(-1)
         hYY = (hiYY.detach() for hiYY in (
-            self._batch_jacobian(hY[:, i, :], y, create_graph=False
-            ) for i in range(p)) if hiYY is not None)
+            self._batch_jacobian(hY[:, i, :], y, create_graph=False)
+            for i in range(p)
+            ) if hiYY is not None)
 
         # Compute 2nd-order partial derivative of hj wrt y and xi at (xs,y):
         hXY = lambda x: (hiXY.detach().squeeze(-1) for hiXY in (
-            self._batch_jacobian(hY[:, i, :], x, create_graph=False
-            ) for i in range(p)) if hiXY is not None)
+            self._batch_jacobian(hY[:, i, :], x, create_graph=False)
+            for i in range(p)
+            ) if hiXY is not None)
 
         # Compute partial derivative of h wrt xi at (xs,y):
         def hX(x):
@@ -486,7 +486,6 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
 
         return hY, hYY, hXY, hX
 
-    @torch.enable_grad()
     def _get_constraint_set(self, xs, y):
         """Filters constraints.
         """
