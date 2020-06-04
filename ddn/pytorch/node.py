@@ -240,8 +240,8 @@ class AbstractDeclarativeNode(AbstractNode):
         f = torch.enable_grad()(self.objective)(*xs, y=y) # b
 
         # Compute partial derivative of f wrt y at (xs,y):
-        fY = grad(f, y, grad_outputs=torch.ones_like(f), create_graph=True
-            )[0].reshape(self.b, -1) # bxm
+        fY = grad(f, y, grad_outputs=torch.ones_like(f), create_graph=True)[0]
+        fY = torch.enable_grad()(fY.reshape)(self.b, -1) # bxm
         if not fY.requires_grad: # if fY is independent of y
             fY.requires_grad = True
         
@@ -469,13 +469,13 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         # Compute 2nd-order partial derivative of h wrt y at (xs,y):
         p = h.size(-1)
         hYY = (hiYY.detach() for hiYY in (
-            self._batch_jacobian(hY[:, i, :], y, create_graph=False)
+            self._batch_jacobian(torch.enable_grad()(hY.select)(1, i), y)
             for i in range(p)
             ) if hiYY is not None)
 
         # Compute 2nd-order partial derivative of hj wrt y and xi at (xs,y):
         hXY = lambda x: (hiXY.detach().squeeze(-1) for hiXY in (
-            self._batch_jacobian(hY[:, i, :], x, create_graph=False)
+            self._batch_jacobian(torch.enable_grad()(hY.select)(1, i), x)
             for i in range(p)
             ) if hiXY is not None)
 
