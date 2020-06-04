@@ -22,9 +22,9 @@ def test_node(node, xs):
 	y.requires_grad = True
 	fxy = node.objective(*xs, y=y)
 
-	print("Input:\n{}".format(xs[0].detach()))
-	print("Output:\n{}".format(y.detach()))
-	print("Fn Value:\n{}".format(fxy.detach()))
+	# print("Input:\n{}".format(xs[0].detach()))
+	# print("Output:\n{}".format(y.detach()))
+	# print("Fn Value:\n{}".format(fxy.detach()))
 
 	Dys = super(type(node), node).gradient(*xs, y=None, v=None, ctx=None) # call parent gradient method
 	Dys_analytic = node.gradient(*xs, y=None, v=None, ctx=None)
@@ -37,7 +37,7 @@ def test_node(node, xs):
 	y = DL(*xs)
 	Dy = grad(y, xs[0], grad_outputs=torch.ones_like(y))[0]
 	# print("Output:   {}".format(y.detach()))
-	print("Dy:\n{}".format(Dy.detach()))
+	# print("Dy:\n{}".format(Dy.detach()))
 	test = gradcheck(DL, xs, eps=1e-6, atol=1e-5, rtol=1e-5, raise_exception=False)
 	print("gradcheck passed:", test)
 
