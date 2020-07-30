@@ -13,7 +13,7 @@ have been vectorized).
 * `ddn.basic.composition`: implements wrapper code for composing nodes in series or parallel (i.e., building a network).
 * `ddn.basic.node`: defines the interface for data processing nodes and declarative nodes.
 * `ddn.basic.robust_nodes`: implements nodes for robust pooling.
-* `ddn.basic.sampls_nodes`: provided examples of deep declarative nodes used for testing and in the tutorials.
+* `ddn.basic.sample_nodes`: provided examples of deep declarative nodes used for testing and in the tutorials.
 
 
 ## PyTorch
