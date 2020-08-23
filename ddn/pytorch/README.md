@@ -22,3 +22,4 @@
 - [ ] SVD node
 - [ ] Sinkhorn node
 - [ ] Limited multi-label node
+- [ ] Triangulation node (Delaunay)
