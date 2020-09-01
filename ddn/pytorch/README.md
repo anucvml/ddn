@@ -16,3 +16,10 @@
 - [ ] Handle NaN values after solves
 - [x] Multiple inequality constraints with batch computation
 - [ ] Filter (first-order) duplicate constraints
+
+### Other useful nodes:
+- [ ] Eigendecomposition: minimize f(x, y) = tr(y^T x y), subject to h(y) = y^T y = I, [link](https://arxiv.org/pdf/1903.11240.pdf)
+- [ ] SVD node
+- [ ] Sinkhorn node
+- [ ] Limited multi-label node
+- [ ] Triangulation node (Delaunay)
