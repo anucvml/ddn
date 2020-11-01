@@ -349,6 +349,153 @@ class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
         return True
 
 
+class GeneralConstDeclarativeNode(AbstractDeclarativeNode):
+    """
+    A general deep declarative node defined by a parameterized optimization problem with multiple equality and
+    inequality constraint of the form:
+        minimize (over y) f(x, y)
+        subject to        h_i(x, y) = 0, i = 1, ..., p
+                          g_i(x, y) <= 0, i = 1, ..., q
+    where x is given (as a vector) and f, h and g are scalar-valued functions. Derived classes must implement the
+    `objective`, `eq_constraints`, `ineq_constraints` and `solve` functions.
+    """
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of objective
+        self.fY = grad(self.objective, 1)
+        self.fYY = jacobian(self.fY, 1)
+        self.fXY = jacobian(self.fY, 0)
+
+    def eq_constraints(self, x, y):
+        """Evaluates the equality constraint functions on an input-output pair. Return a p-length vector or None."""
+        warnings.warn("no equality constraints.")
+        return None
+
+    def ineq_constraints(self, x, y):
+        """Evaluates the inequality constraint functions on an input-output pair. Return a q-length vector or None."""
+        warnings.warn("no inequality constraints.")
+        return None
+
+    def gradient(self, x, y=None, ctx=None):
+        """Overrides base class gradient function."""
+        if y is None:
+            y, ctx = self.solve(x)
+            assert self._check_eq_constraints(x, y)
+            assert self._check_ineq_constraints(x, y)
+            assert self._check_optimality_cond(x, y, ctx)
+
+        # TODO: write test case for GeneralConstDeclarativeNode
+
+        h_hatY, h_hatX, h_hatYY, h_hatXY = self._get_constraint_derivatives(x, y)
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None or 'nu' not in ctx) else ctx['nu']
+        if nu.any() is None or nu.any() == float('-inf'):
+            warnings.warn("non-regular solution.")
+
+        p_plus_q = len(h_hatY)
+
+        H = self.fYY(x, y) - np.sum(nu[i] * h_hatYY[i, :, :] for i in range(p_plus_q))  # m-by-m
+        H = (H + H.T) / 2   # make sure H is symmetric
+
+        A = h_hatY   # (p+q)-by-m
+        B = self.fXY(x, y) - np.sum(nu[i] * h_hatXY[i, :, :] for i in range(p_plus_q))  # m-by-n
+        C = h_hatX   # (p+q)-by-n
+
+        # try to use cholesky to solve H^{-1}A^T and H^-1 B
+        try:
+            CC, L = sci.linalg.cho_factor(H)
+            invHAT = sci.linalg.cho_solve((CC, L), A.T)
+            invHB = sci.linalg.cho_solve((CC, L), B)
+        # if H is not positive definite, revert to LU to solve
+        except:
+            invHAT = sci.linalg.solve(H, A.T)
+            invHB = sci.linalg.solve(H, B)
+
+        # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+        return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB
+
+
+    def _get_constraint_derivatives(self, x, y):
+        """Return derivatives of active constraints."""
+        h = self.eq_constraints(x, y)   # p-by-1
+        if h is not None:
+            self._check_eq_constraints(x, y)
+
+        g = self.ineq_constraints(x, y) # q-by-1
+        if g is not None:
+            self._check_ineq_constraints(x, y)
+
+            # identify active constraints
+            mask = np.array([abs(g[i]) <= self.eps for i in range(len(g))])
+            if not mask.any():
+                mask = None
+        else:
+            mask = None
+
+        # construct gradient
+        if (h is not None) and (mask is None):
+            h_hatY = jacobian(self.eq_constraints, 1)(x, y)
+            h_hatX = jacobian(self.eq_constraints, 0)(x, y)
+            h_hatYY = jacobian(jacobian(self.eq_constraints, 1), 1)(x, y)
+            h_hatXY = jacobian(jacobian(self.eq_constraints, 1), 0)(x, y)
+
+        elif (h is None) and (mask is not None):
+            h_hatY = jacobian(self.ineq_constraints, 1)(x, y)[mask]
+            h_hatX = jacobian(self.ineq_constraints, 0)(x, y)[mask]
+            h_hatYY = jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]
+            h_hatXY = jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]
+
+        elif (h is not None) and (mask is not None):
+            h_hatY = np.vstack((jacobian(self.eq_constraints, 1)(x, y), jacobian(self.ineq_constraints, 1)(x, y)[mask]))
+            h_hatX = np.vstack((jacobian(self.eq_constraints, 0)(x, y), jacobian(self.ineq_constraints, 0)(x, y)[mask]))
+            h_hatYY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 1)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]))
+            h_hatXY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 0)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]))
+
+        else:
+            h_hatY, h_hatX, h_hatYY, h_hatXY = None, None, None, None
+
+        return h_hatY, h_hatX, h_hatYY, h_hatXY
+
+    def _get_nu_star(self, x, y, h_hatY):
+        """Solve: hY^T nu = fY^T."""
+        nu = sci.linalg.lstsq(h_hatY.T, self.fY(x, y))[0]
+        return nu
+
+    def _check_eq_constraints(self, x, y):
+        """Check that the problem's equality constraints are satisfied."""
+        h = self.eq_constraints(x, y)
+        return (h is None) or (abs(h) <= self.eps).all()
+
+    def _check_ineq_constraints(self, x, y):
+        """Check that the problem's inequality constraints are satisfied."""
+        g = self.ineq_constraints(x, y)
+        return (g is None) or (g <= self.eps).all()
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        """Checks that the problem's first-order optimality condition is satisfied."""
+
+        h_hatY = self._get_constraint_derivatives(x, y)[0]
+        if h_hatY is None:
+            return super()._check_optimality_cond(x, y)
+
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None) else ctx['nu']
+        if np.isnan(nu).all():
+            return super()._check_optimality_cond(x, y)
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(h_hatY) <= self.eps).all():
+            warnings.warn("gradient of constraint function vanishes at the optimum.")
+            return True
+
+        success = (abs(self.fY(x, y) - np.dot(nu.T, h_hatY)) <= self.eps).all()
+        if not success:
+            warnings.warn("non-zero Lagrangian gradient {} at y={}, fY={}, hY={}, nu={}".format(
+                (self.fY(x, y) - np.dot(nu.T, h_hatY)), y, self.fY(x, y), h_hatY, nu))
+
+        return success
+
+
 class NonUniqueDeclarativeNode(AbstractDeclarativeNode):
     """
     A general deep declarative node having non-unique solutions so that the pseudo-inverse is required
