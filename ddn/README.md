@@ -25,6 +25,7 @@ in an end-to-end learnable model. The code builds on the PyTorch framework and c
 * `ddn.pytorch.leastsquares`: differentiable weighted least-squares nodes.
 * `ddn.pytorch.node`: defines the PyTorch interface for data processing nodes and declarative nodes.
 * `ddn.pytorch.pnp_node`: differentiable projection-n-point algorithm.
+* `ddn.pytorch.optimal_transport`: differentiable entropy regularized optimal transport layer.
 * `ddn.pytorch.projections`: differentiable Euclidean projection layers onto Lp balls and spheres.
 * `ddn.pytorch.robostpool`: differentiable robust pooling layers.
 * `ddn.pytorch.sample_nodes`: simple example implementations of deep declarative nodes for PyTorch.
