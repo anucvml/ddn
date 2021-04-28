@@ -36,8 +36,8 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     """
 
     B, H, W = M.shape
-    if r is None: r = torch.ones((1, H), device=M.device, dtype=M.dtype) / H
-    if c is None: c = torch.ones((1, W), device=M.device, dtype=M.dtype) / W
+    if r is None: r = torch.full((1, H), 1.0 / H, device=M.device, dtype=M.dtype)
+    if c is None: c = torch.full((1, W), 1.0 / W, device=M.device, dtype=M.dtype)
 
     assert r.shape == (B, H) or r.shape == (1, H)
     assert c.shape == (B, W) or c.shape == (1, W)
@@ -45,8 +45,6 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     P = torch.exp(-1.0 * gamma * M)
     for i in range(maxiters):
         alpha = torch.sum(P, 2).reshape(B, H)
-        if torch.all(torch.isclose(alpha, r, atol=eps, rtol=0.0)):
-            break
         P = (r / alpha).view(B, H, 1) * P
 
         beta = torch.sum(P, 1).reshape(B, W)
@@ -89,15 +87,15 @@ class OptimalTransportFcn(torch.autograd.Function):
         M, r, c, P = ctx.saved_tensors
         B, H, W = M.shape
 
-        if r is None: r = torch.ones((1, H), device=M.device, dtype=M.dtype) / H
-        if c is None: c = torch.ones((1, W), device=M.device, dtype=M.dtype) / W
-
         # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I)
         dJdM = -1.0 * ctx.gamma * P * dJdP
 
         # return approximate gradients
         if ctx.approx_grad:
             return dJdM, None, None, None, None, None, None, None
+
+        if r is None: r = torch.full((1, H), 1.0 / H, device=M.device, dtype=M.dtype)
+        if c is None: c = torch.full((1, W), 1.0 / W, device=M.device, dtype=M.dtype)
 
         # compute v^T H^{-1} A^T as two blocks
         vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2)
@@ -159,20 +157,26 @@ class OptimalTransportLayer(nn.Module):
 if __name__ == '__main__':
 
     from torch.autograd import gradcheck
+    from torch.nn.functional import normalize
 
+    torch.manual_seed(0)
+    
     M = torch.randn((2, 5, 7), dtype=torch.double, requires_grad=True)
     f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    r = normalize(torch.rand((2, 5), dtype=torch.double, requires_grad=False), p=1.0)
+    c = normalize(torch.rand((2, 7), dtype=torch.double, requires_grad=False), p=1.0)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
