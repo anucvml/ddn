@@ -64,6 +64,8 @@ class OptimalTransportFcn(torch.autograd.Function):
 
     Allows for approximate gradient calculations, which is faster and may be useful during early stages of learning,
     when exp(-\gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.
+
+    Both r and c must be positive, if provided. They will be normalized to sum to one.
     """
 
     @staticmethod
@@ -141,12 +143,18 @@ class OptimalTransportFcn(torch.autograd.Function):
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdr is not None:
-            dJdr = torch.einsum("bij,bi->bj", ctx.inv_r_sum.view(B, 1, 1) / ctx.gamma * (r.view(B, H, 1) - torch.eye(H).view(1, H, H)),
-                                torch.cat((torch.zeros(B, 1), v1), dim=1))
+            if (r.shape[0] == B):
+                dJdr = torch.einsum("bij,bi->bj", ctx.inv_r_sum.view(B, 1, 1) / ctx.gamma * (r.view(B, H, 1) - torch.eye(H).view(1, H, H)),
+                                    torch.cat((torch.zeros(B, 1), v1), dim=1))
+            else:
+                dJdr = torch.einsum("ij,bi->bj", ctx.inv_r_sum[0] / ctx.gamma * (r.view(H, 1) - torch.eye(H)), torch.cat((torch.zeros(B, 1), v1), dim=1))
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdc is not None:
-            dJdc = torch.einsum("bij,bi->bj", ctx.inv_c_sum.view(B, 1, 1) / ctx.gamma * (c.view(B, W, 1) - torch.eye(W).view(1, W, W)), v2)
+            if (c.shape[0] == B):
+                dJdc = torch.einsum("bij,bi->bj", ctx.inv_c_sum.view(B, 1, 1) / ctx.gamma * (c.view(B, W, 1) - torch.eye(W).view(1, W, W)), v2)
+            else:
+                dJdc = torch.einsum("ij,bi->bj", ctx.inv_c_sum[0] / ctx.gamma * (c.view(W, 1) - torch.eye(W)), v2)
 
         # return gradients (None for gamma, eps, and maxiters)
         return dJdM, dJdr, dJdc, None, None, None, None, None
@@ -213,11 +221,13 @@ if __name__ == '__main__':
 
     test = gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
-    exit(0)
 
     # shared r and c
     r = normalize(torch.rand((1, M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
     c = normalize(torch.rand((1, M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
 
     test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
