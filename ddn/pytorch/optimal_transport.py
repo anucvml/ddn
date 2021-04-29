@@ -8,8 +8,8 @@
 #    minimize (over P) <P, M> + 1/\gamma KL(P || rc^T)
 #    subject to        P1 = r and P^T1 = c
 #
-# where r and c are m- and n-dimensional vectors, respectively, each summing to one. Here m-by-n matrix M is the input
-# and positive m-by-n dimensional matrix P is the output. The above problem leads to a solution of the form
+# where r and c are m- and n-dimensional positive vectors, respectively, each summing to one. Here m-by-n matrix M is
+# the input and m-by-n dimensional positive matrix P is the output. The above problem leads to a solution of the form
 #
 #   P_{ij} = \alpha_i \beta_j e^{-\gamma M_{ij}}
 #
@@ -71,6 +71,15 @@ class OptimalTransportFcn(torch.autograd.Function):
         """Solve optimal transport using skinhorn."""
 
         with torch.no_grad():
+            # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
+            if r is not None:
+                ctx.inv_r_sum = 1.0 / torch.sum(r, dim=1, keepdim=True)
+                r = ctx.inv_r_sum * r
+            if c is not None:
+                ctx.inv_c_sum = 1.0 / torch.sum(c, dim=1, keepdim=True)
+                c = ctx.inv_c_sum * c
+
+            # run sinkhorn
             P = sinkhorn(M, r, c, gamma, eps, maxiters)
 
         ctx.save_for_backward(M, r, c, P)
@@ -87,21 +96,23 @@ class OptimalTransportFcn(torch.autograd.Function):
         M, r, c, P = ctx.saved_tensors
         B, H, W = M.shape
 
-        # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I)
+        # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I or B = -1/r or B = -1/c)
         dJdM = -1.0 * ctx.gamma * P * dJdP
+        dJdr = None if r is None else torch.zeros_like(r)
+        dJdc = None if c is None else torch.zeros_like(c)
 
         # return approximate gradients
         if ctx.approx_grad:
-            return dJdM, None, None, None, None, None, None, None
+            return dJdM, dJdr, dJdc, None, None, None, None, None
 
         if r is None: r = torch.full((1, H), 1.0 / H, device=M.device, dtype=M.dtype)
         if c is None: c = torch.full((1, W), 1.0 / W, device=M.device, dtype=M.dtype)
 
-        # compute v^T H^{-1} A^T as two blocks
+        # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
         vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2)
         vHAt2 = torch.sum(dJdM, dim=1)
 
-        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
+        # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
         if ctx.block_inverse:
             # by block inverse of (A H^{-1] A^T)
             block_11 = torch.cholesky(torch.diag_embed(r[:, 1:H]) -
@@ -124,15 +135,21 @@ class OptimalTransportFcn(torch.autograd.Function):
             v1 = v[:, 0:H-1]
             v2 = v[:, H-1:H+W-1]
 
-        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} - v^T H^{-1} B
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
         dJdM[:, 1:H, 0:W] -= v1.view(B, H-1, 1) * P[:, 1:H, 0:W]
         dJdM -= v2.view(B, 1, W) * P
 
-        # TODO: gradient wrt r
-        # TODO: gradient wrt c
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdr is not None:
+            dJdr = torch.einsum("bij,bi->bj", ctx.inv_r_sum.view(B, 1, 1) / ctx.gamma * (r.view(B, H, 1) - torch.eye(H).view(1, H, H)),
+                                torch.cat((torch.zeros(B, 1), v1), dim=1))
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdc is not None:
+            dJdc = torch.einsum("bij,bi->bj", ctx.inv_c_sum.view(B, 1, 1) / ctx.gamma * (c.view(B, W, 1) - torch.eye(W).view(1, W, W)), v2)
 
         # return gradients (None for gamma, eps, and maxiters)
-        return dJdM, None, None, None, None, None, None, None
+        return dJdM, dJdr, dJdc, None, None, None, None, None
 
 
 class OptimalTransportLayer(nn.Module):
@@ -160,7 +177,7 @@ if __name__ == '__main__':
     from torch.nn.functional import normalize
 
     torch.manual_seed(0)
-    
+
     M = torch.randn((2, 5, 7), dtype=torch.double, requires_grad=True)
     f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
@@ -179,4 +196,28 @@ if __name__ == '__main__':
     c = normalize(torch.rand((2, 7), dtype=torch.double, requires_grad=False), p=1.0)
 
     test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    # with r and c inputs
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+
+    test = gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+    exit(0)
+
+    # shared r and c
+    r = normalize(torch.rand((1, M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((1, M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
