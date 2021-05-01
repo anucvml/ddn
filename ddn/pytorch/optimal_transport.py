@@ -48,14 +48,14 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
         P = (r / alpha).view(B, H, 1) * P
 
         beta = torch.sum(P, 1)
-        if torch.abs(torch.max(beta - c)) <= eps:
+        if torch.max(torch.abs(beta - c)) <= eps:
             break
         P = P * (c / beta).view(B, 1, W)
 
     return P
 
 
-def sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
+def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     """As above but with inline calculations for when autograd is not needed."""
 
     B, H, W = M.shape
@@ -71,7 +71,7 @@ def sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
         P *= (r / alpha).view(B, H, 1)
 
         beta = torch.sum(P, 1)
-        if torch.abs(torch.max(beta - c)) <= eps:
+        if torch.max(torch.abs(beta - c)) <= eps:
             break
         P *= (c / beta).view(B, 1, W)
 
@@ -105,7 +105,7 @@ class OptimalTransportFcn(torch.autograd.Function):
                 c = ctx.inv_c_sum * c
 
             # run sinkhorn
-            P = sinkhorn_inline(M, r, c, gamma, eps, maxiters)
+            P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters)
 
         ctx.save_for_backward(M, r, c, P)
         ctx.gamma = gamma
