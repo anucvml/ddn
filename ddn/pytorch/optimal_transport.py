@@ -36,21 +36,44 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     """
 
     B, H, W = M.shape
-    if r is None: r = torch.full((1, H), 1.0 / H, device=M.device, dtype=M.dtype)
-    if c is None: c = torch.full((1, W), 1.0 / W, device=M.device, dtype=M.dtype)
+    assert r is None or r.shape == (B, H) or r.shape == (1, H)
+    assert c is None or c.shape == (B, W) or c.shape == (1, W)
 
-    assert r.shape == (B, H) or r.shape == (1, H)
-    assert c.shape == (B, W) or c.shape == (1, W)
+    if r is None: r = 1.0 / H
+    if c is None: c = 1.0 / W
 
     P = torch.exp(-1.0 * gamma * M)
     for i in range(maxiters):
-        alpha = torch.sum(P, 2).reshape(B, H)
+        alpha = torch.sum(P, 2)
         P = (r / alpha).view(B, H, 1) * P
 
-        beta = torch.sum(P, 1).reshape(B, W)
-        if torch.all(torch.isclose(beta, c, atol=eps, rtol=0.0)):
+        beta = torch.sum(P, 1)
+        if torch.abs(torch.max(beta - c)) <= eps:
             break
         P = P * (c / beta).view(B, 1, W)
+
+    return P
+
+
+def sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
+    """As above but with inline calculations for when autograd is not needed."""
+
+    B, H, W = M.shape
+    assert r is None or r.shape == (B, H) or r.shape == (1, H)
+    assert c is None or c.shape == (B, W) or c.shape == (1, W)
+
+    if r is None: r = 1.0 / H
+    if c is None: c = 1.0 / W
+
+    P = torch.exp(-1.0 * gamma * M)
+    for i in range(maxiters):
+        alpha = torch.sum(P, 2)
+        P *= (r / alpha).view(B, H, 1)
+
+        beta = torch.sum(P, 1)
+        if torch.abs(torch.max(beta - c)) <= eps:
+            break
+        P *= (c / beta).view(B, 1, W)
 
     return P
 
@@ -82,7 +105,7 @@ class OptimalTransportFcn(torch.autograd.Function):
                 c = ctx.inv_c_sum * c
 
             # run sinkhorn
-            P = sinkhorn(M, r, c, gamma, eps, maxiters)
+            P = sinkhorn_inline(M, r, c, gamma, eps, maxiters)
 
         ctx.save_for_backward(M, r, c, P)
         ctx.gamma = gamma
