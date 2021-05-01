@@ -123,8 +123,8 @@ class OptimalTransportFcn(torch.autograd.Function):
 
         # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I or B = -1/r or B = -1/c)
         dJdM = -1.0 * ctx.gamma * P * dJdP
-        dJdr = None if r is None else torch.zeros_like(r)
-        dJdc = None if c is None else torch.zeros_like(c)
+        dJdr = None if not ctx.needs_input_grad[1] else torch.zeros_like(r)
+        dJdc = None if not ctx.needs_input_grad[2] else torch.zeros_like(c)
 
         # return approximate gradients
         if ctx.approx_grad:
@@ -140,10 +140,10 @@ class OptimalTransportFcn(torch.autograd.Function):
         # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
         if ctx.block_inverse:
             # by block inverse of (A H^{-1] A^T)
-            block_11 = torch.cholesky(torch.diag_embed(r[:, 1:H]) -
-                torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W)))
-            block_12 = torch.cholesky_solve(P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W), block_11)
-            block_22 = torch.diag_embed(1.0 / c) + torch.einsum("bji,bjk->bik", block_12, P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W))
+            PdivC = P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W)
+            block_11 = torch.cholesky(torch.diag_embed(r[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
+            block_12 = torch.cholesky_solve(PdivC, block_11)
+            block_22 = torch.diag_embed(1.0 / c) + torch.einsum("bji,bjk->bik", block_12, PdivC)
 
             v1 = torch.cholesky_solve(vHAt1.view(B, H-1, 1), block_11).view(B, H-1) - torch.einsum("bi,bji->bj", vHAt2, block_12)
             v2 = torch.einsum("bi,bij->bj", vHAt2, block_22) - torch.einsum("bi,bij->bj", vHAt1, block_12)
@@ -166,18 +166,12 @@ class OptimalTransportFcn(torch.autograd.Function):
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdr is not None:
-            if (r.shape[0] == B):
-                dJdr = torch.einsum("bij,bi->bj", ctx.inv_r_sum.view(B, 1, 1) / ctx.gamma * (r.view(B, H, 1) - torch.eye(H).view(1, H, H)),
-                                    torch.cat((torch.zeros(B, 1), v1), dim=1))
-            else:
-                dJdr = torch.einsum("ij,bi->bj", ctx.inv_r_sum[0] / ctx.gamma * (r.view(H, 1) - torch.eye(H)), torch.cat((torch.zeros(B, 1), v1), dim=1))
+            dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
+                   (torch.sum(r[:, 1:H] * v1, dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1), v1), dim=1))
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdc is not None:
-            if (c.shape[0] == B):
-                dJdc = torch.einsum("bij,bi->bj", ctx.inv_c_sum.view(B, 1, 1) / ctx.gamma * (c.view(B, W, 1) - torch.eye(W).view(1, W, W)), v2)
-            else:
-                dJdc = torch.einsum("ij,bi->bj", ctx.inv_c_sum[0] / ctx.gamma * (c.view(W, 1) - torch.eye(W)), v2)
+            dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2, dim=1, keepdim=True) - v2)
 
         # return gradients (None for gamma, eps, and maxiters)
         return dJdM, dJdr, dJdc, None, None, None, None, None
@@ -209,7 +203,7 @@ if __name__ == '__main__':
 
     torch.manual_seed(0)
 
-    M = torch.randn((2, 5, 7), dtype=torch.double, requires_grad=True)
+    M = torch.randn((3, 5, 7), dtype=torch.double, requires_grad=True)
     f = OptimalTransportFcn().apply
     test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
@@ -223,8 +217,8 @@ if __name__ == '__main__':
     test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    r = normalize(torch.rand((2, 5), dtype=torch.double, requires_grad=False), p=1.0)
-    c = normalize(torch.rand((2, 7), dtype=torch.double, requires_grad=False), p=1.0)
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=False), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=False), p=1.0)
 
     test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
