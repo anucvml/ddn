@@ -6,6 +6,7 @@
 - [ ] Add RobustPool2d
 - [ ] Add RobustAdaptivePool2d
 - [ ] Multi-random-start options for non-convex functions
+- [x] Add RobustVectorPool2d
 
 ### Euclidean projection:
 - [x] Add EuclideanProjection
