@@ -38,7 +38,7 @@ class Penalty():
 
     @staticmethod
     def kappa(z, alpha):
-        """Evaluates phi'/z and phi'' - phi'/z."""
+        """Evaluates phi'/z and (phi'' - phi'/z)/z^2."""
         raise NotImplementedError()
 
 
@@ -66,9 +66,9 @@ class PseudoHuber(Penalty):
 
     @staticmethod
     def kappa(z, alpha=1.0):
-        z2 = torch.pow(z, 2.0)/ (alpha * alpha)
-        xi = torch.sqrt(1.0 + z2)
-        return 1.0 / xi, -1.0 * z2 / torch.pow(xi, 3.0)
+        alpha2 = alpha * alpha
+        xi = torch.sqrt(1.0 + torch.pow(z, 2.0) / alpha2)
+        return 1.0 / xi, -1.0 / (alpha2 * torch.pow(xi, 3.0))
 
 
 class Huber(Penalty):
@@ -83,8 +83,9 @@ class Huber(Penalty):
     @staticmethod
     def kappa(z, alpha=1.0):
         indx = torch.abs(z) <= alpha
+        z2 = torch.pow(z, 2.0)
         alpha_on_z = alpha / torch.abs(z)
-        return torch.where(indx, torch.ones_like(z), alpha_on_z), torch.where(indx, torch.zeros_like(z), 0.0 - alpha_on_z)
+        return torch.where(indx, torch.ones_like(z), alpha_on_z), torch.where(indx, torch.zeros_like(z), -1.0 * alpha_on_z / z2)
 
 
 class Welsch(Penalty):
@@ -99,9 +100,8 @@ class Welsch(Penalty):
     @staticmethod
     def kappa(z, alpha=1.0):
         alpha2 = alpha * alpha
-        z2 = torch.pow(z, 2.0)
-        xi = torch.exp(-0.5 * z2 / alpha2)
-        return xi / alpha2, -1.0 * z2 * xi / (alpha2 * alpha2)
+        xi = torch.exp(-0.5 * torch.pow(z, 2.0) / alpha2) / alpha2
+        return xi, -1.0 * xi / alpha2
 
 
 class TruncQuad(Penalty):
@@ -110,7 +110,8 @@ class TruncQuad(Penalty):
 
     @staticmethod
     def phi(z, alpha=1.0):
-        return torch.minimum(0.5 * torch.pow(z, 2.0), torch.full_like(z, 0.5 * alpha * alpha))
+        indx = torch.abs(z) <= alpha
+        return 0.5 * torch.where(indx, torch.pow(z, 2.0), torch.full_like(z, alpha * alpha))
 
     @staticmethod
     def kappa(z, alpha=1.0):
@@ -189,17 +190,16 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         B, C, H, W = x.shape
 
         x_minus_y = y.view(B, C, 1, 1) - x
-        z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True)
-        x_minus_y_on_z = (x_minus_y / z).view(B, C, -1)
+        z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
 
         k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
         HH = torch.sum(k1.view(B, -1), dim=1).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
-            torch.einsum("bik,bjk->bij", x_minus_y_on_z, k2.view(B, 1, -1) * x_minus_y_on_z)
+            torch.einsum("bik,bjk->bij", x_minus_y.view(B, C, -1), k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
         L = torch.cholesky(HH)
         v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
 
-        w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y_on_z)
-        x_grad = k1 * v.view(B, C, 1, 1) + torch.einsum("bk,bik->bik", w, x_minus_y_on_z).view(B, C, H, W)
+        w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
+        x_grad = k1 * v.view(B, C, 1, 1) + torch.einsum("bk,bik->bik", w, x_minus_y.view(B, C, -1)).view(B, C, H, W)
 
         return x_grad, None, None
 
@@ -240,8 +240,13 @@ if __name__ == '__main__':
         print("{}: {}".format(p.__class__.__name__, y))
 
     # evaluate gradient
+    print("\nalpha = 1.0")
     x.requires_grad = True
     for p in penalties:
         test = gradcheck(f, (x, p), eps=1e-6, atol=1e-3, rtol=1e-6)
         print("{}: {}".format(p.__class__.__name__, test))
 
+    print("\nalpha = 2.0")
+    for p in penalties:
+        test = gradcheck(f, (x, p, 2.0), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print("{}: {}".format(p.__class__.__name__, test))
