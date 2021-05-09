@@ -56,12 +56,13 @@ class AbstractDeclarativeNode(AbstractNode):
     where x is given (as a vector) and f is a scalar-valued function.
     Derived classes must implement the `objective` and `solve` functions.
     """
-    def __init__(self, eps=1e-12, gamma=None):
+    def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create a declarative node
         """
         super().__init__()
         self.eps = eps # tolerance to check if optimality conditions satisfied
         self.gamma = gamma # damping factor: H <-- H + gamma * I
+        self.chunk_size = chunk_size # input is divided into chunks of at most chunk_size (None = infinity)
 
     def objective(self, *xs, y):
         """Evaluates the objective function on a given input-output pair.
@@ -137,9 +138,10 @@ class AbstractDeclarativeNode(AbstractNode):
         gradients = []
         for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
             if isinstance(x_split[0], torch.Tensor) and x_split[0].requires_grad:
-                gradient = x_split[0].new_zeros(self.b, n) # bxn
-                for i, Bi in enumerate(fXY(x_split)):
-                    gradient[:, i] = torch.einsum('bm,bm->b', (Bi, u))
+                gradient = []
+                for Bi in fXY(x_split):
+                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, u)))
+                gradient = torch.cat(gradient, dim=-1) # bxn
                 gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)
@@ -197,7 +199,7 @@ class AbstractDeclarativeNode(AbstractNode):
         self.b = y.size(0)
         self.m = y.reshape(self.b, -1).size(-1)
 
-        # Split each input x into a tuple of n tensors of size bx1:
+        # Split each input x into a tuple of n//chunk_size tensors of size (b, chunk_size):
         # Required since gradients can only be computed wrt individual
         # tensors, not slices of a tensor. See:
         # https://discuss.pytorch.org/t/how-to-calculate-gradients-wrt-one-of-inputs/24407
@@ -209,12 +211,15 @@ class AbstractDeclarativeNode(AbstractNode):
     @torch.enable_grad()
     def _split_inputs(self, xs):
         """Split inputs into a sequence of tensors by input dimension
-        For each input x in xs, generates a tuple of n tensors of size bx1
+        For each input x in xs, generates a tuple of n//chunk_size tensors of size (b, chunk_size)
         """
         xs_split, xs_sizes, xs_n = [], [], []
         for x in xs: # Loop over input tuple
             if isinstance(x, torch.Tensor) and x.requires_grad:
-                xs_split.append(x.reshape(self.b, -1).split(1, dim=-1))
+                if self.chunk_size is None:
+                    xs_split.append((x.reshape(self.b, -1),))
+                else:
+                    xs_split.append(x.reshape(self.b, -1).split(self.chunk_size, dim=-1))
                 xs_sizes.append(x.size())
                 xs_n.append(x.reshape(self.b, -1).size(-1))
             else:
@@ -229,10 +234,10 @@ class AbstractDeclarativeNode(AbstractNode):
         """
         xs = []
         for x_split, x_size in zip(xs_split, xs_sizes): # Loop over input tuple
-            if len(x_split) > 1:
-                xs.append(torch.cat(x_split, dim=-1).reshape(x_size))
-            else:
+            if x_size is None:
                 xs.append(x_split[0])
+            else:
+                xs.append(torch.cat(x_split, dim=-1).reshape(x_size))
         return tuple(xs)
 
     def _get_objective_derivatives(self, xs, y):
@@ -251,8 +256,8 @@ class AbstractDeclarativeNode(AbstractNode):
             self.b, self.m, self.m)
 
         # Create function that returns generator expression for fXY given input:
-        fXY = lambda x: (fXiY.detach().squeeze(-1)
-            if fXiY is not None else torch.zeros_like(fY)
+        fXY = lambda x: (fXiY.detach()
+            if fXiY is not None else torch.zeros_like(fY).unsqueeze(-1)
             for fXiY in (self._batch_jacobian(fY, xi) for xi in x))
 
         return fY, fYY, fXY
@@ -342,10 +347,10 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
     `solve` functions.
     """
 
-    def __init__(self, eps=1e-12, gamma=None):
+    def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create an equality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -444,14 +449,16 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         gradients = []
         for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
             if isinstance(x_split[0],torch.Tensor) and x_split[0].requires_grad:
-                gradient = x_split[0].new_zeros(self.b, n)
+                gradient = []
                 for i, Bi in enumerate(fXY(x_split)):
-                    Bi -= sum(torch.einsum('b,bm->bm', (nu[:, j], hjXiY))
+                    Bi -= sum(torch.einsum('b,bmc->bmc', (nu[:, j], hjXiY))
                         for j, hjXiY in enumerate(hXY(x_split[i])))
-                    gradient[:, i] = torch.einsum('bm,bm->b', (Bi, uts))
+                    g = torch.einsum('bmc,bm->bc', (Bi, uts))
                     Ci = hX(x_split[i])
                     if Ci is not None:
-                        gradient[:, i] -= torch.einsum('bp,bp->b', (Ci, s))
+                        g -= torch.einsum('bpc,bp->bc', (Ci, s))
+                    gradient.append(g)
+                gradient = torch.cat(gradient, dim=-1) # bxn
                 gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)
@@ -474,7 +481,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
             ) if hiYY is not None)
 
         # Compute 2nd-order partial derivative of hj wrt y and xi at (xs,y):
-        hXY = lambda x: (hiXY.detach().squeeze(-1) for hiXY in (
+        hXY = lambda x: (hiXY.detach() for hiXY in (
             self._batch_jacobian(torch.enable_grad()(hY.select)(1, i), x)
             for i in range(p)
             ) if hiXY is not None)
@@ -482,7 +489,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         # Compute partial derivative of h wrt xi at (xs,y):
         def hX(x):
             hXi = self._batch_jacobian(h, x, create_graph=False)
-            return None if hXi is None else hXi.detach().squeeze(-1)
+            return None if hXi is None else hXi.detach()
 
         return hY, hYY, hXY, hX
 
@@ -544,10 +551,10 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
     `inequality_constraints` and `solve` functions.
     """
 
-    def __init__(self, eps=1e-12, gamma=None):
+    def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create an inequality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -722,10 +729,10 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
     where x is given, and A and d are independent of x. Derived classes must
     implement the objective and solve functions.
     """
-    def __init__(self, eps=1e-12, gamma=None):
+    def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create a linear equality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
 
     def linear_constraint_parameters(self, y):
         """Defines the linear equality constraint parameters A and d, where the
@@ -811,9 +818,10 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
         gradients = []
         for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
             if isinstance(x_split[0], torch.Tensor) and x_split[0].requires_grad:
-                gradient = x_split[0].new_zeros(self.b, n)
+                gradient = []
                 for i, Bi in enumerate(fXY(x_split)):
-                    gradient[:, i] = torch.einsum('bm,bm->b', (Bi, uts))
+                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, u)))
+                gradient = torch.cat(gradient, dim=-1) # bxn
                 gradients.append(gradient.reshape(x_size))
             else:
                 gradients.append(None)

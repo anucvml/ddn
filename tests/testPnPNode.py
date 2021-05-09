@@ -45,7 +45,7 @@ w = w.div(w.sum(-1).unsqueeze(-1))
 
 # Create a PnP problem and create a declarative layer:
 # node = PnP(objective_type='cosine')
-node = PnP(objective_type='reproj')
+node = PnP(objective_type='reproj', chunk_size=None)
 # node = PnP(objective_type='reproj_huber', alpha=0.1)
 DL = DeclarativeLayer(node)
 

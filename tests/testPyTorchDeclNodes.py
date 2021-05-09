@@ -60,7 +60,7 @@ test_node(node, xs)
 
 # PseudoHuberPool
 print("\nPseudoHuber Pooling Example:\n")
-node = GlobalPseudoHuberPool2d()
+node = GlobalPseudoHuberPool2d(chunk_size=None)
 b = 2
 m = 7
 x = torch.randn(b, m, m, dtype=torch.double, requires_grad=True)

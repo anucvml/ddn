@@ -50,8 +50,8 @@ class UnconstPolynomial(AbstractDeclarativeNode):
 
 class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
     """"""
-    def __init__(self):
-        super().__init__()
+    def __init__(self, chunk_size=None):
+        super().__init__(chunk_size=chunk_size)
         
     def objective(self, x, alpha, y):
         alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(x)
