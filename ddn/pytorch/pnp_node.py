@@ -16,10 +16,11 @@ class PnP(AbstractDeclarativeNode):
         gamma=None,
         objective_type='reproj',
         alpha=1.0,
+        chunk_size=None,
         ransac_max_num_iterations=1000,
         ransac_threshold=0.1
         ):
-        super().__init__(eps=eps, gamma=gamma)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
         self.objective_type = objective_type
         self.alpha = alpha
         self.ransac_max_num_iterations = ransac_max_num_iterations
