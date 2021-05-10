@@ -15,7 +15,6 @@ from torch.autograd import gradcheck
 import torch.autograd.profiler as profiler
 
 import time
-import tracemalloc
 import matplotlib.pyplot as plt
 
 import sys
@@ -241,7 +240,7 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
     plt.legend(['autograd', 'approx', 'implicit (full inv)', 'implicit (blk inv)'])
     plt.title('Memory usage on {} with batch size {}'.format(device, batch_size))
 
-                # --- Run Unit Tests ----------------------------------------------------------
+# --- Run Unit Tests ----------------------------------------------------------
 
 if __name__ == '__main__':
     if True:

@@ -21,6 +21,7 @@
 
 import torch
 import torch.nn as nn
+import warnings
 
 # --- Penalty functions -------------------------------------------------------
 
@@ -167,11 +168,9 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
                 f = torch.minimum(f, f_median)
 
                 if restarts > 0:
-                    guesses = torch.randperm(H * W)
-                    if H * W > restarts:
-                        guesses = guesses[0:restarts]
-                    for i in guesses:
-                        y_init = x.view(B, C, -1)[:, :, i]
+                    # choose points evenly spaced in batch (can be randomly chosen but that affects reproducibility)
+                    for i in torch.linspace(start=0, end=H * W - 1, steps=restarts):
+                        y_init = x.view(B, C, -1)[:, :, int(i.item())]
                         y_final = RobustVectorPool2dFcn._optimize(x, y_init, penalty, alpha)
                         f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1, 1) - x), dim=1), alpha).view(B, -1).sum(-1)
                         y = torch.where((f < f_final).view(B, 1), y, y_final)
@@ -185,6 +184,8 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, y_grad):
+        if not ctx.needs_input_grad[0]:
+            return None, None, None
 
         x, y = ctx.saved_tensors
         B, C, H, W = x.shape
@@ -195,8 +196,19 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
         HH = torch.sum(k1.view(B, -1), dim=1).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
             torch.einsum("bik,bjk->bij", x_minus_y.view(B, C, -1), k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
-        L = torch.cholesky(HH)
-        v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
+        try:
+            L = torch.cholesky(HH)
+            v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
+        except:
+            warnings.warn("backward pass encountered a singular matrix for penalty function {}".format(ctx.penalty.__name__))
+            v = torch.empty_like(y_grad)
+            for b in range(B):
+                try:
+                    L = torch.cholesky(HH[b, :, :])
+                    v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
+                except:
+                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), HH[b, :, :])[0].view(1, C)
+
 
         w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
         x_grad = k1 * v.view(B, C, 1, 1) + torch.einsum("bk,bik->bik", w, x_minus_y.view(B, C, -1)).view(B, C, H, W)
@@ -208,7 +220,7 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
 
 class RobustVectorPool2d(nn.Module):
 
-    def __init__(self, penalty, alpha=1.0, restarts=10):
+    def __init__(self, penalty, alpha=1.0, restarts=0):
         super(RobustVectorPool2d, self).__init__()
         self.penalty = penalty
         self.alpha = alpha
@@ -234,19 +246,17 @@ if __name__ == '__main__':
 
     # evaluate function
     f = RobustVectorPool2dFcn().apply
-    penalties = [Quadratic(), PseudoHuber(), Huber(), Welsch(), TruncQuad()]
+    penalties = [Quadratic, PseudoHuber, Huber, Welsch, TruncQuad]
     for p in penalties:
         y = f(x, p, 1.0)
-        print("{}: {}".format(p.__class__.__name__, y))
+        print("{}: {}".format(p.__name__, y))
+        z = torch.linalg.norm(y.view(y.shape[0], y.shape[1], -1) - x.view(x.shape[0], x.shape[1], -1), dim=1, keepdim=True)
+        print(torch.histc(z.flatten()))
 
     # evaluate gradient
-    print("\nalpha = 1.0")
     x.requires_grad = True
-    for p in penalties:
-        test = gradcheck(f, (x, p), eps=1e-6, atol=1e-3, rtol=1e-6)
-        print("{}: {}".format(p.__class__.__name__, test))
-
-    print("\nalpha = 2.0")
-    for p in penalties:
-        test = gradcheck(f, (x, p, 2.0), eps=1e-6, atol=1e-3, rtol=1e-6)
-        print("{}: {}".format(p.__class__.__name__, test))
+    for alpha in [1.0, 2.0, 10.0]:
+        print("\nalpha = {}".format(alpha))
+        for p in penalties:
+            test = gradcheck(f, (x, p, alpha), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print("{}: {}".format(p.__name__, test))
