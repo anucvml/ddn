@@ -123,11 +123,12 @@ class TruncQuad(Penalty):
 # --- PyTorch Function --------------------------------------------------------
 
 class RobustVectorPool2dFcn(torch.autograd.Function):
-    """PyTorch autograd function for robust vector pooling. Input (B,C,H,W) -> output (B,C)."""
+    """PyTorch autograd function for robust vector pooling. Input (B,C,*) -> output (B,C)."""
 
     @staticmethod
     def _optimize(x, y, penalty, alpha):
-        B, C, H, W = x.shape
+        B, C = x.shape[0], x.shape[1]
+        x = x.detach()
         y = y.clone()
         y.requires_grad = True
         opt = torch.optim.LBFGS([y], lr=1.0, max_iter=100, max_eval=None,
@@ -135,7 +136,7 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
 
         def reevaluate():
             opt.zero_grad()
-            z = torch.linalg.norm((y.view(B, C, 1, 1) - x), dim=1)
+            z = torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1)
             f = penalty.phi(z, alpha).sum()
             f.backward()
             return f
@@ -148,31 +149,32 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, x, penalty, alpha=1.0, restarts=0):
+        assert len(x.shape) >= 3
         assert alpha > 0.0
         assert restarts >= 0
 
-        B, C, H, W = x.shape
+        B, C = x.shape[0], x.shape[1]
         with torch.no_grad():
             if penalty.is_convex:
-                y = torch.mean(x, dim=(2, 3))
+                y = torch.mean(x.view(B, C, -1), dim=2)
                 y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
             else:
-                y_mean = torch.mean(x, dim=(2, 3))
+                y_mean = torch.mean(x.view(B, C, -1), dim=2)
                 y = RobustVectorPool2dFcn._optimize(x, y_mean, penalty, alpha)
-                f = penalty.phi(torch.linalg.norm((y.view(B, C, 1, 1) - x), dim=1), alpha).view(B, -1).sum(-1)
+                f = penalty.phi(torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
 
                 y_median, _ = torch.median(x.view(B, C, -1), dim=2)
                 y_median = RobustVectorPool2dFcn._optimize(x, y_median, penalty, alpha)
-                f_median = penalty.phi(torch.linalg.norm((y_median.view(B, C, 1, 1) - x), dim=1), alpha).view(B, -1).sum(-1)
+                f_median = penalty.phi(torch.linalg.norm((y_median.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
                 y = torch.where((f <= f_median).view(B, 1), y, y_median)
                 f = torch.minimum(f, f_median)
 
                 if restarts > 0:
                     # choose points evenly spaced in batch (can be randomly chosen but that affects reproducibility)
-                    for i in torch.linspace(start=0, end=H * W - 1, steps=restarts):
+                    for i in torch.linspace(start=0, end=x.view(B, C, -1).shape[2] - 1, steps=restarts):
                         y_init = x.view(B, C, -1)[:, :, int(i.item())]
                         y_final = RobustVectorPool2dFcn._optimize(x, y_init, penalty, alpha)
-                        f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1, 1) - x), dim=1), alpha).view(B, -1).sum(-1)
+                        f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
                         y = torch.where((f < f_final).view(B, 1), y, y_final)
                         f = torch.minimum(f, f_final)
 
@@ -188,30 +190,30 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
             return None, None, None
 
         x, y = ctx.saved_tensors
-        B, C, H, W = x.shape
+        B, C = x.shape[0], x.shape[1]
 
-        x_minus_y = y.view(B, C, 1, 1) - x
+        x_minus_y = y.view(B, C, 1) - x.view(B, C, -1)
         z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
 
         k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
-        HH = torch.sum(k1.view(B, -1), dim=1).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
-            torch.einsum("bik,bjk->bij", x_minus_y.view(B, C, -1), k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
+        H = torch.sum(k1.view(B, -1), dim=1).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
+            torch.einsum("bik,bjk->bij", x_minus_y, k2.view(B, 1, -1) * x_minus_y)
         try:
-            L = torch.cholesky(HH)
+            L = torch.cholesky(H)
             v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
         except:
             warnings.warn("backward pass encountered a singular matrix for penalty function {}".format(ctx.penalty.__name__))
             v = torch.empty_like(y_grad)
             for b in range(B):
                 try:
-                    L = torch.cholesky(HH[b, :, :])
+                    L = torch.cholesky(H[b, :, :])
                     v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
                 except:
-                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), HH[b, :, :])[0].view(1, C)
+                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
 
 
-        w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y.view(B, C, -1))
-        x_grad = k1 * v.view(B, C, 1, 1) + torch.einsum("bk,bik->bik", w, x_minus_y.view(B, C, -1)).view(B, C, H, W)
+        w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y)
+        x_grad = (k1 * v.view(B, C, 1) + torch.einsum("bk,bik->bik", w, x_minus_y)).reshape(x.shape)
 
         return x_grad, None, None
 
