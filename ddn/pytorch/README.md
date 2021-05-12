@@ -12,7 +12,7 @@
 - [x] Add EuclideanProjection
 
 ### Generic node:
-- [ ] Implement switch to allow full computation of B for small problems
+- [x] Implement switch to allow full computation of B for small problems
 - [ ] Implement LBFGS fall-back solver
 - [ ] Handle NaN values after solves
 - [x] Multiple inequality constraints with batch computation
