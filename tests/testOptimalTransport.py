@@ -101,14 +101,14 @@ def learnM(fcns, M_init, r, c, P_true, iters=1000):
         for i in range(iters):
             optimizer.zero_grad(set_to_none=True)
             J = torch.linalg.norm(fcn(M, r, c) - P_true)
-            h.append(J.item())
+            h.append(float(J.item()))
             J.backward()
             optimizer.step()
-
-        M_all.append(M)
+            
+        M_all.append(M.detach().clone())
         h_all.append(h)
         t_all.append(time.monotonic() - start_time)
-
+        
     return M_all, h_all, t_all
 
 
@@ -129,10 +129,10 @@ def learnMRC(fcns, M_init, r_init, c_init, P_true, iters=1000):
             nr = normalize(torch.abs(r))
             nc = normalize(torch.abs(c))
             J = torch.linalg.norm(fcn(M, nr, nc) - P_true)
-            h.append(J.item())
+            h.append(float(J.item()))
             J.backward()
             optimizer.step()
-
+            
         h_all.append(h)
 
     return h_all
@@ -209,9 +209,9 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
         print("Profiling on {}-by-{} problem...".format(ni, ni))
         M_true = torch.randn((batch_size, ni, ni), dtype=torch.float)
         #M_true = torch.log(torch.rand((batch_size, ni, ni), dtype=torch.float))
-        P_true = sinkhorn(M_true).to(device)
+        P_true = sinkhorn(M_true).detach().to(device)
 
-        M_init = torch.log(torch.rand_like(M_true)).to(device)
+        M_init = torch.log(torch.rand_like(M_true) + 1.0e-16).to(device)
 
         # profile speed
         for i in range(len(fcns)):
