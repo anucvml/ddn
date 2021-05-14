@@ -214,18 +214,47 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
         M_init = torch.log(torch.rand_like(M_true)).to(device)
 
         # profile speed
-        _, _, ti = learnM(fcns, M_init, None, None, P_true, repeats)
-        for i in range(4):
-            t[i].append(ti[i])
+        for i in range(len(fcns)):
+            try:
+                _, _, ti = learnM((fcns[i],), M_init, None, None, P_true, repeats)
+                t[i].append(ti[0])
+            except:
+                t[i].append(float('nan'))
 
+            torch.cuda.empty_cache()
+        
         # profile memory
         for i, f in enumerate(fcns):
-            with profiler.profile(profile_memory=True) as prof:
-                _ = learnM([f], M_init, None, None, P_true, 1)
-            m[i].append(prof.total_average().cpu_memory_usage)
+            try:
+                if device == torch.device("cpu"):
+                    with profiler.profile(profile_memory=True) as prof:
+                        _ = learnM([f], M_init, None, None, P_true, 1)
+                    m[i].append(prof.total_average().cpu_memory_usage)
+                else:
+                    torch.cuda.reset_peak_memory_stats()
+                    _ = learnM([f], M_init, None, None, P_true, 1)
+                    m[i].append(torch.cuda.max_memory_allocated(None))
+            except:
+                m[i].append(float('nan'))
+
+            torch.cuda.empty_cache()
 
     print("...done")
 
+    _mb = 1.0 / (1024.0 * 1024.0)
+
+    print("-" * 80)
+    print("Profiling results on {}".format(device))
+    print("-" * 80)
+    print("{:<4}  {:<18} {:<18} {:<18} {:<18}".format("",
+        'autograd', 'approx', 'implicit (full)', 'implicit (blk)'))
+    for i in range(len(n)):
+        print("{:<4}  {:6.1f}s  {:6.1f}MB  {:6.1f}s  {:6.1f}MB  {:6.1f}s  {:6.1f}MB  {:6.1f}s  {:6.1f}MB".format(n[i],
+            t[0][i], m[0][i] * _mb,
+            t[1][i], m[1][i] * _mb,
+            t[2][i], m[2][i] * _mb,
+            t[3][i], m[3][i] * _mb))
+    
     plt.figure()
     plt.plot(n, t[0], n, t[1], n, t[2], n, t[3])
     plt.xlabel('problem size');
@@ -243,13 +272,13 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
 # --- Run Unit Tests ----------------------------------------------------------
 
 if __name__ == '__main__':
-    if True:
+    if False:
         unittest.main()
 
     if False:
         toy_example()
 
-    if False:
+    if True:
         speed_memory_test(torch.device('cpu'))
         if torch.cuda.is_available():
             speed_memory_test(torch.device("cuda"), batch_size=16)

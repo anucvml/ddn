@@ -42,9 +42,11 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
     t_bck = [[] for p in penalties]
     m_fwd = [[] for p in penalties]
     m_bck = [[] for p in penalties]
-
+    sizes = []
+    
     for ni in n:
         for fi in f:
+            sizes.append((batch_size, fi, ni, ni))
             print("Profiling on ({}, {}, {}, {})...".format(batch_size, fi, ni, ni), end='')
 
             x = torch.randn((batch_size, fi, ni, ni), dtype=torch.float, device=device)
@@ -56,8 +58,7 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
             # profile time
             for i, p in enumerate(penalties):
                 print(".", end='')
-
-                y = [[] for j in range(repeats)]
+                y = [None for j in range(repeats)]
 
                 start_time = time.monotonic()
                 for j in range(repeats):
@@ -68,26 +69,50 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
                 for j in range(repeats):
                     loss = torch.linalg.norm(y[j].view(batch_size, fi, -1), dim=1).sum()
                     loss.backward()
+                    torch.cuda.empty_cache()
                 t_bck[i].append((time.monotonic() - start_time) / repeats)
 
             # profile memory
             for i, p in enumerate(penalties):
                 print(".", end='')
-                with profiler.profile(profile_memory=True) as prof:
-                    y = fcn(x.clone(), p, 1.0)
-                m_fwd[i].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
 
-                with profiler.profile(profile_memory=True) as prof:
+                if device == torch.device("cpu"):
+                    with profiler.profile(profile_memory=True) as prof:
+                        y = fcn(x.clone(), p, 1.0)
+                    m_fwd[i].append(prof.total_average().cpu_memory_usage)
+
+                    with profiler.profile(profile_memory=True) as prof:
+                        loss = torch.linalg.norm(y.view(batch_size, fi, -1), dim=1).sum()
+                        loss.backward()
+                    m_bck[i].append(prof.total_average().cpu_memory_usage)
+                else:
+                    torch.cuda.reset_peak_memory_stats()
+                    x_clone = x.clone()
+                    y = fcn(x_clone, p, 1.0)
+                    m_fwd[i].append(torch.cuda.max_memory_allocated(None))
+
+                    torch.cuda.reset_peak_memory_stats()
                     loss = torch.linalg.norm(y.view(batch_size, fi, -1), dim=1).sum()
                     loss.backward()
-                m_bck[i].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
-
+                    m_bck[i].append(torch.cuda.max_memory_allocated(None) - m_fwd[i][-1])
+                    
             print("")
 
-    print(t_fwd)
-    print(t_bck)
-    print(m_fwd)
-    print(m_bck)
+    _ms = 1000.0
+    _mb = 1.0 / (1024.0 * 1024.0)
+    
+    print("-" * 80)
+    print("Profiling results on {}".format(device))
+    print("-" * 80)
+    print("{:<16}\t{:<8}\t{:<8}\t{:<8}\t{:<8}".format("", "fwd time", "bck time", "fwd mem", "bck mem"))
+    for i, p in enumerate(penalties):
+        print("--- {} ---".format(p.__name__))
+        for j, sz in enumerate(sizes):
+            print("{:<16}\t{:6.1f}ms\t{:6.1f}ms\t{:6.1f}MB\t{:6.1f}MB".format(str(sz),
+                t_fwd[i][j] * _ms, t_bck[i][j] * _ms, m_fwd[i][j] * _mb, m_bck[i][j] * _mb))
+
+    # TODO: plot these too
+
 
 # --- Optimization Example (from Jupyter tutorial) ----------------------------
 
@@ -146,7 +171,7 @@ if __name__ == '__main__':
     if True:
         toy_example()
 
-    if False:
+    if True:
         speed_memory_test(torch.device('cpu'))
         if torch.cuda.is_available():
-            speed_memory_test(torch.device("cuda"), batch_size=16)
+            speed_memory_test(torch.device("cuda"), batch_size=16, repeats=1)
