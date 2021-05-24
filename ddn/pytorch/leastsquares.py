@@ -34,13 +34,15 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False):
+    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=False):
         # allocate output tensors
         B, C, T = input.shape
+        U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias;
+                                              # otherwise, in R^{n*n}, where n=C.
         assert target.shape == (B, 1, T) or target.shape == (1, 1, T), "{} vs {}".format(input.shape, target.shape)
         assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), "{} vs {}".format(input.shape, weights.shape)
         if cache_decomposition:
-            L = torch.empty((B, C + 1, C + 1), device=input.device, dtype=input.dtype, requires_grad=False)
+            L = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype, requires_grad=False)
         else:
             L = None
 
@@ -63,25 +65,33 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
             weightedTSum = target.sum(2).view(B, 1) if weights is None else torch.einsum("bm,bm->b", target.view(B, -1), weights.view(B, -1)).view(B, 1)
             weightedXdotT = torch.einsum("bnm,bm->bn", weightedX, target.view(B, -1))
 
-            AtA = torch.empty((B, C + 1, C + 1), device=input.device, dtype=input.dtype)
-            AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
-            AtA[:, :C, :C] = torch.einsum("bik,bjk->bij", weightedX, input) + \
-                (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
-            AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+            # solve x = (A^TA)^{-1} A^T b
+            if enable_bias:
+                AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                AtA[:, :C, :C] = torch.einsum("bik,bjk->bij", weightedX, input) + \
+                    (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                Atb = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
+            else:
+                AtA = torch.einsum("bik,bjk->bij", weightedX, input) + \
+                    (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                Atb = weightedXdotT.view(B, U_sz, 1)
 
             if cache_decomposition:
                 torch.cholesky(AtA, out=L)
-                y = torch.cholesky_solve(torch.cat((weightedXdotT, weightedTSum), 1).view(B, C + 1, 1), L)
+                y = torch.cholesky_solve(Atb, L)
             else:
-                y, _ = torch.solve(torch.cat((weightedXdotT, weightedTSum), 1).view(B, C + 1, 1), AtA)
+                y, _ = torch.solve(Atb, AtA)
 
             # assign to output
             output = y[:, :C, 0].squeeze(-1)
-            bias = y[:, C, 0].view(B, 1)
+            bias = y[:, C, 0].view(B, 1) if enable_bias else torch.zeros((B, 1), device=input.device, dtype=input.dtype)
 
         # save state for backward pass
         ctx.save_for_backward(input, target, weights, output, bias, L)
         ctx.beta = beta
+        ctx.enable_bias = enable_bias
 
         # return rank pool vector and bias
         return output, bias
@@ -94,50 +104,66 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
 
         # unpack cached tensors
         input, target, weights, output, bias, L = ctx.saved_tensors
+        enable_bias = ctx.enable_bias
         B, C, T = input.shape
+        U_sz = C + 1 if (enable_bias) else C
         weightedX = input if weights is None else torch.einsum("bnm,bm->bnm", input, weights.view(B, -1))
 
-        # solve for w
-        if L is None:
-            AtA = torch.empty((B, C + 1, C + 1), device=input.device, dtype=input.dtype)
-            AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
-            AtA[:, :C, :C] = torch.einsum("bik,bjk->bij", weightedX, input) + \
-                (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
-            AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
-
-            w, _ = torch.solve(torch.cat((grad_output, grad_bias), 1).view(B, C + 1, 1), AtA)
+        # solve for w = (A^TA)^{-1} v
+        if enable_bias:
+            v = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
         else:
-            w = torch.cholesky_solve(torch.cat((grad_output, grad_bias), 1).view(B, C + 1, 1), L)
+            v = grad_output.view(B, U_sz, 1)
+
+        if L is None:
+            if enable_bias:
+                AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                AtA[:, :C, :C] = torch.einsum("bik,bjk->bij", weightedX, input) + \
+                    (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+            else:
+                AtA= torch.einsum("bik,bjk->bij", weightedX, input) + \
+                     (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+
+            w, _ = torch.solve(v, AtA)
+        else:
+            w = torch.cholesky_solve(v, L)
 
         # compute w^T B
         grad_weights = None
+        if enable_bias:
+            bias = bias.view(B, 1)
+            w_bias = w[:, C].view(B, 1)
+        else:
+            bias, w_bias = 0, 0
+
         if weights is not None:
-            grad_input = w[:, :-1].view(B, C, 1) * torch.mul(weights,
-                (target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias.view(B, 1)).view(B, 1, T)) - \
-                torch.mul(weights, (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w[:,C].view(B, 1)).view(B, 1, T)) * \
+            grad_input = w[:, :C].view(B, C, 1) * torch.mul(weights,
+                (target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias).view(B, 1, T)) - \
+                torch.mul(weights, (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w_bias).view(B, 1, T)) * \
                 output.view(B, C, 1)
 
             grad_target = (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), weightedX) +
-                w[:, C].view(B, 1) * weights.view(B, T)).view(B, 1, T)
+                w_bias * weights.view(B, T)).view(B, 1, T)
 
-            grad_weights = ((target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias.view(B, 1)) *
-                (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w[:, C].view(B, 1))).view(B, 1, T)
-
+            grad_weights = ((target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias) *
+                (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w_bias)).view(B, 1, T)
         else:
-            grad_input = w[:, :-1].view(B, C, 1) * \
-                (target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias.view(B, 1)).view(B, 1, T) - \
-                (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w[:, C].view(B, 1)).view(B, 1, T) * \
+            grad_input = w[:, :C].view(B, C, 1) * \
+                (target.view(B, T) - torch.einsum("bn,bnm->bm", output.view(B, C), input) - bias).view(B, 1, T) - \
+                (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), input) + w_bias).view(B, 1, T) * \
                 output.view(B, C, 1)
 
-            grad_target = (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), weightedX) + w[:, C].view(B, 1)).view(B, 1, T)
+            grad_target = (torch.einsum("bn,bnm->bm", w[:, :C].view(B, C), weightedX) + w_bias).view(B, 1, T)
 
         if ctx.collapse_target:
             grad_target = torch.sum(grad_target, 0, keepdim=True)
         if ctx.collapse_weights:
             grad_weights = torch.sum(grad_weights, 0, keepdim=True)
 
-        # return gradients (None for `beta` and `cache_decomposition`)
-        return grad_input, grad_target, grad_weights, None, None
+        # return gradients (None for `beta`, `cache_decomposition`, 'enable_bias')
+        return grad_input, grad_target, grad_weights, None, None, None
 
 
 #
@@ -147,25 +173,29 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
 class LeastSquaresLayer(nn.Module):
     """Neural network layer to implement (unweighted) least squares fitting."""
 
-    def __init__(self, beta=1.0e-3, cache_decomposition=False):
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True):
         super(LeastSquaresLayer, self).__init__()
         self.beta = beta
         self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
 
     def forward(self, input, target):
-        return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition)
+        return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition,
+                                             self.enable_bias)
 
 
 class WeightedLeastSquaresLayer(nn.Module):
     """Neural network layer to implement weighted least squares fitting."""
 
-    def __init__(self, beta=1.0e-3, cache_decomposition=False):
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True):
         super(WeightedLeastSquaresLayer, self).__init__()
         self.beta = beta
         self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
 
     def forward(self, input, target, weights):
-        return WeightedLeastSquaresFcn.apply(input, target, weights, self.beta, self.cache_decomposition)
+        return WeightedLeastSquaresFcn.apply(input, target, weights, self.beta, self.cache_decomposition,
+                                             self.enable_bias)
 
 
 #
@@ -183,47 +213,47 @@ if __name__ == '__main__':
     T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
     W2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
     T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
+    enable_bias_list = [True, False]
 
-    # Warning: this part is unstable with different C and T and beta=0 leading to singular AtA
-    print("Foward test of WeightedLeastSquaresFcn...")
-    f = WeightedLeastSquaresFcn.apply
-    y, y0 = f(X, T1, torch.ones_like(W1), 0.0)
-    if torch.allclose(torch.einsum("bnm,bn->bm", X, y) + y0, T1.view(B, T), atol=1.0e-5, rtol=1.0e-3):
-        print("Passed")
-    else:
-        print("Failed")
-        print(torch.einsum("bnm,bn->bm", X, y) + y0 - T1.view(B, T))
+    for enable_bias in enable_bias_list:
+        print("Foward test of WeightedLeastSquaresFcn, bias: {}...".format(enable_bias))
+        f = WeightedLeastSquaresFcn.apply
+        y, y0 = f(X, T1, torch.ones_like(W1), 1.0e-6, False, enable_bias)
+        if torch.allclose(torch.einsum("bnm,bn->bm", X, y) + y0, T1.view(B, T), atol=1.0e-5, rtol=1.0e-3):
+            print("Passed")
+        else:
+            print("Failed")
+            print(torch.einsum("bnm,bn->bm", X, y) + y0 - T1.view(B, T))
 
-    ytilde, y0tilde = f(X, T1, None, 0.0)
-    if torch.allclose(ytilde, y) and torch.allclose(y0tilde, y0):
-        print("Passed")
-    else:
-        print("Failed")
-        print(y - ytilde)
-        print(y0 - y0tilde)
+        ytilde, y0tilde = f(X, T1, None, 1.0e-6, False, enable_bias)
+        if torch.allclose(ytilde, y) and torch.allclose(y0tilde, y0):
+            print("Passed")
+        else:
+            print("Failed")
+            print(y - ytilde)
+            print(y0 - y0tilde)
 
-    print("Gradient test on WeightedLeastSquaresFcn...")
-    f = WeightedLeastSquaresFcn.apply
-    test = gradcheck(f, (X, T1, W1, 1.0e-3, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
-    test = gradcheck(f, (X, T2, W2, 1.0e-3, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
+        print("Gradient test on WeightedLeastSquaresFcn, bias: {}...".format(enable_bias))
+        test = gradcheck(f, (X, T1, W1, 1.0e-3, False, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
+        test = gradcheck(f, (X, T2, W2, 1.0e-3, False, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
 
-    f = WeightedLeastSquaresFcn.apply
-    test = gradcheck(f, (X, T1, W1, 1.0e-3, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
-    test = gradcheck(f, (X, T2, W2, 1.0e-3, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
+        f = WeightedLeastSquaresFcn.apply
+        test = gradcheck(f, (X, T1, W1, 1.0e-3, True, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
+        test = gradcheck(f, (X, T2, W2, 1.0e-3, True, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
 
-    print("Gradient test on (unweighted) WeightedLeastSquaresFcn...")
-    f = WeightedLeastSquaresFcn.apply
-    test = gradcheck(f, (X, T1, None, 1.0e-3, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
-    test = gradcheck(f, (X, T2, None, 1.0e-3, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
+        print("Gradient test on (unweighted) WeightedLeastSquaresFcn, bias: {}...".format(enable_bias))
+        f = WeightedLeastSquaresFcn.apply
+        test = gradcheck(f, (X, T1, None, 1.0e-3, False, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
+        test = gradcheck(f, (X, T2, None, 1.0e-3, False, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
 
-    f = WeightedLeastSquaresFcn.apply
-    test = gradcheck(f, (X, T1, None, 1.0e-3, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
-    test = gradcheck(f, (X, T2, None, 1.0e-3, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print(test)
+        f = WeightedLeastSquaresFcn.apply
+        test = gradcheck(f, (X, T1, None, 1.0e-3, True, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
+        test = gradcheck(f, (X, T2, None, 1.0e-3, True, enable_bias), eps=1e-6, atol=1e-3, rtol=1e-6)
+        print(test)
