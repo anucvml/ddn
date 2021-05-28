@@ -12,7 +12,7 @@ from ddn.pytorch.leastsquares import WeightedLeastSquaresFcn
 # --- Test Speed and Time ---
 #
 
-def speed_memory_test(inverse_mode, enable_bias, fcn, data_sz_list, num_iter_speed=5000, num_iter_memory=5, device=None):
+def speed_memory_test(inverse_mode, enable_bias, cache_decomposition, fcn, data_sz_list, num_iter_speed=5000, num_iter_memory=5, device=None):
     device = torch.device('cpu') if (device is None) else device
     data_sz_list = [data_sz_list] if (not isinstance(data_sz_list, list)) else data_sz_list
     time_forward, time_backward, memory = [], [], []
@@ -28,7 +28,7 @@ def speed_memory_test(inverse_mode, enable_bias, fcn, data_sz_list, num_iter_spe
             T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
 
             time_start = time.monotonic()
-            grad, grad0 = fcn(X, T1, W1, 1.0e-3, True, enable_bias, inverse_mode)
+            grad, grad0 = fcn(X, T1, W1, 1.0e-3, cache_decomposition, enable_bias, inverse_mode)
             duration = time.monotonic() - time_start if (idx > 0) else 0
             time_forward_total += duration
 
@@ -51,12 +51,12 @@ def speed_memory_test(inverse_mode, enable_bias, fcn, data_sz_list, num_iter_spe
                     T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
 
                     # Define a function to avoid the warning of preallocated inputs in the memory profile
-                    def test_fcn_cpu_memory(X, T1, W1, enable_bias, inverse_mode):
-                        grad, grad0 = fcn(X, T1, W1, 1.0e-3, True, enable_bias, inverse_mode)
+                    def test_fcn_cpu_memory(X, T1, W1, cache_decomposition, enable_bias, inverse_mode):
+                        grad, grad0 = fcn(X, T1, W1, 1.0e-3, cache_decomposition, enable_bias, inverse_mode)
                         loss = grad.mean() + grad0.mean()
                         loss.backward()
 
-                    test_fcn_cpu_memory(X, T1, W1, enable_bias, inverse_mode)
+                    test_fcn_cpu_memory(X, T1, W1, cache_decomposition, enable_bias, inverse_mode)
 
             memory.append(prof.total_average().cpu_memory_usage / (1024 * 1024))
         else:
@@ -68,7 +68,7 @@ def speed_memory_test(inverse_mode, enable_bias, fcn, data_sz_list, num_iter_spe
 
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats()
-                grad, grad0 = fcn(X.clone(), T1.clone(), W1.clone(), 1.0e-3, True, enable_bias, inverse_mode)
+                grad, grad0 = fcn(X.clone(), T1.clone(), W1.clone(), 1.0e-3, cache_decomposition, enable_bias, inverse_mode)
                 loss = grad.mean() + grad0.mean()
                 loss.backward()
 
@@ -86,6 +86,7 @@ if __name__ == '__main__':
     device = torch.device("cpu")
     inverse_mode_list = ['choleskey', 'qr']
     enable_bias_list = [True, False]
+    cache_decomp_list = [True, False]
     f = WeightedLeastSquaresFcn.apply
 
     X = torch.randn((B, C, T), dtype=torch.double, device=device, requires_grad=True)
@@ -98,16 +99,19 @@ if __name__ == '__main__':
         beta_test = 1.0e-3 if (inverse_mode == 'qr') else 0.0
 
         for enable_bias in enable_bias_list:
-            # Time comparison: QR is slower than Choleskey, the size of A is larger than AtA, (m+n)*(n+1) vs (n+1)*(n+1)
-            data_sz_list = [(B, C, T)]
-            time_forward, time_backward, memory = speed_memory_test(inverse_mode,
-                                                                    enable_bias,
-                                                                    f,
-                                                                    data_sz_list,
-                                                                    num_iter_speed=5000,
-                                                                    num_iter_memory=5,
-                                                                    device=device)
 
-            for idx, data_sz in enumerate(data_sz_list):
-                print('Time/memory, mode: {}, bias: {}, size: {}, forward: {:.4f}ms, backward: {:.4f}ms; memory: {:.4f}MB.' \
-                      .format(inverse_mode, enable_bias, data_sz, time_forward[idx], time_backward[idx], memory[idx]))
+            for cache_decomp in cache_decomp_list:
+                # Time comparison: QR is slower than Choleskey, the size of A is larger than AtA, (m+n)*(n+1) vs (n+1)*(n+1)
+                data_sz_list = [(B, C, T)]
+                time_forward, time_backward, memory = speed_memory_test(inverse_mode,
+                                                                        enable_bias,
+                                                                        cache_decomp,
+                                                                        f,
+                                                                        data_sz_list,
+                                                                        num_iter_speed=5000,
+                                                                        num_iter_memory=5,
+                                                                        device=device)
+
+                for idx, data_sz in enumerate(data_sz_list):
+                    print('Time/memory, mode: {}, bias: {}, cache: {}, size: {}, forward: {:.4f}ms, backward: {:.4f}ms; memory: {:.4f}MB.' \
+                          .format(inverse_mode, enable_bias, cache_decomp, data_sz, time_forward[idx], time_backward[idx], memory[idx]))

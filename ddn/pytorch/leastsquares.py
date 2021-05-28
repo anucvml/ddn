@@ -10,8 +10,7 @@
 
 import torch
 import torch.nn as nn
-import math, time
-import torch.autograd.profiler as profiler
+import math
 
 #
 # --- PyTorch Functions ---
@@ -36,18 +35,17 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=False, inverse_mode='choleskey'):
+    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='choleskey'):
         # allocate output tensors
         B, C, T = input.shape
-        U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias;
-                                              # otherwise, in R^{n*n}, where n=C.
         assert target.shape == (B, 1, T) or target.shape == (1, 1, T), "{} vs {}".format(input.shape, target.shape)
         assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), "{} vs {}".format(input.shape, weights.shape)
+
         inverse_mode = inverse_mode.lower()
         U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias; otherwise, in R^{n*n}, where n=C.
 
-        # replicate across batch if sharing weights or target
         with torch.no_grad():
+            # replicate across batch if sharing weights or target
             if target.shape[0] != B:
                 target = target.repeat(B, 1, 1)
                 ctx.collapse_target = True
@@ -181,7 +179,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
             bias = bias.view(B, 1)
             w_bias = w[:, C].view(B, 1)
         else:
-            bias, w_bias = 0, 0
+            bias, w_bias = 0.0, 0.0
 
         if weights is not None:
             grad_input = w[:, :C].view(B, C, 1) * torch.mul(weights,
@@ -258,12 +256,10 @@ if __name__ == '__main__':
     T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
     W2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
     T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
-    inverse_mode_list = ['choleskey', 'qr']
-    enable_bias_list = [True, False]
     f = WeightedLeastSquaresFcn.apply
 
-    for inverse_mode in inverse_mode_list:
-        for enable_bias in enable_bias_list:
+    for inverse_mode in ['choleskey', 'qr']:
+        for enable_bias in [True, False]:
             # Forward check
             print("Foward test of WeightedLeastSquaresFcn, mode: {}, bias: {}...".format(inverse_mode, enable_bias))
             y, y0 = f(X, T1, torch.ones_like(W1), 1.0e-6, False, enable_bias, inverse_mode)
@@ -306,3 +302,23 @@ if __name__ == '__main__':
             print(test)
             test = gradcheck(f, (X, T2, None, 1.0e-3, True, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
             print(test)
+
+    print("Foward test of WeightedLeastSquaresFcn bias True vs False...")
+    y_true, y0_true = f(X, T1, torch.ones_like(W1), 1.0e-6, False, True)
+    y_false, y0_false = f(X, T1, None, 1.0e-6, False, False)
+    if torch.allclose(y_true, y_false) and torch.allclose(y0_true, y0_false) and (y0_false != 0.0):
+        print("Failed")
+        print(y_true, y_false)
+        print(y0_true, y0_false)
+    else:
+        print("Passed")
+
+    print("Foward test of WeightedLeastSquaresFcn mode Cholesky vs QR...")
+    y_chol, y0_chol = f(X, T1, None, 1.0e-6, False, True, 'cholesky')
+    y_qr, y0_qr = f(X, T1, None, 1.0e-6, False, True, 'qr')
+    if torch.allclose(y_chol, y_qr) and torch.allclose(y0_chol, y0_qr):
+        print("Passed")
+    else:
+        print("Failed")
+        print(y_chol, y_qr)
+        print(y0_chol, y0_qr)
