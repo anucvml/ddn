@@ -39,6 +39,8 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
     def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=False, inverse_mode='choleskey'):
         # allocate output tensors
         B, C, T = input.shape
+        U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias;
+                                              # otherwise, in R^{n*n}, where n=C.
         assert target.shape == (B, 1, T) or target.shape == (1, 1, T), "{} vs {}".format(input.shape, target.shape)
         assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), "{} vs {}".format(input.shape, weights.shape)
         inverse_mode = inverse_mode.lower()
@@ -67,6 +69,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                 A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
                 b = torch.cat((weightedsqrtT, torch.zeros(B, C)), 1).view(B, C + T)
 
+                # solve x = (R)^{-1} Q^T b
                 if enable_bias:
                     A[:, :C, :T] = weightedsqrtX
                     A[:, -1, :T] = weightedsqrt
@@ -77,8 +80,8 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
 
                 Q, R = torch.qr(A.permute(0, 2, 1), some=True)
-                equation_rightside = torch.einsum("bij,bi->bj", Q, b).view(B, -1, 1)
-                y, _ = torch.solve(equation_rightside, R)
+                Qtb = torch.einsum("bij,bi->bj", Q, b).view(B, -1, 1)
+                y, _ = torch.solve(Qtb, R)
 
                 R = R if cache_decomposition else None
             else:  # need to get AtA
@@ -86,23 +89,24 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                 weightedTSum = target.sum(2).view(B, 1) if weights is None else torch.einsum("bm,bm->b", target.view(B, -1), weights.view(B, -1)).view(B, 1)
                 weightedXdotT = torch.einsum("bnm,bm->bn", weightedX, target.view(B, -1))
 
+                # solve x = (A^TA)^{-1} A^T b
                 if enable_bias:
                     AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
                     AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
                     AtA[:, :C, :C] = torch.einsum("bik,bjk->bij", weightedX, input) + \
                                      (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
                     AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
-                    equation_rightside = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
+                    Atb = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
                 else:
                     AtA = torch.einsum("bik,bjk->bij", weightedX, input) + \
                           (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
-                    equation_rightside = weightedXdotT.view(B, U_sz, 1)
+                    Atb = weightedXdotT.view(B, U_sz, 1)
 
                 if cache_decomposition:
                     L = torch.cholesky(AtA)
-                    y = torch.cholesky_solve(equation_rightside, L)
+                    y = torch.cholesky_solve(Atb, L)
                 else:
-                    y, _ = torch.solve(equation_rightside, AtA)
+                    y, _ = torch.solve(Atb, AtA)
 
             # assign to output
             output = y[:, :C, 0].squeeze(-1)
@@ -131,11 +135,11 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
         U_sz = C + 1 if enable_bias else C
         weightedX = input if weights is None else torch.einsum("bnm,bm->bnm", input, weights.view(B, -1))
 
-        # solve for w
+        # solve for w = (R^TR)^{-1} v for QR; w = (A^TA)^{-1} v for others
         if enable_bias:
-            equation_rightside = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
+            v = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
         else:
-            equation_rightside = grad_output.view(B, U_sz, 1)
+            v = grad_output.view(B, U_sz, 1)
 
         if inverse_mode == 'qr':
             if R is None:
@@ -154,7 +158,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
 
                 _, R = torch.qr(A.permute(0, 2, 1), some=True)
 
-            w, _ = torch.solve(equation_rightside, torch.einsum("bij,bik->bjk", R, R))
+            w, _ = torch.solve(v, torch.einsum("bij,bik->bjk", R, R))
         else:
             if L is None:
                 if enable_bias:
@@ -167,9 +171,9 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     AtA= torch.einsum("bik,bjk->bij", weightedX, input) + \
                          (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
 
-                w, _ = torch.solve(equation_rightside, AtA)
+                w, _ = torch.solve(v, AtA)
             else:
-                w = torch.cholesky_solve(equation_rightside, L)
+                w = torch.cholesky_solve(v, L)
 
         # compute w^T B
         grad_weights = None
@@ -225,7 +229,6 @@ class LeastSquaresLayer(nn.Module):
         return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition,
                                              self.enable_bias, self.inverse_mode)
 
-
 class WeightedLeastSquaresLayer(nn.Module):
     """Neural network layer to implement weighted least squares fitting."""
 
@@ -257,23 +260,20 @@ if __name__ == '__main__':
     T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
     inverse_mode_list = ['choleskey', 'qr']
     enable_bias_list = [True, False]
+    f = WeightedLeastSquaresFcn.apply
 
     for inverse_mode in inverse_mode_list:
-        beta_test = 1.0e-3 if (inverse_mode == 'qr') else 0.0
-
         for enable_bias in enable_bias_list:
-            f = WeightedLeastSquaresFcn.apply
-
             # Forward check
             print("Foward test of WeightedLeastSquaresFcn, mode: {}, bias: {}...".format(inverse_mode, enable_bias))
-            y, y0 = f(X, T1, torch.ones_like(W1), beta_test, False, enable_bias, inverse_mode)
+            y, y0 = f(X, T1, torch.ones_like(W1), 1.0e-6, False, enable_bias, inverse_mode)
             if torch.allclose(torch.einsum("bnm,bn->bm", X, y) + y0, T1.view(B, T), atol=1.0e-5, rtol=1.0e-3):
                 print("Passed")
             else:
                 print("Failed")
                 print(torch.einsum("bnm,bn->bm", X, y) + y0 - T1.view(B, T))
 
-            ytilde, y0tilde = f(X, T1, None, beta_test, False, enable_bias, inverse_mode)
+            ytilde, y0tilde = f(X, T1, None, 1.0e-6, False, enable_bias, inverse_mode)
             if torch.allclose(ytilde, y) and torch.allclose(y0tilde, y0):
                 print("Passed")
             else:
