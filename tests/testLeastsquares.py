@@ -84,7 +84,7 @@ if __name__ == '__main__':
     B, C, T = 2, 64, 12
     # device = torch.device("cuda")
     device = torch.device("cpu")
-    inverse_mode_list = ['choleskey', 'qr']
+    inverse_mode_list = ['cholesky', 'qr']
     enable_bias_list = [True, False]
     cache_decomp_list = [True, False]
     f = WeightedLeastSquaresFcn.apply
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         for enable_bias in enable_bias_list:
 
             for cache_decomp in cache_decomp_list:
-                # Time comparison: QR is slower than Choleskey, the size of A is larger than AtA, (m+n)*(n+1) vs (n+1)*(n+1)
+                # Time comparison: QR is slower than Cholesky, the size of A is larger than AtA, (m+n)*(n+1) vs (n+1)*(n+1)
                 data_sz_list = [(B, C, T)]
                 time_forward, time_backward, memory = speed_memory_test(inverse_mode,
                                                                         enable_bias,

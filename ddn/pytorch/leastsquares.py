@@ -35,7 +35,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='choleskey'):
+    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky'):
         # allocate output tensors
         B, C, T = input.shape
         assert target.shape == (B, 1, T) or target.shape == (1, 1, T), "{} vs {}".format(input.shape, target.shape)
@@ -216,7 +216,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
 class LeastSquaresLayer(nn.Module):
     """Neural network layer to implement (unweighted) least squares fitting."""
 
-    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='choleskey'):
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky'):
         super(LeastSquaresLayer, self).__init__()
         self.beta = beta
         self.cache_decomposition = cache_decomposition
@@ -230,7 +230,7 @@ class LeastSquaresLayer(nn.Module):
 class WeightedLeastSquaresLayer(nn.Module):
     """Neural network layer to implement weighted least squares fitting."""
 
-    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='choleskey'):
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky'):
         super(WeightedLeastSquaresLayer, self).__init__()
         self.beta = beta
         self.cache_decomposition = cache_decomposition
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
     f = WeightedLeastSquaresFcn.apply
 
-    for inverse_mode in ['choleskey', 'qr']:
+    for inverse_mode in ['cholesky', 'qr']:
         for enable_bias in [True, False]:
             # Forward check
             print("Foward test of WeightedLeastSquaresFcn, mode: {}, bias: {}...".format(inverse_mode, enable_bias))
