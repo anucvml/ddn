@@ -2,6 +2,7 @@
 #
 # Stephen Gould <stephen.gould@anu.edu.au>
 # Dylan Campbell <dylan.campbell@anu.edu.au>
+# Zhiwei Xu <zhiwei.xu@anu.edu.au>
 #
 # When running from the command-line make sure that the "ddn" package has been added to the PYTHONPATH:
 #   $ export PYTHONPATH=${PYTHONPATH}: ../ddn
@@ -22,6 +23,7 @@ sys.path.append("../")
 from ddn.pytorch.optimal_transport import sinkhorn, OptimalTransportFcn, OptimalTransportLayer
 
 import unittest
+from timeit import timeit
 
 torch.manual_seed(0)
 
@@ -257,30 +259,156 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
     
     plt.figure()
     plt.plot(n, t[0], n, t[1], n, t[2], n, t[3])
-    plt.xlabel('problem size');
+    plt.xlabel('problem size')
     plt.ylabel('running time')
     plt.legend(['autograd', 'approx', 'implicit (full inv)', 'implicit (blk inv)'])
     plt.title('Running time on {} with batch size {}'.format(device, batch_size))
 
     plt.figure()
     plt.plot(n, m[0], n, m[1], n, m[2], n, m[3])
-    plt.xlabel('problem size');
+    plt.xlabel('problem size')
     plt.ylabel('memory usage')
     plt.legend(['autograd', 'approx', 'implicit (full inv)', 'implicit (blk inv)'])
     plt.title('Memory usage on {} with batch size {}'.format(device, batch_size))
 
+
+# --- Draw Time and Memory Curves Identical with The Tutorials ----------------
+# A slightly modified copy of optimal transport tutorial for better visualization
+
+def wrapper(func, *args, **kwargs):
+    def wrapped():
+        return func(*args, **kwargs)
+
+    return wrapped
+
+
+def plot_running_time(batch_size, device, enable_legend=False):
+    """Plot running time for given device."""
+
+    torch.manual_seed(22)
+    print("Running on {} with batch size of {}...".format(device, batch_size))
+
+    n = [5, 10, 25, 50, 100, 200, 300, 500]
+    t1, t2, t3, t4 = [], [], [], []
+
+    for ni in n:
+        print("Timing on {}-by-{} problem...".format(ni, ni))
+        M_true = torch.randn((batch_size, ni, ni), dtype=torch.float)
+        P_true = sinkhorn(M_true).to(device)
+        M_init = torch.log(torch.rand_like(M_true)).to(device)
+
+        t1.append(timeit(wrapper(learnM, [sinkhorn], M_init, None, None, P_true, iters=500), number=1))
+        t3.append(timeit(wrapper(learnM, [OptimalTransportLayer(block_inverse=False)], M_init, None, None, P_true, iters=500), number=1))
+        t2.append(timeit(wrapper(learnM, [OptimalTransportLayer(approx_grad=True)], M_init, None, None, P_true, iters=500), number=1))
+        t4.append(timeit(wrapper(learnM, [OptimalTransportLayer()], M_init, None, None, P_true, iters=500), number=1))
+
+    print("...done")
+
+    plt.figure(figsize=(7, 7))
+    plt.plot(n, t1, marker='x', markersize=14)
+    plt.plot(n, t2, marker='*', markersize=14)
+    plt.plot(n, t3, marker='o', markersize=14)
+    plt.plot(n, t4, marker='<', markersize=14)
+    plt.xlabel('problem size', fontsize=30)
+    plt.ylabel('running time (s)', fontsize=30)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20, rotation=90)
+    # plt.title('Running time on {} with batch size {}'.format(device, batch_size), fontsize=30)
+    plt.tight_layout()
+
+    if enable_legend:
+        plt.legend(['autograd', 'approx', 'implicit (full inv)', 'implicit (blk inv)'], fontsize=30)
+
+
+
+def plot_memory():
+    M_init = torch.randn((1, 500, 500), dtype=torch.float)
+
+    maxiters_range = list(range(1, 11))
+    probsize_range = [5, 10, 25, 50, 100, 200, 500, 800, 1000]
+
+    memory_by_maxiters = [[], []]
+    memory_by_probsize = [[], []]
+
+    for maxiters in maxiters_range:
+        # profile autograd
+        M = M_init.clone()
+        M.requires_grad = True
+        with profiler.profile(profile_memory=True) as prof:
+            P = sinkhorn(M, eps=0.0, maxiters=maxiters)
+            torch.linalg.norm(P - torch.eye(M.shape[1])).backward()
+        memory_by_maxiters[0].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
+
+        # profile implicit
+        M = M_init.clone()
+        M.requires_grad = True
+        f = OptimalTransportLayer(eps=0.0, maxiters=maxiters)
+        with profiler.profile(profile_memory=True) as prof:
+            P = f(M)
+            torch.linalg.norm(P - torch.eye(M.shape[1])).backward()
+        memory_by_maxiters[1].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
+
+    for n in probsize_range:
+        M_init = torch.randn((1, n, n), dtype=torch.float)
+
+        # profile autograd
+        M = M_init.clone()
+        M.requires_grad = True
+        with profiler.profile(profile_memory=True) as prof:
+            P = sinkhorn(M, eps=0.0, maxiters=10)
+            torch.linalg.norm(P - torch.eye(n)).backward()
+        memory_by_probsize[0].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
+
+        # profile implicit
+        M = M_init.clone()
+        M.requires_grad = True
+        f = OptimalTransportLayer(eps=0.0, maxiters=10)
+        with profiler.profile(profile_memory=True) as prof:
+            P = f(M)
+            torch.linalg.norm(P - torch.eye(n)).backward()
+        memory_by_probsize[1].append(prof.total_average().cpu_memory_usage / (1024 * 1024))
+
+    plt.figure(figsize=(7, 7))
+    plt.plot(maxiters_range, memory_by_maxiters[0], linestyle='-')
+    plt.plot(maxiters_range, memory_by_maxiters[1], linestyle='-.')
+    plt.xlabel('iterations', fontsize=30)
+    plt.ylabel('memory usage (MB)', fontsize=30)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20, rotation=90)
+    plt.legend(['autograd', 'implicit'], fontsize=30)
+    # plt.title("Memory usage for problem of size 500-by-500", fontsize=30)
+    plt.tight_layout()
+
+    plt.figure(figsize=(7, 7))
+    plt.plot(probsize_range, memory_by_probsize[0], linestyle='-')
+    plt.plot(probsize_range, memory_by_probsize[1], linestyle='-.')
+    plt.xlabel('problem size', fontsize=30)
+    plt.ylabel('memory usage (MB)', fontsize=30)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20, rotation=90)
+    # plt.legend(['autograd', 'implicit'], fontsize=30)
+    # plt.title("Memory usage for 10 Sinkhorn iterations", fontsize=30)
+    plt.tight_layout()
+
+
 # --- Run Unit Tests ----------------------------------------------------------
 
 if __name__ == '__main__':
-    if False:
+    if True:
         unittest.main()
 
-    if False:
+    if True:
         toy_example()
 
     if True:
         speed_memory_test(torch.device('cpu'))
         if torch.cuda.is_available():
             speed_memory_test(torch.device("cuda"), batch_size=16)
+
+    if True:
+        plot_running_time(1, torch.device("cpu"), enable_legend=True)
+        if torch.cuda.is_available():
+            plot_running_time(16, torch.device("cuda"), enable_legend=False)
+        plot_memory()
 
     plt.show()
