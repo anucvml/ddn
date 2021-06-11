@@ -297,3 +297,28 @@ if __name__ == '__main__':
                 torch.device("cuda"), batch_size)
 
     plt.show()
+
+    if True:  # LBFGS can be autodiff
+        x = torch.rand(1, 8, 32, 32, dtype=torch.float32) * 100.0
+        y = torch.rand(1, 8, 1, 1, dtype=torch.float32, requires_grad=True)
+        y_org = y.clone()
+        opt = torch.optim.LBFGS([y], lr=1, max_iter=20, max_eval=None,
+            tolerance_grad=1e-07, tolerance_change=1e-09, history_size=100, line_search_fn=None)
+        loss_fnc = lambda y: (y - x).pow(2).sum()
+        loss_org = loss_fnc(y)
+
+        def opt_iter():
+            opt.zero_grad()
+            loss = loss_fnc(y)
+            loss.backward()
+
+            return loss
+
+        opt.step(opt_iter)
+
+        print('==== Optimizer autodiff validation ====')
+        print('loss before: {:.4f}, after: {:.4f}.'.format(loss_org, loss_fnc(y)))
+        print('x_mean:', x.view(1, 8, -1).mean(2).flatten())
+        print('orgi_y:', y_org.flatten().data)
+        print('opti_y:', y.flatten().data)
+        print('y_grad:', y.grad.flatten().data)
