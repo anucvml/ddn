@@ -1,6 +1,7 @@
 # TEST ROBUST VECTOR POOLING DEEP DECLARATIVE NODE
 #
 # Stephen Gould <stephen.gould@anu.edu.au>
+# Zhiwei Xu <zhiwei.xu@anu.edu.au>
 #
 # When running from the command-line make sure that the "ddn" package has been added to the PYTHONPATH:
 #   $ export PYTHONPATH=${PYTHONPATH}: ../ddn
@@ -25,6 +26,113 @@ import unittest
 
 torch.manual_seed(0)
 
+
+# --- Display Figures with Different Feature Sizes ---------------------------------------------
+
+# Features: (method,feat_dim,feat_size) using idx_feat_dim for feat_dim and idx_feat_size for feat_size,
+# The motivation: one can fix eithor or both of feat_dim and feat_size; if both are varied,
+# one feat_dim and feat_size are one-to-one correspondent.
+# Notation: method<-penalities, feat_dims<-f, feat_sizes<-n
+def draw_figure(data, feat_dims, feat_sizes, sizes, disp_type, title, legend, markers=None, fixed_feat_dim=None, fixed_feat_size=None):
+    plt.figure(figsize=(7, 7))
+    num_methods = len(data)  # equal len(penalties)
+    num_feat_nm = len(feat_dims)
+    num_feat_sz = len(feat_sizes)
+
+    for idx_method in range(len(data)):
+        y_list = []
+        data_per = data[idx_method]
+
+        for idx_size, disp_size in enumerate(sizes):
+            feat_dim_stored, feat_size_stored = int(disp_size[1]), int(disp_size[2])
+
+            if (fixed_feat_dim is None) and (fixed_feat_size is None):
+                num_valid = min(num_feat_nm, num_feat_sz)
+                x_list = feat_sizes[:num_valid]
+
+                # Both increase, one-by-one order between feat_dims and feat_sizes
+                for feat_dim_tar, feat_size_tar in zip(feat_dims[:num_valid], feat_sizes[:num_valid]):
+                    y_list.append(data_per[idx_size]) if ((feat_dim_tar == feat_dim_stored) and \
+                        (feat_size_tar == feat_size_stored)) else None
+                x_label = 'feature map size'
+            elif (fixed_feat_dim is None) and (fixed_feat_size is not None):
+                # Fix feat_size
+                x_list = feat_dims
+                y_list.append(data_per[idx_size]) if (fixed_feat_size == feat_size_stored) else None
+                x_label = 'feature map channel'
+            elif (fixed_feat_dim is not None) and (fixed_feat_size is None):
+                # Fix feat_dim
+                x_list = feat_sizes
+                y_list.append(data_per[idx_size]) if (fixed_feat_dim == feat_dim_stored) else None
+                x_label = 'feature map size'
+            else:
+                # Fix both, display a point
+                x_list = [feat_sizes[fixed_feat_size]]
+                y_list.append(data_per[idx_size]) if ((fixed_feat_size == feat_size_stored) and \
+                    (fixed_feat_dim == feat_dim_stored)) else None
+                x_label = 'feature map channel {} & size {}-by-{}' \
+                    .format(fixed_feat_dim, fixed_feat_size, fixed_feat_size)
+
+        if markers is None:
+            plt.plot(x_list, y_list)
+        else:
+            plt.plot(x_list, y_list, marker=markers[idx_method], markersize=14)
+
+    plt.xlabel(x_label, fontsize=30)
+    plt.ylabel('running time (ms)' if (disp_type == 'time') else r'memory usage (MB)', fontsize=30)
+    # plt.title(title, fontsize=30)
+    # plt.legend(legend, fontsize=30)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20, rotation=60)
+    plt.ticklabel_format(axis='y', style='plain', scilimits=(0, 0))
+    plt.tight_layout()
+
+def plot_figures(penalties, t_fwd, t_bck, m_fwd, m_bck, feat_dims, feat_sizes, sizes, device, batch_size):
+    # plot figures
+    t_list = [[] for _ in penalties]
+    m_list = [[] for _ in penalties]
+    _ms = 1000.0
+    _mb = 1.0 / (1024.0 * 1024.0)
+
+    for idx_method in range(len(penalties)):
+        for idx in range(len(t_fwd[idx_method])):
+            t_fwd[idx_method][idx] *= _ms
+            t_bck[idx_method][idx] *= _ms
+            t_list[idx_method].append(t_fwd[idx_method][idx] + t_bck[idx_method][idx])
+
+            m_fwd[idx_method][idx] *= _mb
+            m_bck[idx_method][idx] *= _mb
+            m_list[idx_method].append(m_fwd[idx_method][idx] + m_bck[idx_method][idx])
+
+
+    dir_list = ['Forward', 'Backward']  # Forward/Backward/Total
+    type_list = ['time', 'memory']
+    legend = ['quadratic', 'pseudo-huber', 'huber', 'welsch', 'trunc-quad']
+    markers = ['x', '*', 'o', '<', '^']
+    fixed_feat_dim, fixed_feat_size = 128, None
+
+    for disp_dir in dir_list:
+        for disp_type in type_list:
+            if (disp_dir == 'Forward') and (disp_type == 'time'):
+                data = t_fwd
+            elif (disp_dir == 'Forward') and (disp_type == 'memory'):
+                data = m_fwd
+            elif (disp_dir == 'Backward') and (disp_type == 'time'):
+                data = t_bck
+            elif (disp_dir == 'Backward') and (disp_type == 'memory'):
+                data = m_bck
+            elif (disp_dir == 'Total') and (disp_type == 'time'):
+                data = t_list
+            elif (disp_dir == 'Total') and (disp_type == 'memory'):
+                data = m_list
+            else:
+                assert False, '!!!Unknown direction {} or type {}.'.format(disp_dir, disp_type)
+
+            title = '{} {} on {} with batch size {}'.format(disp_dir, disp_type, device, batch_size)
+            draw_figure(data, feat_dims, feat_sizes, sizes, disp_type, title, legend, markers=markers,
+                fixed_feat_dim=fixed_feat_dim, fixed_feat_size=fixed_feat_size)
+
+
 # --- Speed and Memory Comparison ---------------------------------------------
 
 def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
@@ -34,8 +142,8 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
     if device is None:
         device = torch.device('cpu')
 
-    n = [10, 100]
-    f = [16, 256, 1024]
+    n = [10, 40, 80, 100, 200, 500]
+    f = [128]  # [8, 16, 32, 64, 128, 256]
 
     penalties = [rvp.Quadratic, rvp.PseudoHuber, rvp.Huber, rvp.Welsch, rvp.TruncQuad]
     t_fwd = [[] for p in penalties]
@@ -111,7 +219,7 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
             print("{:<16}\t{:6.1f}ms\t{:6.1f}ms\t{:6.1f}MB\t{:6.1f}MB".format(str(sz),
                 t_fwd[i][j] * _ms, t_bck[i][j] * _ms, m_fwd[i][j] * _mb, m_bck[i][j] * _mb))
 
-    # TODO: plot these too
+    return penalties, t_fwd, t_bck, m_fwd, m_bck, f, n, sizes
 
 
 # --- Optimization Example (from Jupyter tutorial) ----------------------------
@@ -162,8 +270,6 @@ def toy_example(iters=100):
         plt.plot(history[-1][0][0, 0, :], history[-1][0][0, 1, :], 'o', markeredgecolor='k', markerfacecolor=colour, markeredgewidth=1.0)
         plt.gca().set_xlim(-2.0, 7.0); plt.gca().set_ylim(-3.0, 3.0)
 
-    plt.show()
-
 
 # --- Run Unit Tests ----------------------------------------------------------
 
@@ -171,7 +277,23 @@ if __name__ == '__main__':
     if True:
         toy_example()
 
+    # Sepearte CPu and GPU test since they cannot display all figures across
+    # different modules, I think so
     if True:
-        speed_memory_test(torch.device('cpu'))
+        penalties, t_fwd, t_bck, m_fwd, m_bck, feat_dims, feat_sizes, sizes = \
+            speed_memory_test(torch.device('cpu'))
+        plot_figures(penalties, t_fwd, t_bck, m_fwd, m_bck, feat_dims, feat_sizes, sizes,
+            torch.device('cpu'), 1)
+
         if torch.cuda.is_available():
-            speed_memory_test(torch.device("cuda"), batch_size=16, repeats=1)
+            batch_size = 8
+            # Run twice speed_memory_test, the first time is ignored due to the long
+            # time consuming for triggering CUDA to avoid unfair comparison
+            speed_memory_test(torch.device("cuda"), batch_size=batch_size, repeats=1)
+
+            penalties, t_fwd, t_bck, m_fwd, m_bck, feat_dims, feat_sizes, sizes = \
+                speed_memory_test(torch.device("cuda"), batch_size=batch_size, repeats=1)
+            plot_figures(penalties, t_fwd, t_bck, m_fwd, m_bck, feat_dims, feat_sizes, sizes,
+                torch.device("cuda"), batch_size)
+
+    plt.show()
