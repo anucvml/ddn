@@ -168,6 +168,7 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
                 print(".", end='')
                 y = [None for j in range(repeats)]
 
+                torch.cuda.empty_cache()
                 start_time = time.monotonic()
                 for j in range(repeats):
                     y[j] = fcn(x.clone(), p, 1.0)
@@ -177,9 +178,8 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
                 for j in range(repeats):
                     loss = torch.linalg.norm(y[j].view(batch_size, fi, -1), dim=1).sum()
                     loss.backward()
-                    torch.cuda.empty_cache()
                 t_bck[i].append((time.monotonic() - start_time) / repeats)
-
+                    
             # profile memory
             for i, p in enumerate(penalties):
                 print(".", end='')
@@ -194,12 +194,12 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
                         loss.backward()
                     m_bck[i].append(prof.total_average().cpu_memory_usage)
                 else:
+                    torch.cuda.empty_cache()
                     torch.cuda.reset_peak_memory_stats()
-                    x_clone = x.clone()
-                    y = fcn(x_clone, p, 1.0)
+                    y = fcn(x.clone(), p, 1.0)
                     m_fwd[i].append(torch.cuda.max_memory_allocated(None))
 
-                    torch.cuda.reset_peak_memory_stats()
+                    #torch.cuda.reset_peak_memory_stats()
                     loss = torch.linalg.norm(y.view(batch_size, fi, -1), dim=1).sum()
                     loss.backward()
                     m_bck[i].append(torch.cuda.max_memory_allocated(None) - m_fwd[i][-1])
@@ -274,7 +274,7 @@ def toy_example(iters=100):
 # --- Run Unit Tests ----------------------------------------------------------
 
 if __name__ == '__main__':
-    if True:
+    if False:
         toy_example()
 
     # Sepearte CPu and GPU test since they cannot display all figures across
@@ -297,28 +297,3 @@ if __name__ == '__main__':
                 torch.device("cuda"), batch_size)
 
     plt.show()
-
-    if True:  # LBFGS can be autodiff
-        x = torch.rand(1, 8, 32, 32, dtype=torch.float32) * 100.0
-        y = torch.rand(1, 8, 1, 1, dtype=torch.float32, requires_grad=True)
-        y_org = y.clone()
-        opt = torch.optim.LBFGS([y], lr=1, max_iter=20, max_eval=None,
-            tolerance_grad=1e-07, tolerance_change=1e-09, history_size=100, line_search_fn=None)
-        loss_fnc = lambda y: (y - x).pow(2).sum()
-        loss_org = loss_fnc(y)
-
-        def opt_iter():
-            opt.zero_grad()
-            loss = loss_fnc(y)
-            loss.backward()
-
-            return loss
-
-        opt.step(opt_iter)
-
-        print('==== Optimizer autodiff validation ====')
-        print('loss before: {:.4f}, after: {:.4f}.'.format(loss_org, loss_fnc(y)))
-        print('x_mean:', x.view(1, 8, -1).mean(2).flatten())
-        print('orgi_y:', y_org.flatten().data)
-        print('opti_y:', y.flatten().data)
-        print('y_grad:', y.grad.flatten().data)
