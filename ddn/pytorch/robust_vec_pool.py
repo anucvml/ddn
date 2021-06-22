@@ -148,7 +148,7 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
 
 
     @staticmethod
-    def forward(ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1.0e-16, check_k2_zero=True):
+    def forward(ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1.0e-16):
         assert len(x.shape) >= 3
         assert alpha > 0.0
         assert restarts >= 0
@@ -157,7 +157,8 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         with torch.no_grad():
             if penalty.is_convex:
                 y = torch.mean(x.view(B, C, -1), dim=2)
-                y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
+                if penalty is not Quadratic:
+                    y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
             else:
                 y_mean = torch.mean(x.view(B, C, -1), dim=2)
                 y = RobustVectorPool2dFcn._optimize(x, y_mean, penalty, alpha)
@@ -182,14 +183,13 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         ctx.penalty = penalty
         ctx.alpha = alpha
         ctx.hess_reg = hess_reg
-        ctx.check_k2_zero = check_k2_zero
-        
+
         return y
 
     @staticmethod
     def backward(ctx, y_grad):
         if not ctx.needs_input_grad[0]:
-            return None, None, None, None, None, None
+            return None, None, None, None, None
 
         x, y = ctx.saved_tensors
         B, C = x.shape[0], x.shape[1]
@@ -198,13 +198,13 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
 
         k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
-        if ctx.check_k2_zero and torch.all(k2 == 0.0):
-            return (k1 * (y_grad / k1.view(B, -1).sum(dim=1).view(B, 1)).view(B, C, 1)).reshape(x.shape), None, None, None, None, None
+        if torch.all(k2 == 0.0):
+            return (k1 * (y_grad / k1.sum(dim=2)).view(B, C, 1)).reshape(x.shape), None, None, None, None
 
-        H = torch.sum(k1.view(B, -1), dim=1).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
-            torch.einsum("bik,bjk->bij", x_minus_y, k2.view(B, 1, -1) * x_minus_y)
+        H = k1.sum(dim=2).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
+            torch.einsum("bik,bjk->bij", x_minus_y, k2 * x_minus_y)
         try:
-            L = torch.cholesky(H + ctx.hess_reg * torch.eye(C).view(1, C, C))
+            L = torch.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
             v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
         except:
             warnings.warn("backward pass encountered a singular matrix for penalty function {}".format(ctx.penalty.__name__))
@@ -217,10 +217,10 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
                     v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
 
 
-        w = torch.einsum("bi,bik->bk", v, k2.view(B, 1, -1) * x_minus_y)
+        w = torch.einsum("bi,bik->bk", v, k2 * x_minus_y)
         x_grad = (k1 * v.view(B, C, 1) + torch.einsum("bk,bik->bik", w, x_minus_y)).reshape(x.shape)
 
-        return x_grad, None, None, None, None, None
+        return x_grad, None, None, None, None
 
 
 # --- PyTorch Layer -----------------------------------------------------------
@@ -265,8 +265,5 @@ if __name__ == '__main__':
     for alpha in [1.0, 2.0, 10.0]:
         print("\nalpha = {}".format(alpha))
         for p in penalties:
-            test = gradcheck(f, (x, p, alpha, 0, 0.0, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+            test = gradcheck(f, (x, p, alpha, 0, 0.0), eps=1e-6, atol=1e-3, rtol=1e-6)
             print("{}: {}".format(p.__name__, test))
-            test = gradcheck(f, (x, p, alpha, 0, 0.0, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-            print("{}: {}".format(p.__name__, test))
-            
