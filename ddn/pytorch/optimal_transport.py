@@ -178,7 +178,23 @@ class OptimalTransportFcn(torch.autograd.Function):
 
 
 class OptimalTransportLayer(nn.Module):
-    """Neural network layer to implement optimal transport."""
+    """
+    Neural network layer to implement optimal transport.
+
+    Parameters:
+    -----------
+    gamma: float, default: 1.0
+        Inverse of the coeffient on the entropy regularisation term.
+    eps: float, default: 1.0e-6
+        Tolerance used to determine the stop condition.
+    maxiters: int, default: 1000
+        The maximum number of iterations.
+    approx_grad: bool, default: False
+        If `True`, approximate the gradient by assuming exp(-\gamma M) is already nearly doubly stochastic.
+        It is faster and could potentially be useful during early stages of training.
+    block_inverse: bool, default: True
+        If `True`, exploit the block structure of matrix A H^{-1] A^T. 
+    """
 
     def __init__(self, gamma=1.0, eps=1.0e-6, maxiters=1000, approx_grad=False, block_inverse=True):
         super(OptimalTransportLayer, self).__init__()
@@ -189,7 +205,35 @@ class OptimalTransportLayer(nn.Module):
         self.block_inverse = block_inverse
 
     def forward(self, M, r=None, c=None):
-        return OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
+        """
+        Parameters:
+        -----------
+        M: torch.Tensor
+            Input matrix/matrices of size (H, W) or (B, H, W)
+        r: torch.Tensor, optional
+            Weights on each row in the form of a 1xH matrix. Weights are assigned uniformly by default.
+        c: torch.Tensor, optional
+            Weights on each column in the form of a 1xW matrix. Weights are assigned uniformly by default.
+
+        Returns:
+        --------
+        torch.Tensor
+            Normalised matrix/matrices, with the same shape as the inputs
+        """
+        M_shape = M.shape
+        # Check the number of dimensions
+        ndim = len(M_shape)
+        if ndim == 2:
+            M = M.unsqueeze(dim=0)
+        elif ndim != 3:
+            raise ValueError(f"The shape of the input tensor {M_shape} does not match that of an matrix")
+        
+        # Handle 1x1 matrices using autograd
+        nr, nc = M_shape[-2:]
+        M = M / M if nr == 1 and nc == 1 else \
+            OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
+
+        return M.view(*M_shape)
 
 
 #
