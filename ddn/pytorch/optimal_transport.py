@@ -211,9 +211,9 @@ class OptimalTransportLayer(nn.Module):
         M: torch.Tensor
             Input matrix/matrices of size (H, W) or (B, H, W)
         r: torch.Tensor, optional
-            Weights on each row in the form of a 1xH matrix. Weights are assigned uniformly by default.
+            Row sum constraint in the form of a 1xH or BxH matrix. Are assigned uniformly as 1/H by default.
         c: torch.Tensor, optional
-            Weights on each column in the form of a 1xW matrix. Weights are assigned uniformly by default.
+            Column sum constraint in the form of a 1xW or BxW matrix. Are assigned uniformly as 1/W by default.
 
         Returns:
         --------
@@ -228,12 +228,14 @@ class OptimalTransportLayer(nn.Module):
         elif ndim != 3:
             raise ValueError(f"The shape of the input tensor {M_shape} does not match that of an matrix")
         
-        # Handle 1x1 matrices using autograd
+        # Handle special case of 1x1 matrices
         nr, nc = M_shape[-2:]
-        M = M / M if nr == 1 and nc == 1 else \
-            OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
+        if nr == 1 and nc == 1:
+            P = M / M
+        else:
+            P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
 
-        return M.view(*M_shape)
+        return P.view(*M_shape)
 
 
 #
