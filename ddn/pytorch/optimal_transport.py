@@ -189,7 +189,19 @@ class OptimalTransportLayer(nn.Module):
         self.block_inverse = block_inverse
 
     def forward(self, M, r=None, c=None):
-        return OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
+        # Check the number of dimensions
+        ndim = len(M.shape)
+        if ndim == 2:
+            M = M.unsqueeze(dim=0)
+        elif ndim != 3:
+            raise ValueError(f"The shape of the input tensor {M.shape} does not match that of an matrix")
+        
+        # Handle 1x1 matrices using autograd
+        _, nr, nc = M.shape
+        if nr == 1 and nc == 1:
+            return M / M
+        else:
+            return OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
 
 
 #
