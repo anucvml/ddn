@@ -42,7 +42,7 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     if r is None: r = 1.0 / H
     if c is None: c = 1.0 / W
 
-    P = torch.exp(-1.0 * gamma * M)
+    P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
         P = (r / alpha).view(B, H, 1) * P
@@ -65,7 +65,7 @@ def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     if r is None: r = 1.0 / H
     if c is None: c = 1.0 / W
 
-    P = torch.exp(-1.0 * gamma * M)
+    P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
         P *= (r / alpha).view(B, H, 1)
