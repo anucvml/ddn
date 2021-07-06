@@ -43,8 +43,8 @@ export PYTHONPATH=${PYTHONPATH}:ddn
 python tests/testBasicDeclNodes.py
 ```
 
-Documentation for the `ddn` package is provided in the `ddn` directory and many examples given in the `turotials`.
-Interactive tutorials should be opened in Jupyter notebook:
+Documentation for the `ddn` package is provided in the `ddn` directory and many examples given in the interactive `turotials`.
+These should be opened in Jupyter notebook:
 
 ```
 cd tutorials
