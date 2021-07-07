@@ -141,7 +141,7 @@ class OptimalTransportFcn(torch.autograd.Function):
         if ctx.block_inverse:
             # by block inverse of (A H^{-1] A^T)
             PdivC = P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W)
-            block_11 = torch.cholesky(torch.diag_embed(r[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
+            block_11 = torch.cholesky(torch.diag_embed(P[:, 1:H, :].sum(2)) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
             block_12 = torch.cholesky_solve(PdivC, block_11)
             block_22 = torch.diag_embed(1.0 / c) + torch.einsum("bji,bjk->bik", block_12, PdivC)
 
@@ -151,7 +151,7 @@ class OptimalTransportFcn(torch.autograd.Function):
         else:
             # by full inverse of (A H^{-1] A^T)
             AinvHAt = torch.empty((B, H + W - 1, H + W - 1), device=M.device, dtype=M.dtype)
-            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(r[:, 1:H])
+            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(P[:, 1:H, :].sum(2))
             AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(c)
             AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
             AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
