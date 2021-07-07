@@ -130,8 +130,9 @@ class OptimalTransportFcn(torch.autograd.Function):
         if ctx.approx_grad:
             return dJdM, dJdr, dJdc, None, None, None, None, None
 
-        if r is None: r = torch.full((1, H), 1.0 / H, device=M.device, dtype=M.dtype)
-        if c is None: c = torch.full((1, W), 1.0 / W, device=M.device, dtype=M.dtype)
+        # compute exact row and column sums (in case of small numerical errors)
+        row_sum = P.sum(2)
+        col_sum = P.sum(1)
 
         # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
         vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2)
@@ -140,10 +141,10 @@ class OptimalTransportFcn(torch.autograd.Function):
         # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
         if ctx.block_inverse:
             # by block inverse of (A H^{-1] A^T)
-            PdivC = P[:, 1:H, 0:W] / c.view(c.shape[0], 1, W)
-            block_11 = torch.cholesky(torch.diag_embed(P[:, 1:H, :].sum(2)) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
+            PdivC = P[:, 1:H, 0:W] / col_sum.view(B, 1, W)
+            block_11 = torch.cholesky(torch.diag_embed(row_sum[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
             block_12 = torch.cholesky_solve(PdivC, block_11)
-            block_22 = torch.diag_embed(1.0 / c) + torch.einsum("bji,bjk->bik", block_12, PdivC)
+            block_22 = torch.diag_embed(1.0 / col_sum) + torch.einsum("bji,bjk->bik", block_12, PdivC)
 
             v1 = torch.cholesky_solve(vHAt1.view(B, H-1, 1), block_11).view(B, H-1) - torch.einsum("bi,bji->bj", vHAt2, block_12)
             v2 = torch.einsum("bi,bij->bj", vHAt2, block_22) - torch.einsum("bi,bij->bj", vHAt1, block_12)
@@ -151,8 +152,8 @@ class OptimalTransportFcn(torch.autograd.Function):
         else:
             # by full inverse of (A H^{-1] A^T)
             AinvHAt = torch.empty((B, H + W - 1, H + W - 1), device=M.device, dtype=M.dtype)
-            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(P[:, 1:H, :].sum(2))
-            AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(c)
+            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(row_sum[:, 1:H])
+            AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(col_sum)
             AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
             AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
 
