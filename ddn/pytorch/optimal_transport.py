@@ -45,12 +45,13 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
-        P = (r / alpha).view(B, H, 1) * P
+        # Perform division first for numerical stability
+        P = P / alpha.view(B, H, 1) * r
 
         beta = torch.sum(P, 1)
         if torch.max(torch.abs(beta - c)) <= eps:
             break
-        P = P * (c / beta).view(B, 1, W)
+        P = P / beta.view(B, 1, W) * c
 
     return P
 
@@ -68,12 +69,13 @@ def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
-        P *= (r / alpha).view(B, H, 1)
+        # Perform division first for numerical stability
+        P /= alpha.view(B, H, 1); P *= r
 
         beta = torch.sum(P, 1)
         if torch.max(torch.abs(beta - c)) <= eps:
             break
-        P *= (c / beta).view(B, 1, W)
+        P /= beta.view(B, 1, W); P *= c
 
     return P
 
