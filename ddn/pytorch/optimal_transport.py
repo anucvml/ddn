@@ -23,6 +23,7 @@
 
 import torch
 import torch.nn as nn
+import warnings
 
 
 def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
@@ -132,9 +133,9 @@ class OptimalTransportFcn(torch.autograd.Function):
         if ctx.approx_grad:
             return dJdM, dJdr, dJdc, None, None, None, None, None
 
-        # compute exact row and column sums (in case of small numerical errors)
-        alpha = P.sum(2)
-        beta = P.sum(1)
+        # compute exact row and column sums (in case of small numerical errors or forward pass not converging)
+        alpha = torch.sum(P, dim=2)
+        beta = torch.sum(P, dim=1)
 
         # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
         vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2)
@@ -144,7 +145,20 @@ class OptimalTransportFcn(torch.autograd.Function):
         if ctx.block_inverse:
             # by block inverse of (A H^{-1] A^T)
             PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
-            block_11 = torch.cholesky(torch.diag_embed(alpha[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC))
+            RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC)
+            try:
+                block_11 = torch.cholesky(RminusPPdivC)
+            except:
+                #block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
+                block_11 = torch.eye(H-1, device=M.device, dtype=M.dtype).view(1, H-1, H-1).repeat(B, 1, 1)
+                for b in range(B):
+                    try:
+                        block_11[b, :, :] = torch.cholesky(RminusPPdivC[b, :, :])
+                    except:
+                        # keep initialized values (gradient will be close to zero)
+                        warnings.warn("backward pass encountered a singular matrix")
+                        pass
+
             block_12 = torch.cholesky_solve(PdivC, block_11)
             block_22 = torch.diag_embed(1.0 / beta) + torch.einsum("bji,bjk->bik", block_12, PdivC)
 
@@ -234,7 +248,7 @@ class OptimalTransportLayer(nn.Module):
         # Handle special case of 1x1 matrices
         nr, nc = M_shape[-2:]
         if nr == 1 and nc == 1:
-            P = M / M
+            P = torch.ones_like(M)
         else:
             P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
 
