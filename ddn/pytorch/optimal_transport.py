@@ -39,8 +39,8 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     assert r is None or r.shape == (B, H) or r.shape == (1, H)
     assert c is None or c.shape == (B, W) or c.shape == (1, W)
 
-    if r is None: r = 1.0 / H
-    if c is None: c = 1.0 / W
+    r = 1.0 / H if r is None else r.unsqueeze(dim=2)
+    c = 1.0 / W if c is None else c.unsqueeze(dim=1)
 
     P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
@@ -63,8 +63,8 @@ def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     assert r is None or r.shape == (B, H) or r.shape == (1, H)
     assert c is None or c.shape == (B, W) or c.shape == (1, W)
 
-    if r is None: r = 1.0 / H
-    if c is None: c = 1.0 / W
+    r = 1.0 / H if r is None else r.unsqueeze(dim=2)
+    c = 1.0 / W if c is None else c.unsqueeze(dim=1)
 
     P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
     for i in range(maxiters):
