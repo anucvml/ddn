@@ -22,7 +22,6 @@
 #
 
 import torch
-from torch._C import device
 import torch.nn as nn
 import warnings
 
