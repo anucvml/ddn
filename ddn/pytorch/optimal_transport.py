@@ -22,6 +22,7 @@
 #
 
 import torch
+from torch._C import device
 import torch.nn as nn
 import warnings
 
@@ -184,7 +185,7 @@ class OptimalTransportFcn(torch.autograd.Function):
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdr is not None:
             dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
-                   (torch.sum(r[:, 1:H] * v1, dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1), v1), dim=1))
+                   (torch.sum(r[:, 1:H] * v1, dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1), dim=1))
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdc is not None:
