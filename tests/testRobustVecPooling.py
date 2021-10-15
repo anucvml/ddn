@@ -186,23 +186,28 @@ def speed_memory_test(device=None, batch_size=1, outlier_ratio=0.1, repeats=10):
 
                 if device == torch.device("cpu"):
                     with profiler.profile(profile_memory=True) as prof:
-                        y = fcn(x.clone(), p, 1.0)
+                        x_clone = x.clone().detach()
+                        x_clone.requires_grad = True
+                        y = fcn(x_clone, p, 1.0)
                     m_fwd[i].append(prof.total_average().cpu_memory_usage)
+                    #m_fwd[i].append(max([evt.cpu_memory_usage for evt in prof.function_events]))
 
                     with profiler.profile(profile_memory=True) as prof:
                         loss = torch.linalg.norm(y.view(batch_size, fi, -1), dim=1).sum()
                         loss.backward()
                     m_bck[i].append(prof.total_average().cpu_memory_usage)
+                    #m_bck[i].append(max([evt.cpu_memory_usage for evt in prof.function_events]))
                 else:
                     torch.cuda.empty_cache()
                     torch.cuda.reset_peak_memory_stats()
                     y = fcn(x.clone(), p, 1.0)
                     m_fwd[i].append(torch.cuda.max_memory_allocated(None))
 
-                    #torch.cuda.reset_peak_memory_stats()
+                    torch.cuda.empty_cache()
+                    torch.cuda.reset_peak_memory_stats()
                     loss = torch.linalg.norm(y.view(batch_size, fi, -1), dim=1).sum()
                     loss.backward()
-                    m_bck[i].append(torch.cuda.max_memory_allocated(None) - m_fwd[i][-1])
+                    m_bck[i].append(torch.cuda.max_memory_allocated(None))
                     
             print("")
 

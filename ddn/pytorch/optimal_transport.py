@@ -15,10 +15,14 @@
 #
 # where \alpha and \beta are found by iteratively applying row and column normalizations.
 #
+# We also provide an option to parametrize the input in log-space as M_{ij} = -\log Q_{ij} where Q is a positive matrix.
+# The matrix Q becomes the input. This is more numerically stable for inputs M with large positive or negative values.
+#
 # See accompanying Jupyter Notebook at https://deepdeclarativenetworks.com.
 #
 # Stephen Gould <stephen.gould@anu.edu.au>
 # Dylan Campbell <dylan.campbell@anu.edu.au>
+# Fred Zhang <frederic.zhang@anu.edu.au>
 #
 
 import torch
@@ -26,7 +30,7 @@ import torch.nn as nn
 import warnings
 
 
-def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
+def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False):
     """
     PyTorch function for entropy regularized optimal transport. Assumes batched inputs as follows:
         M:  (B,H,W) tensor
@@ -39,11 +43,16 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     B, H, W = M.shape
     assert r is None or r.shape == (B, H) or r.shape == (1, H)
     assert c is None or c.shape == (B, W) or c.shape == (1, W)
+    assert not logspace or torch.all(M > 0.0)
 
     r = 1.0 / H if r is None else r.unsqueeze(dim=2)
     c = 1.0 / W if c is None else c.unsqueeze(dim=1)
 
-    P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+    if logspace:
+        P = torch.pow(M, gamma)
+    else:
+        P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
         # Perform division first for numerical stability
@@ -57,26 +66,33 @@ def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
     return P
 
 
-def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000):
+def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False):
     """As above but with inline calculations for when autograd is not needed."""
 
     B, H, W = M.shape
     assert r is None or r.shape == (B, H) or r.shape == (1, H)
     assert c is None or c.shape == (B, W) or c.shape == (1, W)
+    assert not logspace or torch.all(M > 0.0)
 
     r = 1.0 / H if r is None else r.unsqueeze(dim=2)
     c = 1.0 / W if c is None else c.unsqueeze(dim=1)
 
-    P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+    if logspace:
+        P = torch.pow(M, gamma)
+    else:
+        P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+
     for i in range(maxiters):
         alpha = torch.sum(P, 2)
         # Perform division first for numerical stability
-        P /= alpha.view(B, H, 1); P *= r
+        P /= alpha.view(B, H, 1)
+        P *= r
 
         beta = torch.sum(P, 1)
         if torch.max(torch.abs(beta - c)) <= eps:
             break
-        P /= beta.view(B, 1, W); P *= c
+        P /= beta.view(B, 1, W)
+        P *= c
 
     return P
 
@@ -95,8 +111,9 @@ class OptimalTransportFcn(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, approx_grad=False, block_inverse=True):
-        """Solve optimal transport using skinhorn."""
+    def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method='block'):
+        """Solve optimal transport using skinhorn. Method can be 'block', 'full' or 'approx'."""
+        assert method in ('block', 'full', 'approx')
 
         with torch.no_grad():
             # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
@@ -108,12 +125,12 @@ class OptimalTransportFcn(torch.autograd.Function):
                 c = ctx.inv_c_sum * c
 
             # run sinkhorn
-            P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters)
+            P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters, logspace)
 
         ctx.save_for_backward(M, r, c, P)
         ctx.gamma = gamma
-        ctx.approx_grad = approx_grad
-        ctx.block_inverse = block_inverse
+        ctx.logspace = logspace
+        ctx.method = method
 
         return P
 
@@ -130,8 +147,8 @@ class OptimalTransportFcn(torch.autograd.Function):
         dJdc = None if not ctx.needs_input_grad[2] else torch.zeros_like(c)
 
         # return approximate gradients
-        if ctx.approx_grad:
-            return dJdM, dJdr, dJdc, None, None, None, None, None
+        if ctx.method == 'approx':
+            return dJdM, dJdr, dJdc, None, None, None, None, None, None
 
         # compute exact row and column sums (in case of small numerical errors or forward pass not converging)
         alpha = torch.sum(P, dim=2)
@@ -142,15 +159,15 @@ class OptimalTransportFcn(torch.autograd.Function):
         vHAt2 = torch.sum(dJdM, dim=1)
 
         # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
-        if ctx.block_inverse:
+        if ctx.method == 'block':
             # by block inverse of (A H^{-1] A^T)
             PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
             RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC)
             try:
                 block_11 = torch.cholesky(RminusPPdivC)
             except:
-                #block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
-                block_11 = torch.eye(H-1, device=M.device, dtype=M.dtype).view(1, H-1, H-1).repeat(B, 1, 1)
+                # block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
+                block_11 = torch.eye(H - 1, device=M.device, dtype=M.dtype).view(1, H - 1, H - 1).repeat(B, 1, 1)
                 for b in range(B):
                     try:
                         block_11[b, :, :] = torch.cholesky(RminusPPdivC[b, :, :])
@@ -162,7 +179,7 @@ class OptimalTransportFcn(torch.autograd.Function):
             block_12 = torch.cholesky_solve(PdivC, block_11)
             block_22 = torch.diag_embed(1.0 / beta) + torch.einsum("bji,bjk->bik", block_12, PdivC)
 
-            v1 = torch.cholesky_solve(vHAt1.view(B, H-1, 1), block_11).view(B, H-1) - torch.einsum("bi,bji->bj", vHAt2, block_12)
+            v1 = torch.cholesky_solve(vHAt1.view(B, H - 1, 1), block_11).view(B, H - 1) - torch.einsum("bi,bji->bj", vHAt2, block_12)
             v2 = torch.einsum("bi,bij->bj", vHAt2, block_22) - torch.einsum("bi,bij->bj", vHAt1, block_12)
 
         else:
@@ -174,12 +191,16 @@ class OptimalTransportFcn(torch.autograd.Function):
             AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
 
             v = torch.einsum("bi,bij->bj", torch.cat((vHAt1, vHAt2), dim=1), torch.inverse(AinvHAt))
-            v1 = v[:, 0:H-1]
-            v2 = v[:, H-1:H+W-1]
+            v1 = v[:, 0:H - 1]
+            v2 = v[:, H - 1:H + W - 1]
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
-        dJdM[:, 1:H, 0:W] -= v1.view(B, H-1, 1) * P[:, 1:H, 0:W]
+        dJdM[:, 1:H, 0:W] -= v1.view(B, H - 1, 1) * P[:, 1:H, 0:W]
         dJdM -= v2.view(B, 1, W) * P
+
+        # multiply by derivative of log(M) if in log-space
+        if ctx.logspace:
+            dJdM /= -1.0 * M
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdr is not None:
@@ -190,8 +211,8 @@ class OptimalTransportFcn(torch.autograd.Function):
         if dJdc is not None:
             dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2, dim=1, keepdim=True) - v2)
 
-        # return gradients (None for gamma, eps, and maxiters)
-        return dJdM, dJdr, dJdc, None, None, None, None, None
+        # return gradients (None for gamma, eps, maxiters and logspace)
+        return dJdM, dJdr, dJdc, None, None, None, None, None, None
 
 
 class OptimalTransportLayer(nn.Module):
@@ -206,20 +227,23 @@ class OptimalTransportLayer(nn.Module):
         Tolerance used to determine the stop condition.
     maxiters: int, default: 1000
         The maximum number of iterations.
-    approx_grad: bool, default: False
-        If `True`, approximate the gradient by assuming exp(-\gamma M) is already nearly doubly stochastic.
+    logspace: bool, default: False
+        If `True`, assumes that the input is provided as \log M
+        If `False`, assumes that the input is provided as M (standard optimal transport)
+    method: str, default: 'block'
+        If `approx`, approximate the gradient by assuming exp(-\gamma M) is already nearly doubly stochastic.
         It is faster and could potentially be useful during early stages of training.
-    block_inverse: bool, default: True
-        If `True`, exploit the block structure of matrix A H^{-1] A^T. 
+        If `block`, exploit the block structure of matrix A H^{-1] A^T.
+        If `full`, invert the full A H^{-1} A^T matrix without exploiting the block structure
     """
 
-    def __init__(self, gamma=1.0, eps=1.0e-6, maxiters=1000, approx_grad=False, block_inverse=True):
+    def __init__(self, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method='block'):
         super(OptimalTransportLayer, self).__init__()
         self.gamma = gamma
         self.eps = eps
         self.maxiters = maxiters
-        self.approx_grad = approx_grad
-        self.block_inverse = block_inverse
+        self.logspace = logspace
+        self.method = method
 
     def forward(self, M, r=None, c=None):
         """
@@ -244,13 +268,13 @@ class OptimalTransportLayer(nn.Module):
             M = M.unsqueeze(dim=0)
         elif ndim != 3:
             raise ValueError(f"The shape of the input tensor {M_shape} does not match that of an matrix")
-        
+
         # Handle special case of 1x1 matrices
         nr, nc = M_shape[-2:]
         if nr == 1 and nc == 1:
             P = torch.ones_like(M)
         else:
-            P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.approx_grad, self.block_inverse)
+            P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.logspace, self.method)
 
         return P.view(*M_shape)
 
@@ -260,7 +284,6 @@ class OptimalTransportLayer(nn.Module):
 #
 
 if __name__ == '__main__':
-
     from torch.autograd import gradcheck
     from torch.nn.functional import normalize
 
@@ -268,46 +291,54 @@ if __name__ == '__main__':
 
     M = torch.randn((3, 5, 7), dtype=torch.double, requires_grad=True)
     f = OptimalTransportFcn().apply
-    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+
+    print(torch.all(torch.isclose(sinkhorn(M), f(M))))
+    print(torch.all(torch.isclose(sinkhorn(M), sinkhorn(torch.exp(-1.0 * M), logspace=True))))
+
+    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (torch.exp(-1.0 * M), None, None, 1.0, 1.0e-6, 1000, True, 'block'), eps=1e-6, atol=1e-3,
+                     rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
     r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=False), p=1.0)
     c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=False), p=1.0)
 
-    test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
     # with r and c inputs
     r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
     c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
 
-    test = gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
     # shared r and c
     r = normalize(torch.rand((1, M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
     c = normalize(torch.rand((1, M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
 
-    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
-    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)

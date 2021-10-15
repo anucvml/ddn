@@ -65,24 +65,24 @@ class TestOptimalTransport(unittest.TestCase):
         f = OptimalTransportFcn().apply
 
         # default r and c
-        gradcheck(f, (M, None, None, 1.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, None, None, 1.0, 1.0e-9, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, None, None, 10.0, 1.0e-9, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, None, None, 10.0, 1.0e-9, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, None, None, 1.0, 1.0e-9, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, None, None, 1.0, 1.0e-9, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, None, None, 10.0, 1.0e-9, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, None, None, 10.0, 1.0e-9, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
 
         # with random r and c
-        gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
 
-        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
 
         # shared r and c
         r = torch.rand((1, H), dtype=M.dtype, requires_grad=True)
         c = torch.rand((1, W), dtype=M.dtype, requires_grad=True)
 
-        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, True), eps=1e-6, atol=1e-3, rtol=1e-6)
-        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+        gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
 
 
 # --- Toy Learning Example ----------------------------------------------------
@@ -149,7 +149,7 @@ def toy_example():
     r_true = normalize(torch.rand((1, 50), dtype=M_true.dtype), p=1.0)
     c_true = normalize(torch.rand((1, 50), dtype=M_true.dtype), p=1.0)
 
-    fcns = [sinkhorn, OptimalTransportLayer(approx_grad=True), OptimalTransportLayer()]
+    fcns = [sinkhorn, OptimalTransportLayer(method='approx'), OptimalTransportLayer()]
 
     # calibrated (uniform)
     print("Learning calibrated (uniform) models...")
@@ -206,7 +206,7 @@ def speed_memory_test(device=None, batch_size=1, repeats=100):
     t = [[], [], [], []]
     m = [[], [], [], []]
 
-    fcns = [sinkhorn, OptimalTransportLayer(approx_grad=True), OptimalTransportLayer(block_inverse=False), OptimalTransportLayer()]
+    fcns = [sinkhorn, OptimalTransportLayer(method='approx'), OptimalTransportLayer(method='full'), OptimalTransportLayer()]
     for ni in n:
         print("Profiling on {}-by-{} problem...".format(ni, ni))
         M_true = torch.randn((batch_size, ni, ni), dtype=torch.float)
@@ -298,8 +298,8 @@ def plot_running_time(batch_size, device, enable_legend=False):
         M_init = torch.log(torch.rand_like(M_true)).to(device)
 
         t1.append(timeit(wrapper(learnM, [sinkhorn], M_init, None, None, P_true, iters=500), number=1))
-        t3.append(timeit(wrapper(learnM, [OptimalTransportLayer(block_inverse=False)], M_init, None, None, P_true, iters=500), number=1))
-        t2.append(timeit(wrapper(learnM, [OptimalTransportLayer(approx_grad=True)], M_init, None, None, P_true, iters=500), number=1))
+        t3.append(timeit(wrapper(learnM, [OptimalTransportLayer(method='full')], M_init, None, None, P_true, iters=500), number=1))
+        t2.append(timeit(wrapper(learnM, [OptimalTransportLayer(method='approx')], M_init, None, None, P_true, iters=500), number=1))
         t4.append(timeit(wrapper(learnM, [OptimalTransportLayer()], M_init, None, None, P_true, iters=500), number=1))
 
     print("...done")
@@ -394,7 +394,8 @@ def plot_memory():
 # --- Run Unit Tests ----------------------------------------------------------
 
 if __name__ == '__main__':
-    if True:
+    # Set `True` to run unit tests and then terminate. Set `False` to allow other tests to run.
+    if False:
         unittest.main()
 
     if True:
