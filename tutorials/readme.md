@@ -9,7 +9,7 @@ conda update conda
 ```
 1. Create the conda environment using
 ```
-conda create --name ddn_tutorial python=3.5
+conda create --name ddn_tutorial python=3.8
 ```
 1. Activate the environment using
 ```
