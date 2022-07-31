@@ -23,13 +23,16 @@ which if you would like to reference in your research please cite as:
 or
 
 ```
-@journal{Gould:PAMI2021,
+@journal{Gould:PAMI2022,
   author      = {Stephen Gould and
                  Richard Hartley and
                  Dylan Campbell},
   title       = {Deep Declarative Networks},
   journal     = {IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
-  year        = {2021},
+  year        = {2022},
+  month       = {Aug},
+  volume      = {44},
+  pages       = {3988--4004},
   doi         = {10.1109/TPAMI.2021.3059462}
 }
 ```
