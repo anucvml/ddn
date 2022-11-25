@@ -5,22 +5,8 @@ to be embedded within an end-to-end learnable network. This repository maintains
 [tutorials](https://nbviewer.jupyter.org/github/anucvml/ddn/tree/master/tutorials/) and other
 [resources](https://github.com/anucvml/ddn/wiki/Resources) for developing and understanding DDN models.
 
-You can find more details in [this paper](https://arxiv.org/abs/1909.04866) (also [here](https://ieeexplore.ieee.org/document/9355027)),
+You can find more details in [this paper](https://ieeexplore.ieee.org/document/9355027) (also [here](https://arxiv.org/abs/1909.04866)),
 which if you would like to reference in your research please cite as:
-```
-@techreport{Gould:PrePrint2019,
-  author      = {Stephen Gould and
-                 Richard Hartley and
-                 Dylan Campbell},
-  title       = {Deep Declarative Networks: A New Hope},
-  eprint      = {arXiv:1909.04866},
-  institution = {Australian National University (arXiv:1909.04866)},
-  month       = {Sep},
-  year        = {2019}
-}
-```
-
-or
 
 ```
 @journal{Gould:PAMI2022,
