@@ -16,6 +16,58 @@ import math
 # --- PyTorch Functions ---
 #
 
+class BasicLeastSquaresFcn(torch.autograd.Function):
+    """
+    PyTorch autograd function for basic least squares problems,
+
+        y = argmin_u \|Au - b\|
+
+    solved via QR decomposition.
+    """
+
+    @staticmethod
+    def forward(ctx, A, b, cache_decomposition=True):
+        B, M, N = A.shape
+        assert b.shape == (B, M, 1)
+
+        with torch.no_grad():
+            Q, R = torch.linalg.qr(A, mode='reduced')
+            x = torch.linalg.solve_triangular(R, torch.bmm(b.view(B, 1, M), Q).view(B, N, 1), upper=True)
+
+        # save state for backward pass
+        ctx.save_for_backward(A, b, x, R if cache_decomposition else None)
+
+        # return solution
+        return x
+
+    @staticmethod
+    def backward(ctx, dx):
+        # check for None tensors
+        if dx is None:
+            return None, None
+
+        # unpack cached tensors
+        A, b, x, R = ctx.saved_tensors
+        B, M, N = A.shape
+
+        if R is None:
+            Q, R = torch.linalg.qr(A, mode='reduced')
+
+        dA, db = None, None
+
+        w = torch.linalg.solve_triangular(R, torch.linalg.solve_triangular(torch.transpose(R, 2, 1), dx, upper=False), upper=True)
+        Aw = torch.bmm(A, w)
+
+        if ctx.needs_input_grad[0]:
+            r = b - torch.bmm(A, x)
+            dA = torch.einsum("bi,bj->bij", r.view(B, M), w.view(B, N)) - torch.einsum("bi,bj->bij", Aw.view(B, M), x.view(B, N))
+        if ctx.needs_input_grad[1]:
+            db = Aw
+
+        # return gradients (None for non-tensor inputs)
+        return dA, db, None
+
+
 class WeightedLeastSquaresFcn(torch.autograd.Function):
     """
     PyTorch autograd function for weighted least squares,
@@ -77,9 +129,9 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     A[:, :C, :T] = weightedsqrtX
                     A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
 
-                Q, R = torch.qr(A.permute(0, 2, 1), some=True)
+                Q, R = torch.linalg.qr(A.permute(0, 2, 1))
                 Qtb = torch.einsum("bij,bi->bj", Q, b).view(B, -1, 1)
-                y, _ = torch.solve(Qtb, R)
+                y = torch.linalg.solve_triangular(R, Qtb, upper=True)
 
                 R = R if cache_decomposition else None
             else:  # need to get AtA
@@ -101,10 +153,10 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     Atb = weightedXdotT.view(B, U_sz, 1)
 
                 if cache_decomposition:
-                    L = torch.cholesky(AtA)
+                    L = torch.linalg.cholesky(AtA)
                     y = torch.cholesky_solve(Atb, L)
                 else:
-                    y, _ = torch.solve(Atb, AtA)
+                    y = torch.linalg.solve(AtA, Atb)
 
             # assign to output
             output = y[:, :C, 0].squeeze(-1)
@@ -154,9 +206,9 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     A[:, :C, :T] = weightedsqrtX
                     A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
 
-                _, R = torch.qr(A.permute(0, 2, 1), some=True)
+                _, R = torch.linalg.qr(A.permute(0, 2, 1))
 
-            w, _ = torch.solve(v, torch.einsum("bij,bik->bjk", R, R))
+            w = torch.linalg.solve(torch.einsum("bij,bik->bjk", R, R), v)
         else:
             if L is None:
                 if enable_bias:
@@ -169,7 +221,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
                     AtA= torch.einsum("bik,bjk->bij", weightedX, input) + \
                          (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
 
-                w, _ = torch.solve(v, AtA)
+                w = torch.linalg.solve(AtA, v)
             else:
                 w = torch.cholesky_solve(v, L)
 
@@ -248,9 +300,38 @@ class WeightedLeastSquaresLayer(nn.Module):
 if __name__ == '__main__':
     from torch.autograd import gradcheck
 
-    B, C, T = 2, 64, 12
     # device = torch.device("cuda")
     device = torch.device("cpu")
+
+    # --- test basic least squares function
+    B, M, N = 2, 10, 5
+    fcn = BasicLeastSquaresFcn.apply
+
+    torch.manual_seed(0)
+    A = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=True)
+    b = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=True)
+    A_static = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=False)
+    b_static = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=False)
+
+    # foward pass tests
+    x_true = torch.linalg.lstsq(A, b, driver='gels').solution
+    x_test = fcn(A, b)
+    print("Forward test of BasicLeastSquaresFcn: {}".format(torch.allclose(x_true, x_test)))
+
+    # backward pass tests
+    test = gradcheck(fcn, (A, b_static, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicLeastSquaresFcn A grad: {}".format(test))
+    test = gradcheck(fcn, (A, b_static, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicLeastSquaresFcn A grad: {}".format(test))
+
+    test = gradcheck(fcn, (A_static, b, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicLeastSquaresFcn b grad: {}".format(test))
+    test = gradcheck(fcn, (A_static, b, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicLeastSquaresFcn b grad: {}".format(test))
+
+    # --- test weighted least squares function
+
+    B, C, T = 2, 64, 12
     X = torch.randn((B, C, T), dtype=torch.double, device=device, requires_grad=True)
     W1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
     T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
@@ -258,7 +339,7 @@ if __name__ == '__main__':
     T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
     f = WeightedLeastSquaresFcn.apply
 
-    for inverse_mode in ['cholesky', 'qr']:
+    for inverse_mode in ['qr', 'cholesky']:
         for enable_bias in [True, False]:
             # Forward check
             print("Foward test of WeightedLeastSquaresFcn, mode: {}, bias: {}...".format(inverse_mode, enable_bias))
