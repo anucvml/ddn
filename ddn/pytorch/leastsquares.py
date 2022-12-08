@@ -51,7 +51,7 @@ class BasicLeastSquaresFcn(torch.autograd.Function):
         B, M, N = A.shape
 
         if R is None:
-            Q, R = torch.linalg.qr(A, mode='reduced')
+            _, R = torch.linalg.qr(A, mode='r')
 
         dA, db = None, None
 
@@ -322,12 +322,12 @@ if __name__ == '__main__':
     test = gradcheck(fcn, (A, b_static, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print("Backward test of BasicLeastSquaresFcn A grad: {}".format(test))
     test = gradcheck(fcn, (A, b_static, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print("Backward test of BasicLeastSquaresFcn A grad: {}".format(test))
+    print("Backward test of BasicLeastSquaresFcn (no cache) A grad: {}".format(test))
 
     test = gradcheck(fcn, (A_static, b, True), eps=1e-6, atol=1e-3, rtol=1e-6)
     print("Backward test of BasicLeastSquaresFcn b grad: {}".format(test))
     test = gradcheck(fcn, (A_static, b, False), eps=1e-6, atol=1e-3, rtol=1e-6)
-    print("Backward test of BasicLeastSquaresFcn b grad: {}".format(test))
+    print("Backward test of BasicLeastSquaresFcn (no cache) b grad: {}".format(test))
 
     # --- test weighted least squares function
 
