@@ -222,7 +222,7 @@ class OptimalTransportLayer(nn.Module):
     Parameters:
     -----------
     gamma: float, default: 1.0
-        Inverse of the coeffient on the entropy regularisation term.
+        Inverse of the coefficient on the entropy regularisation term.
     eps: float, default: 1.0e-6
         Tolerance used to determine the stop condition.
     maxiters: int, default: 1000
