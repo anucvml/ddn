@@ -60,7 +60,7 @@ class BasicLeastSquaresFcn(torch.autograd.Function):
 
         if ctx.needs_input_grad[0]:
             r = b - torch.bmm(A, x)
-            dA = torch.einsum("bi,bj->bij", r.view(B, M), w.view(B, N)) - torch.einsum("bi,bj->bij", Aw.view(B, M), x.view(B, N))
+            dA = torch.bmm(r.view(B, M, 1), w.view(B, 1, N)) - torch.bmm(Aw.view(B, M, 1), x.view(B, 1, N))
         if ctx.needs_input_grad[1]:
             db = Aw
 
