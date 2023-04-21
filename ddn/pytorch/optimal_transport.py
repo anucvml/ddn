@@ -155,14 +155,14 @@ class OptimalTransportFcn(torch.autograd.Function):
         beta = torch.sum(P, dim=1)
 
         # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
-        vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2)
-        vHAt2 = torch.sum(dJdM, dim=1)
+        vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2).view(B, H - 1, 1)
+        vHAt2 = torch.sum(dJdM, dim=1).view(B, W, 1)
 
         # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
         if ctx.method == 'block':
             # by block inverse of (A H^{-1] A^T)
             PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
-            RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.einsum("bij,bkj->bik", P[:, 1:H, 0:W], PdivC)
+            RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.bmm(P[:, 1:H, 0:W], PdivC.transpose(1, 2))
             try:
                 block_11 = torch.linalg.cholesky(RminusPPdivC)
             except:
@@ -177,10 +177,10 @@ class OptimalTransportFcn(torch.autograd.Function):
                         pass
 
             block_12 = torch.cholesky_solve(PdivC, block_11)
-            block_22 = torch.diag_embed(1.0 / beta) + torch.einsum("bji,bjk->bik", block_12, PdivC)
+            block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
 
-            v1 = torch.cholesky_solve(vHAt1.view(B, H - 1, 1), block_11).view(B, H - 1) - torch.einsum("bi,bji->bj", vHAt2, block_12)
-            v2 = torch.einsum("bi,bij->bj", vHAt2, block_22) - torch.einsum("bi,bij->bj", vHAt1, block_12)
+            v1 = torch.cholesky_solve(vHAt1, block_11) - torch.bmm(block_12, vHAt2)
+            v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
 
         else:
             # by full inverse of (A H^{-1] A^T)
@@ -190,12 +190,12 @@ class OptimalTransportFcn(torch.autograd.Function):
             AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
             AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
 
-            v = torch.einsum("bi,bij->bj", torch.cat((vHAt1, vHAt2), dim=1), torch.inverse(AinvHAt))
-            v1 = v[:, 0:H - 1]
-            v2 = v[:, H - 1:H + W - 1]
+            v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+            v1 = v[:, 0:H - 1].view(B, H - 1, 1)
+            v2 = v[:, H - 1:H + W - 1].view(B, W, 1)
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
-        dJdM[:, 1:H, 0:W] -= v1.view(B, H - 1, 1) * P[:, 1:H, 0:W]
+        dJdM[:, 1:H, 0:W] -= v1 * P[:, 1:H, 0:W]
         dJdM -= v2.view(B, 1, W) * P
 
         # multiply by derivative of log(M) if in log-space
@@ -205,11 +205,11 @@ class OptimalTransportFcn(torch.autograd.Function):
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdr is not None:
             dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
-                   (torch.sum(r[:, 1:H] * v1, dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1), dim=1))
+                   (torch.sum(r[:, 1:H] * v1.view(B, H - 1), dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1.view(B, H - 1)), dim=1))
 
         # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
         if dJdc is not None:
-            dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2, dim=1, keepdim=True) - v2)
+            dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2.view(B, W), dim=1, keepdim=True) - v2.view(B, W))
 
         # return gradients (None for gamma, eps, maxiters and logspace)
         return dJdM, dJdr, dJdc, None, None, None, None, None, None
