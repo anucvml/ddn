@@ -112,8 +112,8 @@ class OptimalTransportFcn(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method='block'):
-        """Solve optimal transport using skinhorn. Method can be 'block', 'full' or 'approx'."""
-        assert method in ('block', 'full', 'approx')
+        """Solve optimal transport using skinhorn. Method can be 'block', 'full', 'fullchol' or 'approx'."""
+        assert method in ('block', 'full', 'fullchol', 'approx')
 
         with torch.no_grad():
             # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
@@ -177,10 +177,12 @@ class OptimalTransportFcn(torch.autograd.Function):
                         pass
 
             block_12 = torch.cholesky_solve(PdivC, block_11)
-            block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
+            #block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
+            block_22 = torch.bmm(block_12.transpose(1, 2), PdivC)
 
             v1 = torch.cholesky_solve(vHAt1, block_11) - torch.bmm(block_12, vHAt2)
-            v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+            #v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+            v2 = vHAt2 / beta.view(B, W, 1) + torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
 
         else:
             # by full inverse of (A H^{-1] A^T)
@@ -190,7 +192,12 @@ class OptimalTransportFcn(torch.autograd.Function):
             AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
             AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
 
-            v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+            if ctx.method == 'fullchol':
+                v = torch.cholesky_solve(torch.cat((vHAt1, vHAt2), dim=1), torch.linalg.cholesky(AinvHAt))
+            else:
+                v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+                #v = torch.linalg.solve(AinvHAt, torch.cat((vHAt1, vHAt2), dim=1))
+
             v1 = v[:, 0:H - 1].view(B, H - 1, 1)
             v2 = v[:, H - 1:H + W - 1].view(B, W, 1)
 
@@ -311,6 +318,9 @@ if __name__ == '__main__':
     test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
 
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, 'fullchol'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
     r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=False), p=1.0)
     c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=False), p=1.0)
 
@@ -341,4 +351,7 @@ if __name__ == '__main__':
     print(test)
 
     test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'fullchol'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
