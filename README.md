@@ -1,6 +1,6 @@
 # Deep Declarative Networks
 
-<p style="text-align:center;"><img src="./ddnlogo.png" alt="app-screen" width="50%"/></p>
+<p align="center"><img src="./ddnlogo.png" alt="app-screen" width="50%"/></p>
 
 Deep Declarative Networks (DDNs) are a class of deep learning model that allows for optimization problems
 to be embedded within an end-to-end learnable network. This repository maintains code,
