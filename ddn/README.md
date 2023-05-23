@@ -21,8 +21,9 @@ have been vectorized).
 The `ddn.pytorch` package includes efficient implementations of deeep declarative nodes suitable for including
 in an end-to-end learnable model. The code builds on the PyTorch framework and conventions.
 
+* `ddn.pytorch.eigen_decomposition`: differentiable eigen (spectral) decomposition for real symmetric matrices.
 * `ddn.pytorch.geometry_utilities`: utility functions for geometry applications.
-* `ddn.pytorch.leastsquares`: differentiable weighted least-squares nodes (see [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/10_least_squares.ipynb)).
+* `ddn.pytorch.leastsquares`: differentiable weighted least-squares nodes (see [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/10_basic_least_squares.ipynb) and [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/11_least_squares.ipynb)).
 * `ddn.pytorch.node`: defines the PyTorch interface for data processing nodes and declarative nodes (see [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/08_ddn_pytorch_node.ipynb)).
 * `ddn.pytorch.pnp_node`: differentiable projection-n-point algorithm.
 * `ddn.pytorch.optimal_transport`: differentiable entropy regularized optimal transport layer (see [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/11_optimal_transport.ipynb)).
