@@ -238,44 +238,44 @@ if __name__ == '__main__':
 
     if True:
         # profiling
-        data = {}
-        for f in [EigenDecompositionFcn,
-                  EigenDecompositionFcn_v1,
-                  EigenDecompositionFcn_v2,
-                  EigenDecompositionFcn_v3]:
+        devices = ['cpu', 'cuda'] if torch.cuda.is_available() else ['cpu']
+        
+        for device in devices:
+            data = {}
+            for f in [EigenDecompositionFcn,
+                      EigenDecompositionFcn_v1,
+                      EigenDecompositionFcn_v2,
+                      EigenDecompositionFcn_v3]:
 
-            torch.cuda.empty_cache()
-            time_fwd, time_bck, mem = speed_memory_test(lambda X: f.apply(X, None), (5, 32),
-                num_iter_speed=1000, num_iter_memory=5, device='cpu', dtype=torch.float32)
+                torch.cuda.empty_cache()
+                time_fwd, time_bck, mem = speed_memory_test(lambda X: f.apply(X, None),
+                    (5 if device == 'cpu' else 1000, 32),
+                    num_iter_speed=1000, num_iter_memory=5, device=device, dtype=torch.float32)
 
-            print(f.__name__, time_fwd, time_bck, mem)
-            data[f.__name__] = {'time_fwd': time_fwd, 'time_bck': time_bck, 'total_mem': mem}
+                print(f.__name__, time_fwd, time_bck, mem)
+                data[f.__name__] = {'time_fwd': time_fwd, 'time_bck': time_bck, 'total_mem': mem}
 
+            fig, ax = plt.subplots(1, 1)
+            b = plt.bar(tuple(range(5)), [data['EigenDecompositionFcn']['time_fwd'],
+                                          data['EigenDecompositionFcn_v1']['time_bck'],
+                                          data['EigenDecompositionFcn_v2']['time_bck'],
+                                          data['EigenDecompositionFcn_v3']['time_bck'],
+                                          data['EigenDecompositionFcn']['time_bck']],
+                        log=True, color=['r', 'b', 'b', 'b', 'b'])
+            ax.set_xticks(range(5))
+            ax.set_xticklabels(['fwd', 'bck (v1)', 'bck (v2)', 'bck (v3)', 'bck (final)'])
+            # add counts above the two bar graphs
+            for rect in b:
+                height = rect.get_height()
+                value = height / data['EigenDecompositionFcn']['time_fwd']
+                plt.text(rect.get_x() + rect.get_width() / 2.0, height, f'{value:0.1f}x', ha='center', va='bottom')
 
-            #time_fwd, time_bck, mem = speed_memory_test(lambda X: f.apply(X, 1), (3, 32),
-            #    num_iter_speed=1000, num_iter_memory=5, device='cpu', dtype=torch.float32)
-            #print(f.__name__, time_fwd, time_bck, mem)
+            plt.ylabel('log time (ms)')
+            plt.grid(True); plt.grid(True, which='minor', axis='y', ls='--')
+            plt.tight_layout()
+            plt.title("Differentiable eigen decomposition implementation comparison on {}".format(device))
+            #plt.savefig("ed_runtime_versions_{}.png".format(device), dpi=300, bbox_inches='tight')
 
-        fig, ax = plt.subplots(1, 1)
-        b = plt.bar(tuple(range(5)), [data['EigenDecompositionFcn']['time_fwd'],
-                                      data['EigenDecompositionFcn_v1']['time_bck'],
-                                      data['EigenDecompositionFcn_v2']['time_bck'],
-                                      data['EigenDecompositionFcn_v3']['time_bck'],
-                                      data['EigenDecompositionFcn']['time_bck']],
-                log=True, color=['r', 'b', 'b', 'b', 'b'])
-        ax.set_xticks(range(5))
-        ax.set_xticklabels(['fwd', 'bck (v1)', 'bck (v2)', 'bck (v3)', 'bck (final)'])
-        # Add counts above the two bar graphs
-        for rect in b:
-            height = rect.get_height()
-            value = height / data['EigenDecompositionFcn']['time_fwd']
-            plt.text(rect.get_x() + rect.get_width() / 2.0, height, f'{value:0.1f}x', ha='center', va='bottom')
-
-        plt.ylabel('log time (ms)')
-        plt.grid(True); plt.grid(True, which='minor', axis='y', ls='--')
-        plt.tight_layout()
-        plt.title('Differentiable eigen decomposition implementation comparison')
-        #plt.savefig('ed_runtime_versions_cpu.png', dpi=300, bbox_inches='tight')
         plt.show()
 
 
