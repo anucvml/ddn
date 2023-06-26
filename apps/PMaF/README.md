@@ -21,7 +21,7 @@ If you find our paper or code useful, please cite our work as follows,
 We explore two differentiable deep declarative layers, namely least squares on sphere (LESS) and implicit eigen decomposition (IED), for learning the principal matrix features (PMaF) which refers to a single vector summarising a data matrix.
 
 ## Least Squares on Sphere (LESS)
-In LESS/test_least_squares_sphere, set "enable_viz_proj=True" for all figures (with 8 examples) in the paper;
+In LESS/test_least_squares_sphere.py, set "enable_viz_proj=True" for all figures (with 8 examples) in the paper;
 set "enable_viz_proj=False" for the table in the paper.
 
 Then, run
