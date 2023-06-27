@@ -1,6 +1,6 @@
 # Related Publication
 
-**"PMaF: Deep Declarative Layers for Principal Matrix Features"** \
+[**"PMaF: Deep Declarative Layers for Principal Matrix Features"**](https://arxiv.org/abs/2306.14759) \
 Zhiwei Xu, Hao Wang, Yanbin Liu, and Stephen Gould\
 The Differentiable Almost Everything Workshop of the International Conference on Machine Learning (ICML), July 2023, Honolulu, Hawaii.
 
