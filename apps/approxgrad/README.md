@@ -16,6 +16,8 @@ If you would like to reference this paper or code in your research please cite a
 }
 ```
 
+A copy of the paper can be found on [arXiv](https://arxiv.org/abs/2306.14054).
+
 ## Running code
 
 When running code from the command line make sure you add the `ddn` package to your PYTHONPATH. For example:
