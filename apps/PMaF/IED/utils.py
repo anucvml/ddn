@@ -11,6 +11,21 @@ import matplotlib.pyplot as plt
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+def method_mode_explaination(enable_display=False):
+    if enable_display:
+        print('')
+        print('=====================')
+        print('AT: forward solver with autogradient eigh().')
+        print('+dLdx_DDN_fcn: use auto Jacobian to calculate A, B, H for dydx.')
+        print('+nn_back: auto backpropagate eigh().')
+        print('')
+        print('SI: forward solver with Simultaneous Iteration with QR decomposition.')
+        print('+unroll: unroll to auto backpropagate SI algorithm.')
+        print('+nn_back: use exploited structure to calculate A, B, H for dydx.')
+        print('=====================')
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 def generate_random_data(
         b, m, n, seed, device='cuda', enable_symmetric=False, dtype=torch.float32, enable_grad_one=False,
         distribution_mode='gaussian', uniform_sample_max=1.0, choice_max=10.0):
@@ -489,3 +504,89 @@ def visual_precision(precision_info, data_sizes, g_save_path, enable_legend=Fals
             plt.close()
 
     return enable_legend
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def plot_hor(subplot, data, num_plts=12, xlabel=None, ylabel=None, methods=None):
+    ax = plt.subplot(1, num_plts, subplot)
+    data_indices = np.arange(data.shape[0])
+    bar_list = ax.barh(data_indices, data, color='gray')
+
+    # Set y up side down due to barh()
+    ax.invert_yaxis()
+
+    # Set color for the same solver
+    if methods is not None:
+        for i, v in enumerate(methods):
+            if v.find('AutoDiff') > -1: color = 'gray'
+            elif v.find('PI') > -1: color = 'bisque'
+            elif v.find('SI') > -1: color = 'pink'
+
+            if v.find('-E') > -1: color = 'green'
+            bar_list[i].set_color(color)
+
+    # Set labels
+    if xlabel is not None: ax.set_xlabel(xlabel, fontsize=10)
+
+    if ylabel is not None:
+        ax.set_yticks(data_indices)
+        ax.set_yticklabels(ylabel, fontsize=10)
+    else:
+        ax.spines[['left']].set_visible(False)
+        ax.set_yticks([])
+        ax.set_yticklabels([])
+
+    ax.spines[['right', 'top']].set_visible(False)
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def draw_bar_chart():
+    # Data sizes: 32, 64, 128, 256, 512, 1024
+    csv_dir = 'results/20230702-121221/100iters/solve_symmetric_stopFalse_float32/csv'
+    data_paths = [
+        os.path.join(csv_dir, 'time_gpu.csv'),
+        os.path.join(csv_dir, 'memory_gpu.csv')]
+    num_data_paths = len(data_paths)
+
+    # ====
+    for idx_path, data_path in enumerate(data_paths):
+        # Read data from .csv
+        data_matrix = []
+        methods = []
+
+        with open(data_path, 'r', newline='') as f:
+            data = csv.reader(f)
+            next(data)
+
+            for row in data:
+                methods.append(row[0].replace('\\rowcolor{lightgray} ', ''))
+                data_matrix.append([float(v.replace('-', '-1')) for v in row[1:]])
+
+        # Convert to numpy array and log10
+        data_matrix = np.array(data_matrix)
+        data_matrix = np.log10(data_matrix)
+
+        # Draw bar chart
+        plt.subplots(figsize=(12, 3))
+        plt.tight_layout()
+        count = 1
+
+        for idx, data_size in enumerate([32, 64, 128, 256, 512, 1024]):
+            if data_size not in [32, 128, 512]: continue
+            num_plts = 6
+
+            # Set y labels
+            ylabel = methods if count == 1 else None
+
+            # Plot
+            plot_hor(count, data_matrix[:, idx * 2], num_plts=num_plts, xlabel=fr'5$\times${data_size}, fwd', ylabel=ylabel, methods=methods)
+            plot_hor(count + 1, data_matrix[:, idx * 2 + 1], num_plts=num_plts, xlabel=fr'5$\times${data_size}, bwd', methods=methods)
+            count += 2
+
+        # Save figure
+        plt.savefig(f"{data_path.replace('.csv', '.png')}", bbox_inches='tight')
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    draw_bar_chart()

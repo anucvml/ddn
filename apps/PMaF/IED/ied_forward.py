@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 #
+# This is a PyTorch autograd version without considering batch dimension
+# One can use it for proofread the manual version.
+#
+# Two base modules:
+# - EigenDecomposeBase (in ed_forward.py): for forward solver
+#   - EigenAuto (AT)             : autogradient torch.linalg.eigh() method
+#   - PowerIteration (PI)        : power iteration method for the largest Eigenvalue
+#   - Simultaneous Iteration (SI): simultaneous iteration with QR decomposition for multiple Eigenvalues
+#
+# - BackpropBase (in ed_backward.py): will be passed to EigenDecomposeBase() and form backward()
+#   - AutoBackprop      : Jacobian based, also contains an automatic calculation of DDN components
+#   - DDNBackprop       : DDN based
+#   - JRMagnusBackprop  : feasible for symmetric matrix (leads to SPD)
+#   - FixedPointBackprop: this won't work, too huge errors
+#
+# - Note:
+#   - PI and SI are useful for the largest Eigenvalue of an asymmetric matrix
+#
 # Zhiwei Xu <zhiwei.xu@anu.edu.au>
 #
 
