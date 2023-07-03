@@ -5,8 +5,11 @@
 
 import os, torch
 import numpy as np
+# import matplotlib as mpl
+# mpl.use('tkagg')
 import matplotlib.pyplot as plt
 import scipy.optimize as sciop
+from datetime import datetime
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -299,6 +302,9 @@ if __name__ == '__main__':
     # ==== Edit those parameters
     enable_rand_data = True
     enable_viz_proj = True  # True: draw the figures in paper, False: statistics for the tables in paper
+    time_string = datetime.now().strftime('%Y%m%d-%H%M%S')
+    save_dir = os.path.join('results', time_string)
+    os.makedirs(save_dir, exist_ok=True)
 
     if enable_viz_proj:
         methods = [
@@ -436,22 +442,18 @@ if __name__ == '__main__':
                     sub_count += 1
 
         if enable_plot:
-            if True:
-                if len(data_idx_list) > 1:
-                    os.makedirs('results/case_study', exist_ok=True)
-                    save_path = f'results/case_study/case_study_{rand_idx}.png'
-                else:
-                    os.makedirs('results', exist_ok=True)
-                    save_path = f'results/case_study.png'
-
-                plt.savefig(save_path, bbox_inches='tight', dpi=300)
+            if len(data_idx_list) > 1:
+                os.makedirs(f'{save_dir}/case_study', exist_ok=True)
+                save_path = f'{save_dir}/case_study/case_study_{rand_idx}.png'
             else:
-                plt.show()
+                save_path = f'{save_dir}/case_study.png'
+
+            plt.savefig(save_path, bbox_inches='tight', dpi=300)
+            # plt.show()
 
     # ====
     num_dist_in, num_dist_out = len([v for v in loss_dict['dist'] if v < 1]), len([v for v in loss_dict['dist'] if v > 1])
-    save_txt_path = f'results/sample{num_rand_seeds}-m{m}-n{n}'
-    os.makedirs('results', exist_ok=True)
+    save_txt_path = f'{save_dir}/sample{num_rand_seeds}-m{m}-n{n}'
     save_txt_path += f'_{device}.txt'
     num_digits = 6
 

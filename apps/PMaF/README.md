@@ -1,10 +1,7 @@
-# Related Publication
+# **PMaF: Deep Declarative Layers for Principal Matrix Features**
+This is the official implementation of our paper on [arXiv](https://arxiv.org/abs/2306.14759).
 
-[**"PMaF: Deep Declarative Layers for Principal Matrix Features"**](https://arxiv.org/abs/2306.14759) \
-Zhiwei Xu, Hao Wang, Yanbin Liu, and Stephen Gould\
-The Differentiable Almost Everything Workshop of the International Conference on Machine Learning (ICML), July 2023, Honolulu, Hawaii.
-
-If you find our paper or code useful, please cite our work as follows,
+If you find this paper or code useful, please cite our work as follows,
 ```
 @inproceedings{Xu:ICML23w,
   author    = {Zhiwei Xu and
@@ -19,6 +16,9 @@ If you find our paper or code useful, please cite our work as follows,
 
 # How to Use
 We explore two differentiable deep declarative layers, namely least squares on sphere (LESS) and implicit eigen decomposition (IED), for learning the principal matrix features (PMaF) which refers to a single vector summarising a data matrix.
+
+## Environment
+We use PyTorch 1.12.0 on a single 3090 GPU.
 
 ## Least Squares on Sphere (LESS)
 In LESS/test_least_squares_sphere.py, set "enable_viz_proj=True" for all figures (with 8 examples) in the paper;

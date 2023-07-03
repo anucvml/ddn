@@ -4,6 +4,7 @@
 #
 
 import matplotlib as mpl
+# mpl.use('tkagg')
 import numpy as np
 import pandas as pd
 import torch, time, csv, os, torchvision
@@ -507,8 +508,7 @@ def visual_precision(precision_info, data_sizes, g_save_path, enable_legend=Fals
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def plot_hor(subplot, data, num_plts=12, xlabel=None, ylabel=None, methods=None):
-    ax = plt.subplot(1, num_plts, subplot)
+def plot_hor(ax, data, xlabel=None, ylabel=None, methods=None):
     data_indices = np.arange(data.shape[0])
     bar_list = ax.barh(data_indices, data, color='gray')
 
@@ -518,11 +518,15 @@ def plot_hor(subplot, data, num_plts=12, xlabel=None, ylabel=None, methods=None)
     # Set color for the same solver
     if methods is not None:
         for i, v in enumerate(methods):
-            if v.find('AutoDiff') > -1: color = 'gray'
-            elif v.find('PI') > -1: color = 'bisque'
-            elif v.find('SI') > -1: color = 'pink'
+            if v.find('AutoDiff') > -1:
+                color = 'gray'
+            elif v.find('PI') > -1:
+                color = 'bisque'
+                if v.find('-E') > -1: color = 'green'
+            elif v.find('SI') > -1:
+                color = 'pink'
+                if v.find('-E') > -1: color = 'green'
 
-            if v.find('-E') > -1: color = 'green'
             bar_list[i].set_color(color)
 
     # Set labels
@@ -546,10 +550,9 @@ def draw_bar_chart():
     data_paths = [
         os.path.join(csv_dir, 'time_gpu.csv'),
         os.path.join(csv_dir, 'memory_gpu.csv')]
-    num_data_paths = len(data_paths)
 
     # ====
-    for idx_path, data_path in enumerate(data_paths):
+    for data_path in data_paths:
         # Read data from .csv
         data_matrix = []
         methods = []
@@ -563,24 +566,30 @@ def draw_bar_chart():
                 data_matrix.append([float(v.replace('-', '-1')) for v in row[1:]])
 
         # Convert to numpy array and log10
-        data_matrix = np.array(data_matrix)
-        data_matrix = np.log10(data_matrix)
+        data_matrix = np.array(data_matrix).astype(np.float32)
+
+        # Set draw sizes
+        dis_data_size = [32, 128, 512]
+        num_plts = 2 * len(dis_data_size)
 
         # Draw bar chart
-        plt.subplots(figsize=(12, 3))
+        _, axes = plt.subplots(1, num_plts, figsize=(12, 3))
         plt.tight_layout()
-        count = 1
+        count = 0
 
         for idx, data_size in enumerate([32, 64, 128, 256, 512, 1024]):
-            if data_size not in [32, 128, 512]: continue
-            num_plts = 6
+            if data_size not in dis_data_size: continue
 
             # Set y labels
-            ylabel = methods if count == 1 else None
+            ylabel = methods if count == 0 else None
+
+            # Set fwd and bwd data
+            data_fwd = np.log10(data_matrix[:, idx * 2])
+            data_bwd = np.log10(data_matrix[:, idx * 2 + 1])
 
             # Plot
-            plot_hor(count, data_matrix[:, idx * 2], num_plts=num_plts, xlabel=fr'5$\times${data_size}, fwd', ylabel=ylabel, methods=methods)
-            plot_hor(count + 1, data_matrix[:, idx * 2 + 1], num_plts=num_plts, xlabel=fr'5$\times${data_size}, bwd', methods=methods)
+            plot_hor(axes[count], data_fwd, xlabel=fr'5$\times${data_size}, fwd', ylabel=ylabel, methods=methods)
+            plot_hor(axes[count + 1], data_bwd, xlabel=fr'5$\times${data_size}, bwd', methods=methods)
             count += 2
 
         # Save figure
