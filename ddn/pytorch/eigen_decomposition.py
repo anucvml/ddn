@@ -30,7 +30,7 @@ class EigenDecompositionFcn(torch.autograd.Function):
 
         zero = torch.zeros(1, dtype=lmd.dtype, device=lmd.device)
         L = lmd[:, -K:].view(B, 1, K) - lmd.view(B, M, 1)
-        torch.where(torch.abs(L) < EigenDecompositionFcn.eps, zero, 1.0 / L, out=L)
+        L = torch.where(torch.abs(L) < EigenDecompositionFcn.eps, zero, 1.0 / L)
         dJdX = torch.bmm(torch.bmm(Y, L * torch.bmm(Y.transpose(1, 2), dJdY)), Y[:, :, -K:].transpose(1, 2))
 
         dJdX = 0.5 * (dJdX + dJdX.transpose(1, 2))
