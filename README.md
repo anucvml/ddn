@@ -25,6 +25,10 @@ which if you would like to reference in your research please cite as:
 }
 ```
 
+## Installing
+
+Either clone code from GitHub or install with `pip install "git+https://github.com/anucvml/ddn.git"`.
+
 ## Running code
 
 When running code from the command line make sure you add the `ddn` package to your PYTHONPATH. For example:
