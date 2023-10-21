@@ -17,5 +17,6 @@ setup(
     author_email='stephen.gould@anu.edu.au',
     url='http://deepdeclarativenetworks.com',
     license=license,
-    packages=['ddn']
+    packages=find_packages(),
+    install_requires=["autograd"],
 )
