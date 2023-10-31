@@ -33,6 +33,21 @@ from ddn.pytorch.eigen_decomposition import EigenDecompositionFcn
 # --- alternative versions ---
 #
 
+class EigenDecompositionFcn_eigh:
+    """Helper class for profiling eigh backward pass."""
+
+    @staticmethod
+    def apply(X, top_k=None):
+        B, M, N = X.shape
+        assert N == M
+        assert (top_k is None) or (1 <= top_k <= M)
+
+        X = 0.5 * (X + X.transpose(1, 2))
+        lmd, Y = torch.linalg.eigh(X)
+
+        return Y if top_k is None else Y[:, :, -top_k:]
+
+
 class EigenDecompositionFcn_v1(torch.autograd.Function):
     """PyTorch autograd function for eigen decomposition real symmetric matrices. Returns all eigenvectors
     or just eigenvectors associated with the top-k eigenvalues."""
@@ -225,6 +240,7 @@ if __name__ == '__main__':
 
         for m in (5, 8, 16):
             for f in [EigenDecompositionFcn,
+                      EigenDecompositionFcn_eigh,
                       EigenDecompositionFcn_v1,
                       EigenDecompositionFcn_v2,
                       EigenDecompositionFcn_v3]:
@@ -243,6 +259,7 @@ if __name__ == '__main__':
         for device in devices:
             data = {}
             for f in [EigenDecompositionFcn,
+                      EigenDecompositionFcn_eigh,
                       EigenDecompositionFcn_v1,
                       EigenDecompositionFcn_v2,
                       EigenDecompositionFcn_v3]:
@@ -256,14 +273,15 @@ if __name__ == '__main__':
                 data[f.__name__] = {'time_fwd': time_fwd, 'time_bck': time_bck, 'total_mem': mem}
 
             fig, ax = plt.subplots(1, 1)
-            b = plt.bar(tuple(range(5)), [data['EigenDecompositionFcn']['time_fwd'],
+            b = plt.bar(tuple(range(6)), [data['EigenDecompositionFcn']['time_fwd'],
                                           data['EigenDecompositionFcn_v1']['time_bck'],
                                           data['EigenDecompositionFcn_v2']['time_bck'],
                                           data['EigenDecompositionFcn_v3']['time_bck'],
-                                          data['EigenDecompositionFcn']['time_bck']],
-                        log=True, color=['r', 'b', 'b', 'b', 'b'])
-            ax.set_xticks(range(5))
-            ax.set_xticklabels(['fwd', 'bck (v1)', 'bck (v2)', 'bck (v3)', 'bck (final)'])
+                                          data['EigenDecompositionFcn']['time_bck'],
+                                          data['EigenDecompositionFcn_eigh']['time_bck']],
+                log=True, color=['r', 'b', 'b', 'b', 'b', 'g'])
+            ax.set_xticks(range(6))
+            ax.set_xticklabels(['fwd', 'bck (v1)', 'bck (v2)', 'bck (v3)', 'bck (final)', 'bck (eigh)'])
             # add counts above the two bar graphs
             for rect in b:
                 height = rect.get_height()
