@@ -182,7 +182,7 @@ def speed_memory_test(fnc, data_sz, num_iter_speed=1000, num_iter_memory=5, devi
     time_backward = time_backward_total * 1000 / (num_iter_speed - 1)
 
     # Memory, the first loop is ignored, set num_iter_memory small for fast test
-    if device == 'cpu':
+    if device == torch.device('cpu'):
         X = generate_random_data(B, M, dtype=dtype, device=device)
 
         with profiler.profile(profile_memory=True) as prof:
@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
     if True:
         # profiling
-        devices = ['cpu', 'cuda'] if torch.cuda.is_available() else ['cpu']
+        devices = [torch.device('cpu'), torch.device('cuda')] if torch.cuda.is_available() else [torch.device('cpu')]
         
         for device in devices:
             data = {}
@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
                 torch.cuda.empty_cache()
                 time_fwd, time_bck, mem = speed_memory_test(lambda X: f.apply(X, None),
-                    (5 if device == 'cpu' else 1000, 32),
+                    (5 if device == torch.device('cpu') else 1000, 32),
                     num_iter_speed=1000, num_iter_memory=5, device=device, dtype=torch.float32)
 
                 print(f.__name__, time_fwd, time_bck, mem)
