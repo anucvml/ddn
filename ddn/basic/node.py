@@ -162,6 +162,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
             v = sci.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1), assume_a='pos')
         except:
             return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
+        assert v[:, 0].dot(a) != 0.0, "a^T H^{-1} a is zero"
         return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()
 
     def _get_nu_star(self, x, y):
