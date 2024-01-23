@@ -295,6 +295,7 @@ if __name__ == '__main__':
     from torch.nn.functional import normalize
 
     torch.manual_seed(0)
+    print(torch.__version__)
 
     M = torch.randn((3, 5, 7), dtype=torch.double, requires_grad=True)
     f = OptimalTransportFcn().apply
@@ -354,4 +355,21 @@ if __name__ == '__main__':
     print(test)
 
     test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, 'fullchol'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    # shared M, different r and c
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+    M_shared = torch.randn((M.shape[1], M.shape[2]), dtype=torch.double, requires_grad=True)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, 'block'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, 'full'), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, 'fullchol'), eps=1e-6, atol=1e-3, rtol=1e-6)
     print(test)
