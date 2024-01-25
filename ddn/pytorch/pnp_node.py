@@ -52,11 +52,11 @@ class PnP(AbstractDeclarativeNode):
         Return Values:
             objective value: (b, ) Torch tensor
         """
-        if self.objective_type is 'cosine':
+        if self.objective_type == 'cosine':
             return self.objective_cosine(p2d, p3d, w, K, y)
-        elif self.objective_type is 'reproj':
+        elif self.objective_type == 'reproj':
             return self.objective_reproj(p2d, p3d, w, K, y)
-        elif self.objective_type is 'reproj_huber':
+        elif self.objective_type == 'reproj_huber':
             return self.objective_reproj_huber(p2d, p3d, w, K, y)
 
     def objective_cosine(self, p2d, p3d, w, K, theta):

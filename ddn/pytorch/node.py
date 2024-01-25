@@ -281,17 +281,16 @@ class AbstractDeclarativeNode(AbstractNode):
         if len(B.size()) == 2:
             B = B.unsqueeze(-1)
         try: # Batchwise Cholesky solve
-            A_decomp = torch.cholesky(A, upper=False)
+            A_decomp = torch.linalg.cholesky(A, upper=False)
             X = torch.cholesky_solve(B, A_decomp, upper=False) # bxmxn
-        except: # Revert to loop if batchwise solve fails
+        except RuntimeError: # Revert to loop if batchwise solve fails
             X = torch.zeros_like(B)
             for i in range(A.size(0)):
                 try: # Cholesky solve
-                    A_decomp = torch.cholesky(A[i, ...], upper=False)
-                    X[i, ...] = torch.cholesky_solve(B[i, ...], A_decomp,
-                        upper=False) # mxn
-                except: # Revert to LU solve
-                    X[i, ...], _ = torch.solve(B[i, ...], A[i, ...]) # mxn
+                    A_decomp = torch.linalg.cholesky(A[i, ...], upper=False)
+                    X[i, ...] = torch.cholesky_solve(B[i, ...], A_decomp, upper=False) # mxn
+                except RuntimeError: # Revert to LU solve
+                    X[i, ...] = torch.linalg.solve(A[i, ...], B[i, ...])[0] # mxn
         if B_sizes is not None:
             X = X.split(B_sizes, dim=-1)
         return X
@@ -512,7 +511,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         p = hY.size(1)
         nu = fY.new_zeros(self.b, p)
         for i in range(self.b): # loop over batch
-            solution,_ = torch.lstsq(fY[i, :].unsqueeze(-1), hY[i, :, :].t())
+            solution = torch.linalg.lstsq(hY[i, :, :].t(), fY[i, :].unsqueeze(-1))[0]
             nu[i, :] = solution[:p, :].squeeze() # extract first p values
         return nu
 

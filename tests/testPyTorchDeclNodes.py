@@ -48,6 +48,7 @@ def scalar_to_batched_tensor(a, batch_size, dtype=None, device=None, requires_gr
 	else:
 		return a
 
+
 # Polynomial
 print("\nPolynomial Example:\n")
 node = UnconstPolynomial()
@@ -101,8 +102,10 @@ test_node(node, xs)
 # QuadFcnOnBall:
 print("\nQuadFcnOnBall:\n")
 node = QuadFcnOnBall()
-x = torch.randn(3, 4, dtype=torch.double, requires_grad=True)
+z = torch.randn(3, 4, dtype=torch.double, requires_grad=False)
 # Force at least one xi to be ||xi|| < 1.0
-x[1, :] = x[1, :] / torch.sqrt(torch.einsum('bm,bm->b', (x, x))[1]) / 1.1
+z[1, :] = z[1, :] / torch.sqrt(torch.einsum('bm,bm->b', (z, z))[1]) / 1.1
+x = z.clone().detach().requires_grad_(True)
 xs = (x,)
 test_node(node, xs)
+
