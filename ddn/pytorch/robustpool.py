@@ -89,9 +89,9 @@ class Huber():
     def phi(z, alpha = 1.0):
         """ Huber penalty function
 
-                        / 0.5 z^2 for |z| <= alpha
+                        | 0.5 z^2 for |z| <= alpha
         phi(z; alpha) = |
-                        \ alpha (|z| - 0.5 alpha) else
+                        | alpha (|z| - 0.5 alpha) else
 
         Arguments:
             z: (b, ...) Torch tensor,
@@ -166,9 +166,9 @@ class TruncatedQuadratic():
     def phi(z, alpha = 1.0):
         """ Truncated quadratic penalty function
 
-                        / 0.5 z^2 for |z| <= alpha
+                        | 0.5 z^2 for |z| <= alpha
         phi(z; alpha) = |
-                        \ 0.5 alpha^2 else
+                        | 0.5 alpha^2 else
 
         Arguments:
             z: (b, ...) Torch tensor,
