@@ -85,8 +85,8 @@ class PnP(AbstractDeclarativeNode):
         """Weighted Huber reprojection error
         f(p2d, p3d, w, K, y) = sum_{i=1}^n
             w_i * rho(pi(p3d_i, K, y) - p2d_i, alpha)
-            where rho(z, alpha) = / 0.5 z^2 for |z| <= alpha
-                                  \ alpha * (|z| - 0.5 * alpha) else
+            where rho(z, alpha) = 0.5 z^2 for |z| <= alpha
+                                  alpha * (|z| - 0.5 * alpha) else
             and pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
             where h2i(x) = [x1 / x3, x2 / x3]
         """
