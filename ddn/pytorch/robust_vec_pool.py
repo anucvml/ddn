@@ -3,9 +3,9 @@
 # ROBUST VECTOR POOLING
 # Implements robust pooling of vector arguments by solving,
 #
-#    minimize \sum_{i=1}^{n} \phi(\|u - x_i\|_2; \alpha)
+#    minimize sum_{i=1}^{n} phi(||u - x_i||_2; alpha)
 #
-# over u in R^m, where \phi is a (robust) penalty function, one of:
+# over u in R^m, where phi is a (robust) penalty function, one of:
 #   quadratic
 #   pseudo-huber
 #   huber
