@@ -51,6 +51,11 @@ or viewed using using [jupyter.org's notebook viewer](https://nbviewer.jupyter.o
 Reference (PyTorch) applications for image and point cloud classification can be found under the `apps`
 directory. See the `README` files therein for instructions on installation and how to run.
 
+Documentation can be generated using:
+```
+pdoc --html --output-dir docs ddn
+```
+
 ## License
 
 The `ddn` library is distributed under the MIT license. See the [LICENSE](LICENSE) file for details.
