@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.leastsquares API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.leastsquares</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python
+#
+# LEAST SQUARES NODES
+# Implementation of differentiable weighted and unweighted least squares nodes. Can be used for rank pooling operations
+# as well as many other tasks. See accompanying Jupyter Notebook tutorial at https://deepdeclarativenetworks.com.
+#
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+# Zhiwei Xu &lt;zhiwei.xu@anu.edu.au&gt;
+#
+
+import torch
+import torch.nn as nn
+import math
+
+#
+# --- PyTorch Functions ---
+#
+
+class BasicLeastSquaresFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for basic least squares problems,
+
+        y = argmin_u ||Au - b||
+
+    solved via QR decomposition.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, A, b, cache_decomposition=True):
+        B, M, N = A.shape
+        assert b.shape == (B, M, 1)
+
+        with torch.no_grad():
+            Q, R = torch.linalg.qr(A, mode=&#39;reduced&#39;)
+            x = torch.linalg.solve_triangular(R, torch.bmm(b.view(B, 1, M), Q).view(B, N, 1), upper=True)
+
+        # save state for backward pass
+        ctx.save_for_backward(A, b, x, R if cache_decomposition else None)
+
+        # return solution
+        return x
+
+    @staticmethod
+    def backward(ctx, dx):
+        # check for None tensors
+        if dx is None:
+            return None, None
+
+        # unpack cached tensors
+        A, b, x, R = ctx.saved_tensors
+        B, M, N = A.shape
+
+        if R is None:
+            _, R = torch.linalg.qr(A, mode=&#39;r&#39;)
+
+        dA, db = None, None
+
+        w = torch.linalg.solve_triangular(R, torch.linalg.solve_triangular(torch.transpose(R, 2, 1), dx, upper=False), upper=True)
+        Aw = torch.bmm(A, w)
+
+        if ctx.needs_input_grad[0]:
+            r = b - torch.bmm(A, x)
+            dA = torch.bmm(r.view(B, M, 1), w.view(B, 1, N)) - torch.bmm(Aw.view(B, M, 1), x.view(B, 1, N))
+        if ctx.needs_input_grad[1]:
+            db = Aw
+
+        # return gradients (None for non-tensor inputs)
+        return dA, db, None
+
+
+class WeightedLeastSquaresFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for weighted least squares,
+
+        y, y_0 = argmin_{u, u_0} 1/2 sum_i w_i (x_i^T u + u_0 - t_i)^2 + beta/2 ||u||^2,
+
+    returning y and y_0. Features x, target t and weights w are all provided as input.
+
+    Assumes the input data (features) is provided as a (B,C,T) tensor, which is interpreted
+    as B sequences of C-dimensional features, each sequence of length T. Weights and target
+    are provided as (B,1,T) or (1,1,T) tensors. In the case of the latter, the values are
+    replicated across batches, which may be useful if learning them as shared parameters
+    in the model. Outputs are (B,C) and (B,1) tensors for y and y_0, respectively. Weights
+    can also be None, indicating uniform weighting.
+
+    Works well for feature sizes (C) up to 1024 dimensions.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        # allocate output tensors
+        B, C, T = input.shape
+        assert target.shape == (B, 1, T) or target.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, target.shape)
+        assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, weights.shape)
+
+        inverse_mode = inverse_mode.lower()
+        U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias; otherwise, in R^{n*n}, where n=C.
+
+        with torch.no_grad():
+            # replicate across batch if sharing weights or target
+            if target.shape[0] != B:
+                target = target.repeat(B, 1, 1)
+                ctx.collapse_target = True
+            else:
+                ctx.collapse_target = False
+            if weights is not None and weights.shape[0] != B:
+                weights = weights.repeat(B, 1, 1)
+                ctx.collapse_weights = True
+            else:
+                ctx.collapse_weights = False
+
+            # compute solution y and pack into output
+            # Warning: if beta is zero or too small then the problem may not be strongly convex
+            L, R = None, None
+            if inverse_mode == &#39;qr&#39;:  # need to get A for A=QR
+                weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+                weightedsqrtX = input if (weights is None) else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+                weightedsqrtT = target.view(B, -1) if (weights is None) else torch.einsum(&#34;bm,bm-&gt;bm&#34;, target.view(B, -1), weightedsqrt).view(B, -1)
+                A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+                b = torch.cat((weightedsqrtT, torch.zeros(B, C)), 1).view(B, C + T)
+
+                # solve x = (R)^{-1} Q^T b
+                if enable_bias:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, -1, :T] = weightedsqrt
+                    A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                    A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+                else:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+                Q, R = torch.linalg.qr(A.permute(0, 2, 1))
+                Qtb = torch.einsum(&#34;bij,bi-&gt;bj&#34;, Q, b).view(B, -1, 1)
+                y = torch.linalg.solve_triangular(R, Qtb, upper=True)
+
+                R = R if cache_decomposition else None
+            else:  # need to get AtA
+                weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+                weightedTSum = target.sum(2).view(B, 1) if weights is None else torch.einsum(&#34;bm,bm-&gt;b&#34;, target.view(B, -1), weights.view(B, -1)).view(B, 1)
+                weightedXdotT = torch.einsum(&#34;bnm,bm-&gt;bn&#34;, weightedX, target.view(B, -1))
+
+                # solve x = (A^TA)^{-1} A^T b
+                if enable_bias:
+                    AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                    AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                    AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                                     (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                    Atb = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
+                else:
+                    AtA = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                          (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    Atb = weightedXdotT.view(B, U_sz, 1)
+
+                if cache_decomposition:
+                    L = torch.linalg.cholesky(AtA)
+                    y = torch.cholesky_solve(Atb, L)
+                else:
+                    y = torch.linalg.solve(AtA, Atb)
+
+            # assign to output
+            output = y[:, :C, 0].squeeze(-1)
+            bias = y[:, C, 0].view(B, 1) if enable_bias else torch.zeros((B, 1), device=input.device, dtype=input.dtype)
+
+        # save state for backward pass
+        ctx.save_for_backward(input, target, weights, output, bias, L, R)
+        ctx.beta = beta
+        ctx.enable_bias = enable_bias
+        ctx.inverse_mode = inverse_mode
+
+        # return rank pool vector and bias
+        return output, bias
+
+    @staticmethod
+    def backward(ctx, grad_output, grad_bias):
+        # check for None tensors
+        if grad_output is None and grad_bias is None:
+            return None, None
+
+        # unpack cached tensors
+        input, target, weights, output, bias, L, R = ctx.saved_tensors
+        enable_bias = ctx.enable_bias
+        inverse_mode = ctx.inverse_mode
+        B, C, T = input.shape
+        U_sz = C + 1 if enable_bias else C
+        weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+
+        # solve for w = (R^TR)^{-1} v for QR; w = (A^TA)^{-1} v for others
+        if enable_bias:
+            v = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
+        else:
+            v = grad_output.view(B, U_sz, 1)
+
+        if inverse_mode == &#39;qr&#39;:
+            if R is None:
+                weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+                weightedsqrtX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+                A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+
+                if enable_bias:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, -1, :T] = weightedsqrt
+                    A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                    A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+                else:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+                _, R = torch.linalg.qr(A.permute(0, 2, 1))
+
+            w = torch.linalg.solve(torch.einsum(&#34;bij,bik-&gt;bjk&#34;, R, R), v)
+        else:
+            if L is None:
+                if enable_bias:
+                    AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                    AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                    AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                        (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                else:
+                    AtA= torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                         (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+
+                w = torch.linalg.solve(AtA, v)
+            else:
+                w = torch.cholesky_solve(v, L)
+
+        # compute w^T B
+        grad_weights = None
+        if enable_bias:
+            bias = bias.view(B, 1)
+            w_bias = w[:, C].view(B, 1)
+        else:
+            bias, w_bias = 0.0, 0.0
+
+        if weights is not None:
+            grad_input = w[:, :C].view(B, C, 1) * torch.mul(weights,
+                (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T)) - \
+                torch.mul(weights, (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T)) * \
+                output.view(B, C, 1)
+
+            grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) +
+                w_bias * weights.view(B, T)).view(B, 1, T)
+
+            grad_weights = ((target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias) *
+                (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias)).view(B, 1, T)
+        else:
+            grad_input = w[:, :C].view(B, C, 1) * \
+                (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T) - \
+                (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T) * \
+                output.view(B, C, 1)
+
+            grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) + w_bias).view(B, 1, T)
+
+        if ctx.collapse_target:
+            grad_target = torch.sum(grad_target, 0, keepdim=True)
+        if ctx.collapse_weights:
+            grad_weights = torch.sum(grad_weights, 0, keepdim=True)
+
+        # return gradients (None for `beta`, `cache_decomposition`, &#39;enable_bias&#39;, &#39;inverse_mode&#39;)
+        return grad_input, grad_target, grad_weights, None, None, None, None
+
+
+#
+# --- PyTorch Modules ---
+#
+
+class LeastSquaresLayer(nn.Module):
+    &#34;&#34;&#34;Neural network layer to implement (unweighted) least squares fitting.&#34;&#34;&#34;
+
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        super(LeastSquaresLayer, self).__init__()
+        self.beta = beta
+        self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
+        self.inverse_mode = inverse_mode
+
+    def forward(self, input, target):
+        return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition,
+                                             self.enable_bias, self.inverse_mode)
+
+class WeightedLeastSquaresLayer(nn.Module):
+    &#34;&#34;&#34;Neural network layer to implement weighted least squares fitting.&#34;&#34;&#34;
+
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        super(WeightedLeastSquaresLayer, self).__init__()
+        self.beta = beta
+        self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
+        self.inverse_mode = inverse_mode
+
+    def forward(self, input, target, weights):
+        return WeightedLeastSquaresFcn.apply(input, target, weights, self.beta, self.cache_decomposition,
+                                             self.enable_bias, self.inverse_mode)
+
+#
+# --- Test Gradient ---
+#
+
+if __name__ == &#39;__main__&#39;:
+    from torch.autograd import gradcheck
+
+    # device = torch.device(&#34;cuda&#34;)
+    device = torch.device(&#34;cpu&#34;)
+
+    # --- test basic least squares function
+    B, M, N = 2, 10, 5
+    fcn = BasicLeastSquaresFcn.apply
+
+    torch.manual_seed(0)
+    A = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=True)
+    b = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=True)
+    A_static = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=False)
+    b_static = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=False)
+
+    # foward pass tests
+    x_true = torch.linalg.lstsq(A, b, driver=&#39;gels&#39;).solution
+    x_test = fcn(A, b)
+    print(&#34;Forward test of BasicLeastSquaresFcn: {}&#34;.format(torch.allclose(x_true, x_test)))
+
+    # backward pass tests
+    test = gradcheck(fcn, (A, b_static, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(&#34;Backward test of BasicLeastSquaresFcn A grad: {}&#34;.format(test))
+    test = gradcheck(fcn, (A, b_static, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(&#34;Backward test of BasicLeastSquaresFcn (no cache) A grad: {}&#34;.format(test))
+
+    test = gradcheck(fcn, (A_static, b, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(&#34;Backward test of BasicLeastSquaresFcn b grad: {}&#34;.format(test))
+    test = gradcheck(fcn, (A_static, b, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(&#34;Backward test of BasicLeastSquaresFcn (no cache) b grad: {}&#34;.format(test))
+
+    # --- test weighted least squares function
+
+    B, C, T = 2, 64, 12
+    X = torch.randn((B, C, T), dtype=torch.double, device=device, requires_grad=True)
+    W1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
+    T1 = torch.rand((B, 1, T), dtype=torch.double, device=device, requires_grad=True)
+    W2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
+    T2 = torch.rand((1, 1, T), dtype=torch.double, device=device, requires_grad=True)
+    f = WeightedLeastSquaresFcn.apply
+
+    for inverse_mode in [&#39;qr&#39;, &#39;cholesky&#39;]:
+        for enable_bias in [True, False]:
+            # Forward check
+            print(&#34;Foward test of WeightedLeastSquaresFcn, mode: {}, bias: {}...&#34;.format(inverse_mode, enable_bias))
+            y, y0 = f(X, T1, torch.ones_like(W1), 1.0e-6, False, enable_bias, inverse_mode)
+            if torch.allclose(torch.einsum(&#34;bnm,bn-&gt;bm&#34;, X, y) + y0, T1.view(B, T), atol=1.0e-5, rtol=1.0e-3):
+                print(&#34;Passed&#34;)
+            else:
+                print(&#34;Failed&#34;)
+                print(torch.einsum(&#34;bnm,bn-&gt;bm&#34;, X, y) + y0 - T1.view(B, T))
+
+            ytilde, y0tilde = f(X, T1, None, 1.0e-6, False, enable_bias, inverse_mode)
+            if torch.allclose(ytilde, y) and torch.allclose(y0tilde, y0):
+                print(&#34;Passed&#34;)
+            else:
+                print(&#34;Failed&#34;)
+                print(y - ytilde)
+                print(y0 - y0tilde)
+
+            # Backward check
+            print(&#34;Gradient test on WeightedLeastSquaresFcn, mode: {}, bias: {}...&#34;.format(inverse_mode, enable_bias))
+            test = gradcheck(f, (X, T1, W1, 1.0e-3, False, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+            test = gradcheck(f, (X, T2, W2, 1.0e-3, False, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+
+            f = WeightedLeastSquaresFcn.apply
+            test = gradcheck(f, (X, T1, W1, 1.0e-3, True, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+            test = gradcheck(f, (X, T2, W2, 1.0e-3, True, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+
+            print(&#34;Gradient test on (unweighted) WeightedLeastSquaresFcn, mode: {}, bias: {}...&#34;.format(inverse_mode, enable_bias))
+            f = WeightedLeastSquaresFcn.apply
+            test = gradcheck(f, (X, T1, None, 1.0e-3, False, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+            test = gradcheck(f, (X, T2, None, 1.0e-3, False, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+
+            f = WeightedLeastSquaresFcn.apply
+            test = gradcheck(f, (X, T1, None, 1.0e-3, True, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+            test = gradcheck(f, (X, T2, None, 1.0e-3, True, enable_bias, inverse_mode), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(test)
+
+    print(&#34;Foward test of WeightedLeastSquaresFcn bias True vs False...&#34;)
+    y_true, y0_true = f(X, T1, torch.ones_like(W1), 1.0e-6, False, True)
+    y_false, y0_false = f(X, T1, None, 1.0e-6, False, False)
+    if torch.allclose(y_true, y_false) and torch.allclose(y0_true, y0_false) and (y0_false != 0.0):
+        print(&#34;Failed&#34;)
+        print(y_true, y_false)
+        print(y0_true, y0_false)
+    else:
+        print(&#34;Passed&#34;)
+
+    print(&#34;Foward test of WeightedLeastSquaresFcn mode Cholesky vs QR...&#34;)
+    y_chol, y0_chol = f(X, T1, None, 1.0e-6, False, True, &#39;cholesky&#39;)
+    y_qr, y0_qr = f(X, T1, None, 1.0e-6, False, True, &#39;qr&#39;)
+    if torch.allclose(y_chol, y_qr) and torch.allclose(y0_chol, y0_qr):
+        print(&#34;Passed&#34;)
+    else:
+        print(&#34;Failed&#34;)
+        print(y_chol, y_qr)
+        print(y0_chol, y0_qr)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.pytorch.leastsquares.BasicLeastSquaresFcn"><code class="flex name class">
+<span>class <span class="ident">BasicLeastSquaresFcn</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PyTorch autograd function for basic least squares problems,</p>
+<pre><code>y = argmin_u ||Au - b||
+</code></pre>
+<p>solved via QR decomposition.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BasicLeastSquaresFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for basic least squares problems,
+
+        y = argmin_u ||Au - b||
+
+    solved via QR decomposition.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, A, b, cache_decomposition=True):
+        B, M, N = A.shape
+        assert b.shape == (B, M, 1)
+
+        with torch.no_grad():
+            Q, R = torch.linalg.qr(A, mode=&#39;reduced&#39;)
+            x = torch.linalg.solve_triangular(R, torch.bmm(b.view(B, 1, M), Q).view(B, N, 1), upper=True)
+
+        # save state for backward pass
+        ctx.save_for_backward(A, b, x, R if cache_decomposition else None)
+
+        # return solution
+        return x
+
+    @staticmethod
+    def backward(ctx, dx):
+        # check for None tensors
+        if dx is None:
+            return None, None
+
+        # unpack cached tensors
+        A, b, x, R = ctx.saved_tensors
+        B, M, N = A.shape
+
+        if R is None:
+            _, R = torch.linalg.qr(A, mode=&#39;r&#39;)
+
+        dA, db = None, None
+
+        w = torch.linalg.solve_triangular(R, torch.linalg.solve_triangular(torch.transpose(R, 2, 1), dx, upper=False), upper=True)
+        Aw = torch.bmm(A, w)
+
+        if ctx.needs_input_grad[0]:
+            r = b - torch.bmm(A, x)
+            dA = torch.bmm(r.view(B, M, 1), w.view(B, 1, N)) - torch.bmm(Aw.view(B, M, 1), x.view(B, 1, N))
+        if ctx.needs_input_grad[1]:
+            db = Aw
+
+        # return gradients (None for non-tensor inputs)
+        return dA, db, None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.autograd.function.Function</li>
+<li>torch.autograd.function._SingleLevelFunction</li>
+<li>torch._C._FunctionBase</li>
+<li>torch.autograd.function.FunctionCtx</li>
+<li>torch.autograd.function._HookMixin</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ddn.pytorch.leastsquares.BasicLeastSquaresFcn.backward"><code class="name flex">
+<span>def <span class="ident">backward</span></span>(<span>ctx, dx)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines a formula for differentiating the operation with backward mode
+automatic differentiation (alias to the vjp function).</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context :attr:<code>ctx</code> as the first argument, followed by
+as many outputs as the :func:<code>forward</code> returned (None will be passed in
+for non tensor outputs of the forward function),
+and it should return as many tensors, as there were inputs to
+:func:<code>forward</code>. Each argument is the gradient w.r.t the given output,
+and each returned value should be the gradient w.r.t. the
+corresponding input. If an input is not a Tensor or is a Tensor not
+requiring grads, you can just pass None as a gradient for that input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute :attr:<code>ctx.needs_input_grad</code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+:func:<code>backward</code> will have <code>ctx.needs_input_grad[0] = True</code> if the
+first input to :func:<code>forward</code> needs gradient computed w.r.t. the
+output.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def backward(ctx, dx):
+    # check for None tensors
+    if dx is None:
+        return None, None
+
+    # unpack cached tensors
+    A, b, x, R = ctx.saved_tensors
+    B, M, N = A.shape
+
+    if R is None:
+        _, R = torch.linalg.qr(A, mode=&#39;r&#39;)
+
+    dA, db = None, None
+
+    w = torch.linalg.solve_triangular(R, torch.linalg.solve_triangular(torch.transpose(R, 2, 1), dx, upper=False), upper=True)
+    Aw = torch.bmm(A, w)
+
+    if ctx.needs_input_grad[0]:
+        r = b - torch.bmm(A, x)
+        dA = torch.bmm(r.view(B, M, 1), w.view(B, 1, N)) - torch.bmm(Aw.view(B, M, 1), x.view(B, 1, N))
+    if ctx.needs_input_grad[1]:
+        db = Aw
+
+    # return gradients (None for non-tensor inputs)
+    return dA, db, None</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.leastsquares.BasicLeastSquaresFcn.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>ctx, A, b, cache_decomposition=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function is to be overridden by all subclasses. There are two ways
+to define forward:</p>
+<p>Usage 1 (Combined forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(ctx: Any, *args: Any, **kwargs: Any) -&gt; Any:
+    pass
+</code></pre>
+<ul>
+<li>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</li>
+<li>See :ref:<code>combining-forward-context</code> for more details</li>
+</ul>
+<p>Usage 2 (Separate forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(*args: Any, **kwargs: Any) -&gt; Any:
+    pass
+
+@staticmethod
+def setup_context(ctx: Any, inputs: Tuple[Any, ...], output: Any) -&gt; None:
+    pass
+</code></pre>
+<ul>
+<li>The forward no longer accepts a ctx argument.</li>
+<li>Instead, you must also override the :meth:<code>torch.autograd.Function.setup_context</code>
+staticmethod to handle setting up the <code>ctx</code> object.
+<code>output</code> is the output of the forward, <code>inputs</code> are a Tuple of inputs
+to the forward.</li>
+<li>See :ref:<code>extending-autograd</code> for more details</li>
+</ul>
+<p>The context can be used to store arbitrary data that can be then
+retrieved during the backward pass. Tensors should not be stored
+directly on <code>ctx</code> (though this is not currently enforced for
+backward compatibility). Instead, tensors should be saved either with
+:func:<code>ctx.save_for_backward</code> if they are intended to be used in
+<code>backward</code> (equivalently, <code>vjp</code>) or :func:<code>ctx.save_for_forward</code>
+if they are intended to be used for in <code>jvp</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def forward(ctx, A, b, cache_decomposition=True):
+    B, M, N = A.shape
+    assert b.shape == (B, M, 1)
+
+    with torch.no_grad():
+        Q, R = torch.linalg.qr(A, mode=&#39;reduced&#39;)
+        x = torch.linalg.solve_triangular(R, torch.bmm(b.view(B, 1, M), Q).view(B, N, 1), upper=True)
+
+    # save state for backward pass
+    ctx.save_for_backward(A, b, x, R if cache_decomposition else None)
+
+    # return solution
+    return x</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.leastsquares.LeastSquaresLayer"><code class="flex name class">
+<span>class <span class="ident">LeastSquaresLayer</span></span>
+<span>(</span><span>beta=0.001, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Neural network layer to implement (unweighted) least squares fitting.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LeastSquaresLayer(nn.Module):
+    &#34;&#34;&#34;Neural network layer to implement (unweighted) least squares fitting.&#34;&#34;&#34;
+
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        super(LeastSquaresLayer, self).__init__()
+        self.beta = beta
+        self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
+        self.inverse_mode = inverse_mode
+
+    def forward(self, input, target):
+        return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition,
+                                             self.enable_bias, self.inverse_mode)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.leastsquares.LeastSquaresLayer.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input, target) -> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input, target):
+    return WeightedLeastSquaresFcn.apply(input, target, None, self.beta, self.cache_decomposition,
+                                         self.enable_bias, self.inverse_mode)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn"><code class="flex name class">
+<span>class <span class="ident">WeightedLeastSquaresFcn</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PyTorch autograd function for weighted least squares,</p>
+<pre><code>y, y_0 = argmin_{u, u_0} 1/2 sum_i w_i (x_i^T u + u_0 - t_i)^2 + beta/2 ||u||^2,
+</code></pre>
+<p>returning y and y_0. Features x, target t and weights w are all provided as input.</p>
+<p>Assumes the input data (features) is provided as a (B,C,T) tensor, which is interpreted
+as B sequences of C-dimensional features, each sequence of length T. Weights and target
+are provided as (B,1,T) or (1,1,T) tensors. In the case of the latter, the values are
+replicated across batches, which may be useful if learning them as shared parameters
+in the model. Outputs are (B,C) and (B,1) tensors for y and y_0, respectively. Weights
+can also be None, indicating uniform weighting.</p>
+<p>Works well for feature sizes (C) up to 1024 dimensions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WeightedLeastSquaresFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for weighted least squares,
+
+        y, y_0 = argmin_{u, u_0} 1/2 sum_i w_i (x_i^T u + u_0 - t_i)^2 + beta/2 ||u||^2,
+
+    returning y and y_0. Features x, target t and weights w are all provided as input.
+
+    Assumes the input data (features) is provided as a (B,C,T) tensor, which is interpreted
+    as B sequences of C-dimensional features, each sequence of length T. Weights and target
+    are provided as (B,1,T) or (1,1,T) tensors. In the case of the latter, the values are
+    replicated across batches, which may be useful if learning them as shared parameters
+    in the model. Outputs are (B,C) and (B,1) tensors for y and y_0, respectively. Weights
+    can also be None, indicating uniform weighting.
+
+    Works well for feature sizes (C) up to 1024 dimensions.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        # allocate output tensors
+        B, C, T = input.shape
+        assert target.shape == (B, 1, T) or target.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, target.shape)
+        assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, weights.shape)
+
+        inverse_mode = inverse_mode.lower()
+        U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias; otherwise, in R^{n*n}, where n=C.
+
+        with torch.no_grad():
+            # replicate across batch if sharing weights or target
+            if target.shape[0] != B:
+                target = target.repeat(B, 1, 1)
+                ctx.collapse_target = True
+            else:
+                ctx.collapse_target = False
+            if weights is not None and weights.shape[0] != B:
+                weights = weights.repeat(B, 1, 1)
+                ctx.collapse_weights = True
+            else:
+                ctx.collapse_weights = False
+
+            # compute solution y and pack into output
+            # Warning: if beta is zero or too small then the problem may not be strongly convex
+            L, R = None, None
+            if inverse_mode == &#39;qr&#39;:  # need to get A for A=QR
+                weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+                weightedsqrtX = input if (weights is None) else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+                weightedsqrtT = target.view(B, -1) if (weights is None) else torch.einsum(&#34;bm,bm-&gt;bm&#34;, target.view(B, -1), weightedsqrt).view(B, -1)
+                A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+                b = torch.cat((weightedsqrtT, torch.zeros(B, C)), 1).view(B, C + T)
+
+                # solve x = (R)^{-1} Q^T b
+                if enable_bias:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, -1, :T] = weightedsqrt
+                    A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                    A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+                else:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+                Q, R = torch.linalg.qr(A.permute(0, 2, 1))
+                Qtb = torch.einsum(&#34;bij,bi-&gt;bj&#34;, Q, b).view(B, -1, 1)
+                y = torch.linalg.solve_triangular(R, Qtb, upper=True)
+
+                R = R if cache_decomposition else None
+            else:  # need to get AtA
+                weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+                weightedTSum = target.sum(2).view(B, 1) if weights is None else torch.einsum(&#34;bm,bm-&gt;b&#34;, target.view(B, -1), weights.view(B, -1)).view(B, 1)
+                weightedXdotT = torch.einsum(&#34;bnm,bm-&gt;bn&#34;, weightedX, target.view(B, -1))
+
+                # solve x = (A^TA)^{-1} A^T b
+                if enable_bias:
+                    AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                    AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                    AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                                     (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                    Atb = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
+                else:
+                    AtA = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                          (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    Atb = weightedXdotT.view(B, U_sz, 1)
+
+                if cache_decomposition:
+                    L = torch.linalg.cholesky(AtA)
+                    y = torch.cholesky_solve(Atb, L)
+                else:
+                    y = torch.linalg.solve(AtA, Atb)
+
+            # assign to output
+            output = y[:, :C, 0].squeeze(-1)
+            bias = y[:, C, 0].view(B, 1) if enable_bias else torch.zeros((B, 1), device=input.device, dtype=input.dtype)
+
+        # save state for backward pass
+        ctx.save_for_backward(input, target, weights, output, bias, L, R)
+        ctx.beta = beta
+        ctx.enable_bias = enable_bias
+        ctx.inverse_mode = inverse_mode
+
+        # return rank pool vector and bias
+        return output, bias
+
+    @staticmethod
+    def backward(ctx, grad_output, grad_bias):
+        # check for None tensors
+        if grad_output is None and grad_bias is None:
+            return None, None
+
+        # unpack cached tensors
+        input, target, weights, output, bias, L, R = ctx.saved_tensors
+        enable_bias = ctx.enable_bias
+        inverse_mode = ctx.inverse_mode
+        B, C, T = input.shape
+        U_sz = C + 1 if enable_bias else C
+        weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+
+        # solve for w = (R^TR)^{-1} v for QR; w = (A^TA)^{-1} v for others
+        if enable_bias:
+            v = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
+        else:
+            v = grad_output.view(B, U_sz, 1)
+
+        if inverse_mode == &#39;qr&#39;:
+            if R is None:
+                weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+                weightedsqrtX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+                A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+
+                if enable_bias:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, -1, :T] = weightedsqrt
+                    A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                    A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+                else:
+                    A[:, :C, :T] = weightedsqrtX
+                    A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+                _, R = torch.linalg.qr(A.permute(0, 2, 1))
+
+            w = torch.linalg.solve(torch.einsum(&#34;bij,bik-&gt;bjk&#34;, R, R), v)
+        else:
+            if L is None:
+                if enable_bias:
+                    AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                    AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                    AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                        (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                    AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                else:
+                    AtA= torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                         (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+
+                w = torch.linalg.solve(AtA, v)
+            else:
+                w = torch.cholesky_solve(v, L)
+
+        # compute w^T B
+        grad_weights = None
+        if enable_bias:
+            bias = bias.view(B, 1)
+            w_bias = w[:, C].view(B, 1)
+        else:
+            bias, w_bias = 0.0, 0.0
+
+        if weights is not None:
+            grad_input = w[:, :C].view(B, C, 1) * torch.mul(weights,
+                (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T)) - \
+                torch.mul(weights, (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T)) * \
+                output.view(B, C, 1)
+
+            grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) +
+                w_bias * weights.view(B, T)).view(B, 1, T)
+
+            grad_weights = ((target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias) *
+                (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias)).view(B, 1, T)
+        else:
+            grad_input = w[:, :C].view(B, C, 1) * \
+                (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T) - \
+                (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T) * \
+                output.view(B, C, 1)
+
+            grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) + w_bias).view(B, 1, T)
+
+        if ctx.collapse_target:
+            grad_target = torch.sum(grad_target, 0, keepdim=True)
+        if ctx.collapse_weights:
+            grad_weights = torch.sum(grad_weights, 0, keepdim=True)
+
+        # return gradients (None for `beta`, `cache_decomposition`, &#39;enable_bias&#39;, &#39;inverse_mode&#39;)
+        return grad_input, grad_target, grad_weights, None, None, None, None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.autograd.function.Function</li>
+<li>torch.autograd.function._SingleLevelFunction</li>
+<li>torch._C._FunctionBase</li>
+<li>torch.autograd.function.FunctionCtx</li>
+<li>torch.autograd.function._HookMixin</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.backward"><code class="name flex">
+<span>def <span class="ident">backward</span></span>(<span>ctx, grad_output, grad_bias)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines a formula for differentiating the operation with backward mode
+automatic differentiation (alias to the vjp function).</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context :attr:<code>ctx</code> as the first argument, followed by
+as many outputs as the :func:<code>forward</code> returned (None will be passed in
+for non tensor outputs of the forward function),
+and it should return as many tensors, as there were inputs to
+:func:<code>forward</code>. Each argument is the gradient w.r.t the given output,
+and each returned value should be the gradient w.r.t. the
+corresponding input. If an input is not a Tensor or is a Tensor not
+requiring grads, you can just pass None as a gradient for that input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute :attr:<code>ctx.needs_input_grad</code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+:func:<code>backward</code> will have <code>ctx.needs_input_grad[0] = True</code> if the
+first input to :func:<code>forward</code> needs gradient computed w.r.t. the
+output.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def backward(ctx, grad_output, grad_bias):
+    # check for None tensors
+    if grad_output is None and grad_bias is None:
+        return None, None
+
+    # unpack cached tensors
+    input, target, weights, output, bias, L, R = ctx.saved_tensors
+    enable_bias = ctx.enable_bias
+    inverse_mode = ctx.inverse_mode
+    B, C, T = input.shape
+    U_sz = C + 1 if enable_bias else C
+    weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+
+    # solve for w = (R^TR)^{-1} v for QR; w = (A^TA)^{-1} v for others
+    if enable_bias:
+        v = torch.cat((grad_output, grad_bias), 1).view(B, U_sz, 1)
+    else:
+        v = grad_output.view(B, U_sz, 1)
+
+    if inverse_mode == &#39;qr&#39;:
+        if R is None:
+            weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+            weightedsqrtX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+            A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+
+            if enable_bias:
+                A[:, :C, :T] = weightedsqrtX
+                A[:, -1, :T] = weightedsqrt
+                A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+            else:
+                A[:, :C, :T] = weightedsqrtX
+                A[:, :C, T:] = math.sqrt(ctx.beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+            _, R = torch.linalg.qr(A.permute(0, 2, 1))
+
+        w = torch.linalg.solve(torch.einsum(&#34;bij,bik-&gt;bjk&#34;, R, R), v)
+    else:
+        if L is None:
+            if enable_bias:
+                AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                    (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+            else:
+                AtA= torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                     (ctx.beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+
+            w = torch.linalg.solve(AtA, v)
+        else:
+            w = torch.cholesky_solve(v, L)
+
+    # compute w^T B
+    grad_weights = None
+    if enable_bias:
+        bias = bias.view(B, 1)
+        w_bias = w[:, C].view(B, 1)
+    else:
+        bias, w_bias = 0.0, 0.0
+
+    if weights is not None:
+        grad_input = w[:, :C].view(B, C, 1) * torch.mul(weights,
+            (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T)) - \
+            torch.mul(weights, (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T)) * \
+            output.view(B, C, 1)
+
+        grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) +
+            w_bias * weights.view(B, T)).view(B, 1, T)
+
+        grad_weights = ((target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias) *
+            (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias)).view(B, 1, T)
+    else:
+        grad_input = w[:, :C].view(B, C, 1) * \
+            (target.view(B, T) - torch.einsum(&#34;bn,bnm-&gt;bm&#34;, output.view(B, C), input) - bias).view(B, 1, T) - \
+            (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), input) + w_bias).view(B, 1, T) * \
+            output.view(B, C, 1)
+
+        grad_target = (torch.einsum(&#34;bn,bnm-&gt;bm&#34;, w[:, :C].view(B, C), weightedX) + w_bias).view(B, 1, T)
+
+    if ctx.collapse_target:
+        grad_target = torch.sum(grad_target, 0, keepdim=True)
+    if ctx.collapse_weights:
+        grad_weights = torch.sum(grad_weights, 0, keepdim=True)
+
+    # return gradients (None for `beta`, `cache_decomposition`, &#39;enable_bias&#39;, &#39;inverse_mode&#39;)
+    return grad_input, grad_target, grad_weights, None, None, None, None</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>ctx, input, target, weights=None, beta=0.001, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function is to be overridden by all subclasses. There are two ways
+to define forward:</p>
+<p>Usage 1 (Combined forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(ctx: Any, *args: Any, **kwargs: Any) -&gt; Any:
+    pass
+</code></pre>
+<ul>
+<li>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</li>
+<li>See :ref:<code>combining-forward-context</code> for more details</li>
+</ul>
+<p>Usage 2 (Separate forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(*args: Any, **kwargs: Any) -&gt; Any:
+    pass
+
+@staticmethod
+def setup_context(ctx: Any, inputs: Tuple[Any, ...], output: Any) -&gt; None:
+    pass
+</code></pre>
+<ul>
+<li>The forward no longer accepts a ctx argument.</li>
+<li>Instead, you must also override the :meth:<code>torch.autograd.Function.setup_context</code>
+staticmethod to handle setting up the <code>ctx</code> object.
+<code>output</code> is the output of the forward, <code>inputs</code> are a Tuple of inputs
+to the forward.</li>
+<li>See :ref:<code>extending-autograd</code> for more details</li>
+</ul>
+<p>The context can be used to store arbitrary data that can be then
+retrieved during the backward pass. Tensors should not be stored
+directly on <code>ctx</code> (though this is not currently enforced for
+backward compatibility). Instead, tensors should be saved either with
+:func:<code>ctx.save_for_backward</code> if they are intended to be used in
+<code>backward</code> (equivalently, <code>vjp</code>) or :func:<code>ctx.save_for_forward</code>
+if they are intended to be used for in <code>jvp</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def forward(ctx, input, target, weights=None, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+    # allocate output tensors
+    B, C, T = input.shape
+    assert target.shape == (B, 1, T) or target.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, target.shape)
+    assert weights is None or weights.shape == (B, 1, T) or weights.shape == (1, 1, T), &#34;{} vs {}&#34;.format(input.shape, weights.shape)
+
+    inverse_mode = inverse_mode.lower()
+    U_sz = C + 1 if (enable_bias) else C  # H = DDf/DYDY is in R^{(n+1)*(n+1)} if enable_bias; otherwise, in R^{n*n}, where n=C.
+
+    with torch.no_grad():
+        # replicate across batch if sharing weights or target
+        if target.shape[0] != B:
+            target = target.repeat(B, 1, 1)
+            ctx.collapse_target = True
+        else:
+            ctx.collapse_target = False
+        if weights is not None and weights.shape[0] != B:
+            weights = weights.repeat(B, 1, 1)
+            ctx.collapse_weights = True
+        else:
+            ctx.collapse_weights = False
+
+        # compute solution y and pack into output
+        # Warning: if beta is zero or too small then the problem may not be strongly convex
+        L, R = None, None
+        if inverse_mode == &#39;qr&#39;:  # need to get A for A=QR
+            weightedsqrt = torch.ones_like(target).view(B, -1) if (weights is None) else torch.sqrt(weights).view(B, -1)
+            weightedsqrtX = input if (weights is None) else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weightedsqrt)
+            weightedsqrtT = target.view(B, -1) if (weights is None) else torch.einsum(&#34;bm,bm-&gt;bm&#34;, target.view(B, -1), weightedsqrt).view(B, -1)
+            A = torch.empty((B, U_sz, C + T), device=input.device, dtype=input.dtype)
+            b = torch.cat((weightedsqrtT, torch.zeros(B, C)), 1).view(B, C + T)
+
+            # solve x = (R)^{-1} Q^T b
+            if enable_bias:
+                A[:, :C, :T] = weightedsqrtX
+                A[:, -1, :T] = weightedsqrt
+                A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+                A[:, -1, T:] = torch.zeros((B, C), device=input.device, dtype=input.dtype)
+            else:
+                A[:, :C, :T] = weightedsqrtX
+                A[:, :C, T:] = math.sqrt(beta) * torch.eye(C, device=input.device, dtype=input.dtype)
+
+            Q, R = torch.linalg.qr(A.permute(0, 2, 1))
+            Qtb = torch.einsum(&#34;bij,bi-&gt;bj&#34;, Q, b).view(B, -1, 1)
+            y = torch.linalg.solve_triangular(R, Qtb, upper=True)
+
+            R = R if cache_decomposition else None
+        else:  # need to get AtA
+            weightedX = input if weights is None else torch.einsum(&#34;bnm,bm-&gt;bnm&#34;, input, weights.view(B, -1))
+            weightedTSum = target.sum(2).view(B, 1) if weights is None else torch.einsum(&#34;bm,bm-&gt;b&#34;, target.view(B, -1), weights.view(B, -1)).view(B, 1)
+            weightedXdotT = torch.einsum(&#34;bnm,bm-&gt;bn&#34;, weightedX, target.view(B, -1))
+
+            # solve x = (A^TA)^{-1} A^T b
+            if enable_bias:
+                AtA = torch.empty((B, U_sz, U_sz), device=input.device, dtype=input.dtype)
+                AtA[:, -1, -1] = T if weights is None else torch.sum(weights.view(B, -1), 1)
+                AtA[:, :C, :C] = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                                 (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                AtA[:, :C, -1] = AtA[:, -1, :C] = torch.sum(weightedX, 2)
+                Atb = torch.cat((weightedXdotT, weightedTSum), 1).view(B, U_sz, 1)
+            else:
+                AtA = torch.einsum(&#34;bik,bjk-&gt;bij&#34;, weightedX, input) + \
+                      (beta * torch.eye(C, device=input.device, dtype=input.dtype)).view(1, C, C)
+                Atb = weightedXdotT.view(B, U_sz, 1)
+
+            if cache_decomposition:
+                L = torch.linalg.cholesky(AtA)
+                y = torch.cholesky_solve(Atb, L)
+            else:
+                y = torch.linalg.solve(AtA, Atb)
+
+        # assign to output
+        output = y[:, :C, 0].squeeze(-1)
+        bias = y[:, C, 0].view(B, 1) if enable_bias else torch.zeros((B, 1), device=input.device, dtype=input.dtype)
+
+    # save state for backward pass
+    ctx.save_for_backward(input, target, weights, output, bias, L, R)
+    ctx.beta = beta
+    ctx.enable_bias = enable_bias
+    ctx.inverse_mode = inverse_mode
+
+    # return rank pool vector and bias
+    return output, bias</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.leastsquares.WeightedLeastSquaresLayer"><code class="flex name class">
+<span>class <span class="ident">WeightedLeastSquaresLayer</span></span>
+<span>(</span><span>beta=0.001, cache_decomposition=False, enable_bias=True, inverse_mode='cholesky')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Neural network layer to implement weighted least squares fitting.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WeightedLeastSquaresLayer(nn.Module):
+    &#34;&#34;&#34;Neural network layer to implement weighted least squares fitting.&#34;&#34;&#34;
+
+    def __init__(self, beta=1.0e-3, cache_decomposition=False, enable_bias=True, inverse_mode=&#39;cholesky&#39;):
+        super(WeightedLeastSquaresLayer, self).__init__()
+        self.beta = beta
+        self.cache_decomposition = cache_decomposition
+        self.enable_bias = enable_bias
+        self.inverse_mode = inverse_mode
+
+    def forward(self, input, target, weights):
+        return WeightedLeastSquaresFcn.apply(input, target, weights, self.beta, self.cache_decomposition,
+                                             self.enable_bias, self.inverse_mode)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.leastsquares.WeightedLeastSquaresLayer.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input, target, weights) -> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input, target, weights):
+    return WeightedLeastSquaresFcn.apply(input, target, weights, self.beta, self.cache_decomposition,
+                                         self.enable_bias, self.inverse_mode)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.pytorch.leastsquares.BasicLeastSquaresFcn" href="#ddn.pytorch.leastsquares.BasicLeastSquaresFcn">BasicLeastSquaresFcn</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.leastsquares.BasicLeastSquaresFcn.backward" href="#ddn.pytorch.leastsquares.BasicLeastSquaresFcn.backward">backward</a></code></li>
+<li><code><a title="ddn.pytorch.leastsquares.BasicLeastSquaresFcn.forward" href="#ddn.pytorch.leastsquares.BasicLeastSquaresFcn.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.leastsquares.LeastSquaresLayer" href="#ddn.pytorch.leastsquares.LeastSquaresLayer">LeastSquaresLayer</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.leastsquares.LeastSquaresLayer.forward" href="#ddn.pytorch.leastsquares.LeastSquaresLayer.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn" href="#ddn.pytorch.leastsquares.WeightedLeastSquaresFcn">WeightedLeastSquaresFcn</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.backward" href="#ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.backward">backward</a></code></li>
+<li><code><a title="ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.forward" href="#ddn.pytorch.leastsquares.WeightedLeastSquaresFcn.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.leastsquares.WeightedLeastSquaresLayer" href="#ddn.pytorch.leastsquares.WeightedLeastSquaresLayer">WeightedLeastSquaresLayer</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.leastsquares.WeightedLeastSquaresLayer.forward" href="#ddn.pytorch.leastsquares.WeightedLeastSquaresLayer.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

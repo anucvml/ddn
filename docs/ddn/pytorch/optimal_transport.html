@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.optimal_transport API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.optimal_transport</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python
+#
+# OPTIMAL TRANSPORT NODE
+# Implementation of differentiable optimal transport using implicit differentiation. Makes use of Sinkhorn normalization
+# to solve the entropy regularized problem (Cuturi, NeurIPS 2013) in the forward pass. The problem can be written as
+# Let us write the entropy regularized optimal transport problem in the following form,
+#
+#    minimize (over P) &lt;P, M&gt; + 1/gamma KL(P || rc^T)
+#    subject to        P1 = r and P^T1 = c
+#
+# where r and c are m- and n-dimensional positive vectors, respectively, each summing to one. Here m-by-n matrix M is
+# the input and m-by-n dimensional positive matrix P is the output. The above problem leads to a solution of the form
+#
+#   P_{ij} = alpha_i beta_j e^{-gamma M_{ij}}
+#
+# where alpha and beta are found by iteratively applying row and column normalizations.
+#
+# We also provide an option to parametrize the input in log-space as M_{ij} = -log Q_{ij} where Q is a positive matrix.
+# The matrix Q becomes the input. This is more numerically stable for inputs M with large positive or negative values.
+#
+# See accompanying Jupyter Notebook at https://deepdeclarativenetworks.com.
+#
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+# Fred Zhang &lt;frederic.zhang@anu.edu.au&gt;
+#
+
+import torch
+import torch.nn as nn
+import warnings
+
+
+def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False):
+    &#34;&#34;&#34;
+    PyTorch function for entropy regularized optimal transport. Assumes batched inputs as follows:
+        M:  (B,H,W) tensor
+        r:  (B,H) tensor, (1,H) tensor or None for constant uniform vector 1/H
+        c:  (B,W) tensor, (1,W) tensor or None for constant uniform vector 1/W
+
+    You can back propagate through this function in O(TBWH) time where T is the number of iterations taken to converge.
+    &#34;&#34;&#34;
+
+    B, H, W = M.shape
+    assert r is None or r.shape == (B, H) or r.shape == (1, H)
+    assert c is None or c.shape == (B, W) or c.shape == (1, W)
+    assert not logspace or torch.all(M &gt; 0.0)
+
+    r = 1.0 / H if r is None else r.unsqueeze(dim=2)
+    c = 1.0 / W if c is None else c.unsqueeze(dim=1)
+
+    if logspace:
+        P = torch.pow(M, gamma)
+    else:
+        P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+
+    for i in range(maxiters):
+        alpha = torch.sum(P, 2)
+        # Perform division first for numerical stability
+        P = P / alpha.view(B, H, 1) * r
+
+        beta = torch.sum(P, 1)
+        if torch.max(torch.abs(beta - c)) &lt;= eps:
+            break
+        P = P / beta.view(B, 1, W) * c
+
+    return P
+
+
+def _sinkhorn_inline(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False):
+    &#34;&#34;&#34;As above but with inline calculations for when autograd is not needed.&#34;&#34;&#34;
+
+    B, H, W = M.shape
+    assert r is None or r.shape == (B, H) or r.shape == (1, H)
+    assert c is None or c.shape == (B, W) or c.shape == (1, W)
+    assert not logspace or torch.all(M &gt; 0.0)
+
+    r = 1.0 / H if r is None else r.unsqueeze(dim=2)
+    c = 1.0 / W if c is None else c.unsqueeze(dim=1)
+
+    if logspace:
+        P = torch.pow(M, gamma)
+    else:
+        P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+
+    for i in range(maxiters):
+        alpha = torch.sum(P, 2)
+        # Perform division first for numerical stability
+        P /= alpha.view(B, H, 1)
+        P *= r
+
+        beta = torch.sum(P, 1)
+        if torch.max(torch.abs(beta - c)) &lt;= eps:
+            break
+        P /= beta.view(B, 1, W)
+        P *= c
+
+    return P
+
+
+class OptimalTransportFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for entropy regularized optimal transport. Assumes batched inputs as follows:
+        M:  (B,H,W) tensor
+        r:  (B,H) tensor, (1,H) tensor or None for constant uniform vector
+        c:  (B,W) tensor, (1,W) tensor or None for constant uniform vector
+
+    Allows for approximate gradient calculations, which is faster and may be useful during early stages of learning,
+    when exp(-gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.
+
+    Both r and c must be positive, if provided. They will be normalized to sum to one.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method=&#39;block&#39;):
+        &#34;&#34;&#34;Solve optimal transport using skinhorn. Method can be &#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39; or &#39;approx&#39;.&#34;&#34;&#34;
+        assert method in (&#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39;, &#39;approx&#39;)
+
+        with torch.no_grad():
+            # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
+            if r is not None:
+                ctx.inv_r_sum = 1.0 / torch.sum(r, dim=1, keepdim=True)
+                r = ctx.inv_r_sum * r
+            if c is not None:
+                ctx.inv_c_sum = 1.0 / torch.sum(c, dim=1, keepdim=True)
+                c = ctx.inv_c_sum * c
+
+            # run sinkhorn
+            P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters, logspace)
+
+        ctx.save_for_backward(M, r, c, P)
+        ctx.gamma = gamma
+        ctx.logspace = logspace
+        ctx.method = method
+
+        return P
+
+    @staticmethod
+    def backward(ctx, dJdP):
+        &#34;&#34;&#34;Implement backward pass using implicit differentiation.&#34;&#34;&#34;
+
+        M, r, c, P = ctx.saved_tensors
+        B, H, W = M.shape
+
+        # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I or B = -1/r or B = -1/c)
+        dJdM = -1.0 * ctx.gamma * P * dJdP
+        dJdr = None if not ctx.needs_input_grad[1] else torch.zeros_like(r)
+        dJdc = None if not ctx.needs_input_grad[2] else torch.zeros_like(c)
+
+        # return approximate gradients
+        if ctx.method == &#39;approx&#39;:
+            return dJdM, dJdr, dJdc, None, None, None, None, None, None
+
+        # compute exact row and column sums (in case of small numerical errors or forward pass not converging)
+        alpha = torch.sum(P, dim=2)
+        beta = torch.sum(P, dim=1)
+
+        # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
+        vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2).view(B, H - 1, 1)
+        vHAt2 = torch.sum(dJdM, dim=1).view(B, W, 1)
+
+        # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
+        if ctx.method == &#39;block&#39;:
+            # by block inverse of (A H^{-1] A^T)
+            PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
+            RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.bmm(P[:, 1:H, 0:W], PdivC.transpose(1, 2))
+            try:
+                block_11 = torch.linalg.cholesky(RminusPPdivC)
+            except:
+                # block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
+                block_11 = torch.eye(H - 1, device=M.device, dtype=M.dtype).view(1, H - 1, H - 1).repeat(B, 1, 1)
+                for b in range(B):
+                    try:
+                        block_11[b, :, :] = torch.linalg.cholesky(RminusPPdivC[b, :, :])
+                    except:
+                        # keep initialized values (gradient will be close to zero)
+                        warnings.warn(&#34;backward pass encountered a singular matrix&#34;)
+                        pass
+
+            block_12 = torch.cholesky_solve(PdivC, block_11)
+            #block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
+            block_22 = torch.bmm(block_12.transpose(1, 2), PdivC)
+
+            v1 = torch.cholesky_solve(vHAt1, block_11) - torch.bmm(block_12, vHAt2)
+            #v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+            v2 = vHAt2 / beta.view(B, W, 1) + torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+
+        else:
+            # by full inverse of (A H^{-1] A^T)
+            AinvHAt = torch.empty((B, H + W - 1, H + W - 1), device=M.device, dtype=M.dtype)
+            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(alpha[:, 1:H])
+            AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(beta)
+            AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
+            AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
+
+            if ctx.method == &#39;fullchol&#39;:
+                v = torch.cholesky_solve(torch.cat((vHAt1, vHAt2), dim=1), torch.linalg.cholesky(AinvHAt))
+            else:
+                v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+                #v = torch.linalg.solve(AinvHAt, torch.cat((vHAt1, vHAt2), dim=1))
+
+            v1 = v[:, 0:H - 1].view(B, H - 1, 1)
+            v2 = v[:, H - 1:H + W - 1].view(B, W, 1)
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
+        dJdM[:, 1:H, 0:W] -= v1 * P[:, 1:H, 0:W]
+        dJdM -= v2.view(B, 1, W) * P
+
+        # multiply by derivative of log(M) if in log-space
+        if ctx.logspace:
+            dJdM /= -1.0 * M
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdr is not None:
+            dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
+                   (torch.sum(r[:, 1:H] * v1.view(B, H - 1), dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1.view(B, H - 1)), dim=1))
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdc is not None:
+            dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2.view(B, W), dim=1, keepdim=True) - v2.view(B, W))
+
+        # return gradients (None for gamma, eps, maxiters and logspace)
+        return dJdM, dJdr, dJdc, None, None, None, None, None, None
+
+
+class OptimalTransportLayer(nn.Module):
+    &#34;&#34;&#34;
+    Neural network layer to implement optimal transport.
+
+    Parameters:
+    -----------
+    gamma: float, default: 1.0
+        Inverse of the coefficient on the entropy regularisation term.
+    eps: float, default: 1.0e-6
+        Tolerance used to determine the stop condition.
+    maxiters: int, default: 1000
+        The maximum number of iterations.
+    logspace: bool, default: False
+        If `True`, assumes that the input is provided as log M
+        If `False`, assumes that the input is provided as M (standard optimal transport)
+    method: str, default: &#39;block&#39;
+        If `approx`, approximate the gradient by assuming exp(-gamma M) is already nearly doubly stochastic.
+        It is faster and could potentially be useful during early stages of training.
+        If `block`, exploit the block structure of matrix A H^{-1] A^T.
+        If `full`, invert the full A H^{-1} A^T matrix without exploiting the block structure
+    &#34;&#34;&#34;
+
+    def __init__(self, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method=&#39;block&#39;):
+        super(OptimalTransportLayer, self).__init__()
+        self.gamma = gamma
+        self.eps = eps
+        self.maxiters = maxiters
+        self.logspace = logspace
+        self.method = method
+
+    def forward(self, M, r=None, c=None):
+        &#34;&#34;&#34;
+        Parameters:
+        -----------
+        M: torch.Tensor
+            Input matrix/matrices of size (H, W) or (B, H, W)
+        r: torch.Tensor, optional
+            Row sum constraint in the form of a 1xH or BxH matrix. Are assigned uniformly as 1/H by default.
+        c: torch.Tensor, optional
+            Column sum constraint in the form of a 1xW or BxW matrix. Are assigned uniformly as 1/W by default.
+
+        Returns:
+        --------
+        torch.Tensor
+            Normalised matrix/matrices, with the same shape as the inputs
+        &#34;&#34;&#34;
+        M_shape = M.shape
+        # Check the number of dimensions
+        ndim = len(M_shape)
+        if ndim == 2:
+            M = M.unsqueeze(dim=0)
+        elif ndim != 3:
+            raise ValueError(f&#34;The shape of the input tensor {M_shape} does not match that of an matrix&#34;)
+
+        # Handle special case of 1x1 matrices
+        nr, nc = M_shape[-2:]
+        if nr == 1 and nc == 1:
+            P = torch.ones_like(M)
+        else:
+            P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.logspace, self.method)
+
+        return P.view(*M_shape)
+
+
+#
+# --- testing ---
+#
+
+if __name__ == &#39;__main__&#39;:
+    from torch.autograd import gradcheck
+    from torch.nn.functional import normalize
+
+    torch.manual_seed(0)
+    print(torch.__version__)
+
+    M = torch.randn((3, 5, 7), dtype=torch.double, requires_grad=True)
+    f = OptimalTransportFcn().apply
+
+    print(torch.all(torch.isclose(sinkhorn(M), f(M))))
+    print(torch.all(torch.isclose(sinkhorn(M), sinkhorn(torch.exp(-1.0 * M), logspace=True))))
+
+    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (torch.exp(-1.0 * M), None, None, 1.0, 1.0e-6, 1000, True, &#39;block&#39;), eps=1e-6, atol=1e-3,
+                     rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, None, 1.0, 1.0e-6, 1000, False, &#39;full&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, &#39;full&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, None, 10.0, 1.0e-6, 1000, False, &#39;fullchol&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=False), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=False), p=1.0)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-9, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    # with r and c inputs
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+
+    test = gradcheck(f, (M, r, None, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, None, c, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 10.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    # shared r and c
+    r = normalize(torch.rand((1, M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((1, M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, &#39;full&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M, r, c, 1.0, 1.0e-6, 1000, False, &#39;fullchol&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    # shared M, different r and c
+    r = normalize(torch.rand((M.shape[0], M.shape[1]), dtype=torch.double, requires_grad=True), p=1.0)
+    c = normalize(torch.rand((M.shape[0], M.shape[2]), dtype=torch.double, requires_grad=True), p=1.0)
+    M_shared = torch.randn((M.shape[1], M.shape[2]), dtype=torch.double, requires_grad=True)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, &#39;block&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, &#39;full&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)
+
+    test = gradcheck(f, (M_shared.view(1, M.shape[1], M.shape[2]).repeat(M.shape[0], 1, 1),
+                         r, c, 1.0, 1.0e-6, 1000, False, &#39;fullchol&#39;), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print(test)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ddn.pytorch.optimal_transport.sinkhorn"><code class="name flex">
+<span>def <span class="ident">sinkhorn</span></span>(<span>M, r=None, c=None, gamma=1.0, eps=1e-06, maxiters=1000, logspace=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PyTorch function for entropy regularized optimal transport. Assumes batched inputs as follows:
+M:
+(B,H,W) tensor
+r:
+(B,H) tensor, (1,H) tensor or None for constant uniform vector 1/H
+c:
+(B,W) tensor, (1,W) tensor or None for constant uniform vector 1/W</p>
+<p>You can back propagate through this function in O(TBWH) time where T is the number of iterations taken to converge.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sinkhorn(M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False):
+    &#34;&#34;&#34;
+    PyTorch function for entropy regularized optimal transport. Assumes batched inputs as follows:
+        M:  (B,H,W) tensor
+        r:  (B,H) tensor, (1,H) tensor or None for constant uniform vector 1/H
+        c:  (B,W) tensor, (1,W) tensor or None for constant uniform vector 1/W
+
+    You can back propagate through this function in O(TBWH) time where T is the number of iterations taken to converge.
+    &#34;&#34;&#34;
+
+    B, H, W = M.shape
+    assert r is None or r.shape == (B, H) or r.shape == (1, H)
+    assert c is None or c.shape == (B, W) or c.shape == (1, W)
+    assert not logspace or torch.all(M &gt; 0.0)
+
+    r = 1.0 / H if r is None else r.unsqueeze(dim=2)
+    c = 1.0 / W if c is None else c.unsqueeze(dim=1)
+
+    if logspace:
+        P = torch.pow(M, gamma)
+    else:
+        P = torch.exp(-1.0 * gamma * (M - torch.amin(M, 2, keepdim=True)))
+
+    for i in range(maxiters):
+        alpha = torch.sum(P, 2)
+        # Perform division first for numerical stability
+        P = P / alpha.view(B, H, 1) * r
+
+        beta = torch.sum(P, 1)
+        if torch.max(torch.abs(beta - c)) &lt;= eps:
+            break
+        P = P / beta.view(B, 1, W) * c
+
+    return P</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.pytorch.optimal_transport.OptimalTransportFcn"><code class="flex name class">
+<span>class <span class="ident">OptimalTransportFcn</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PyTorch autograd function for entropy regularized optimal transport. Assumes batched inputs as follows:
+M:
+(B,H,W) tensor
+r:
+(B,H) tensor, (1,H) tensor or None for constant uniform vector
+c:
+(B,W) tensor, (1,W) tensor or None for constant uniform vector</p>
+<p>Allows for approximate gradient calculations, which is faster and may be useful during early stages of learning,
+when exp(-gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.</p>
+<p>Both r and c must be positive, if provided. They will be normalized to sum to one.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OptimalTransportFcn(torch.autograd.Function):
+    &#34;&#34;&#34;
+    PyTorch autograd function for entropy regularized optimal transport. Assumes batched inputs as follows:
+        M:  (B,H,W) tensor
+        r:  (B,H) tensor, (1,H) tensor or None for constant uniform vector
+        c:  (B,W) tensor, (1,W) tensor or None for constant uniform vector
+
+    Allows for approximate gradient calculations, which is faster and may be useful during early stages of learning,
+    when exp(-gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.
+
+    Both r and c must be positive, if provided. They will be normalized to sum to one.
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method=&#39;block&#39;):
+        &#34;&#34;&#34;Solve optimal transport using skinhorn. Method can be &#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39; or &#39;approx&#39;.&#34;&#34;&#34;
+        assert method in (&#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39;, &#39;approx&#39;)
+
+        with torch.no_grad():
+            # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
+            if r is not None:
+                ctx.inv_r_sum = 1.0 / torch.sum(r, dim=1, keepdim=True)
+                r = ctx.inv_r_sum * r
+            if c is not None:
+                ctx.inv_c_sum = 1.0 / torch.sum(c, dim=1, keepdim=True)
+                c = ctx.inv_c_sum * c
+
+            # run sinkhorn
+            P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters, logspace)
+
+        ctx.save_for_backward(M, r, c, P)
+        ctx.gamma = gamma
+        ctx.logspace = logspace
+        ctx.method = method
+
+        return P
+
+    @staticmethod
+    def backward(ctx, dJdP):
+        &#34;&#34;&#34;Implement backward pass using implicit differentiation.&#34;&#34;&#34;
+
+        M, r, c, P = ctx.saved_tensors
+        B, H, W = M.shape
+
+        # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I or B = -1/r or B = -1/c)
+        dJdM = -1.0 * ctx.gamma * P * dJdP
+        dJdr = None if not ctx.needs_input_grad[1] else torch.zeros_like(r)
+        dJdc = None if not ctx.needs_input_grad[2] else torch.zeros_like(c)
+
+        # return approximate gradients
+        if ctx.method == &#39;approx&#39;:
+            return dJdM, dJdr, dJdc, None, None, None, None, None, None
+
+        # compute exact row and column sums (in case of small numerical errors or forward pass not converging)
+        alpha = torch.sum(P, dim=2)
+        beta = torch.sum(P, dim=1)
+
+        # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
+        vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2).view(B, H - 1, 1)
+        vHAt2 = torch.sum(dJdM, dim=1).view(B, W, 1)
+
+        # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
+        if ctx.method == &#39;block&#39;:
+            # by block inverse of (A H^{-1] A^T)
+            PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
+            RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.bmm(P[:, 1:H, 0:W], PdivC.transpose(1, 2))
+            try:
+                block_11 = torch.linalg.cholesky(RminusPPdivC)
+            except:
+                # block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
+                block_11 = torch.eye(H - 1, device=M.device, dtype=M.dtype).view(1, H - 1, H - 1).repeat(B, 1, 1)
+                for b in range(B):
+                    try:
+                        block_11[b, :, :] = torch.linalg.cholesky(RminusPPdivC[b, :, :])
+                    except:
+                        # keep initialized values (gradient will be close to zero)
+                        warnings.warn(&#34;backward pass encountered a singular matrix&#34;)
+                        pass
+
+            block_12 = torch.cholesky_solve(PdivC, block_11)
+            #block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
+            block_22 = torch.bmm(block_12.transpose(1, 2), PdivC)
+
+            v1 = torch.cholesky_solve(vHAt1, block_11) - torch.bmm(block_12, vHAt2)
+            #v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+            v2 = vHAt2 / beta.view(B, W, 1) + torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+
+        else:
+            # by full inverse of (A H^{-1] A^T)
+            AinvHAt = torch.empty((B, H + W - 1, H + W - 1), device=M.device, dtype=M.dtype)
+            AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(alpha[:, 1:H])
+            AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(beta)
+            AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
+            AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
+
+            if ctx.method == &#39;fullchol&#39;:
+                v = torch.cholesky_solve(torch.cat((vHAt1, vHAt2), dim=1), torch.linalg.cholesky(AinvHAt))
+            else:
+                v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+                #v = torch.linalg.solve(AinvHAt, torch.cat((vHAt1, vHAt2), dim=1))
+
+            v1 = v[:, 0:H - 1].view(B, H - 1, 1)
+            v2 = v[:, H - 1:H + W - 1].view(B, W, 1)
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
+        dJdM[:, 1:H, 0:W] -= v1 * P[:, 1:H, 0:W]
+        dJdM -= v2.view(B, 1, W) * P
+
+        # multiply by derivative of log(M) if in log-space
+        if ctx.logspace:
+            dJdM /= -1.0 * M
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdr is not None:
+            dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
+                   (torch.sum(r[:, 1:H] * v1.view(B, H - 1), dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1.view(B, H - 1)), dim=1))
+
+        # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+        if dJdc is not None:
+            dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2.view(B, W), dim=1, keepdim=True) - v2.view(B, W))
+
+        # return gradients (None for gamma, eps, maxiters and logspace)
+        return dJdM, dJdr, dJdc, None, None, None, None, None, None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.autograd.function.Function</li>
+<li>torch.autograd.function._SingleLevelFunction</li>
+<li>torch._C._FunctionBase</li>
+<li>torch.autograd.function.FunctionCtx</li>
+<li>torch.autograd.function._HookMixin</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ddn.pytorch.optimal_transport.OptimalTransportFcn.backward"><code class="name flex">
+<span>def <span class="ident">backward</span></span>(<span>ctx, dJdP)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implement backward pass using implicit differentiation.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def backward(ctx, dJdP):
+    &#34;&#34;&#34;Implement backward pass using implicit differentiation.&#34;&#34;&#34;
+
+    M, r, c, P = ctx.saved_tensors
+    B, H, W = M.shape
+
+    # initialize backward gradients (-v^T H^{-1} B with v = dJdP and B = I or B = -1/r or B = -1/c)
+    dJdM = -1.0 * ctx.gamma * P * dJdP
+    dJdr = None if not ctx.needs_input_grad[1] else torch.zeros_like(r)
+    dJdc = None if not ctx.needs_input_grad[2] else torch.zeros_like(c)
+
+    # return approximate gradients
+    if ctx.method == &#39;approx&#39;:
+        return dJdM, dJdr, dJdc, None, None, None, None, None, None
+
+    # compute exact row and column sums (in case of small numerical errors or forward pass not converging)
+    alpha = torch.sum(P, dim=2)
+    beta = torch.sum(P, dim=1)
+
+    # compute [vHAt1, vHAt2] = v^T H^{-1} A^T as two blocks
+    vHAt1 = torch.sum(dJdM[:, 1:H, 0:W], dim=2).view(B, H - 1, 1)
+    vHAt2 = torch.sum(dJdM, dim=1).view(B, W, 1)
+
+    # compute [v1, v2] = -v^T H^{-1} A^T (A H^{-1] A^T)^{-1}
+    if ctx.method == &#39;block&#39;:
+        # by block inverse of (A H^{-1] A^T)
+        PdivC = P[:, 1:H, 0:W] / beta.view(B, 1, W)
+        RminusPPdivC = torch.diag_embed(alpha[:, 1:H]) - torch.bmm(P[:, 1:H, 0:W], PdivC.transpose(1, 2))
+        try:
+            block_11 = torch.linalg.cholesky(RminusPPdivC)
+        except:
+            # block_11 = torch.ones((B, H-1, H-1), device=M.device, dtype=M.dtype)
+            block_11 = torch.eye(H - 1, device=M.device, dtype=M.dtype).view(1, H - 1, H - 1).repeat(B, 1, 1)
+            for b in range(B):
+                try:
+                    block_11[b, :, :] = torch.linalg.cholesky(RminusPPdivC[b, :, :])
+                except:
+                    # keep initialized values (gradient will be close to zero)
+                    warnings.warn(&#34;backward pass encountered a singular matrix&#34;)
+                    pass
+
+        block_12 = torch.cholesky_solve(PdivC, block_11)
+        #block_22 = torch.diag_embed(1.0 / beta) + torch.bmm(block_12.transpose(1, 2), PdivC)
+        block_22 = torch.bmm(block_12.transpose(1, 2), PdivC)
+
+        v1 = torch.cholesky_solve(vHAt1, block_11) - torch.bmm(block_12, vHAt2)
+        #v2 = torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+        v2 = vHAt2 / beta.view(B, W, 1) + torch.bmm(block_22, vHAt2) - torch.bmm(block_12.transpose(1, 2), vHAt1)
+
+    else:
+        # by full inverse of (A H^{-1] A^T)
+        AinvHAt = torch.empty((B, H + W - 1, H + W - 1), device=M.device, dtype=M.dtype)
+        AinvHAt[:, 0:H - 1, 0:H - 1] = torch.diag_embed(alpha[:, 1:H])
+        AinvHAt[:, H - 1:H + W - 1, H - 1:H + W - 1] = torch.diag_embed(beta)
+        AinvHAt[:, 0:H - 1, H - 1:H + W - 1] = P[:, 1:H, 0:W]
+        AinvHAt[:, H - 1:H + W - 1, 0:H - 1] = P[:, 1:H, 0:W].transpose(1, 2)
+
+        if ctx.method == &#39;fullchol&#39;:
+            v = torch.cholesky_solve(torch.cat((vHAt1, vHAt2), dim=1), torch.linalg.cholesky(AinvHAt))
+        else:
+            v = torch.bmm(torch.inverse(AinvHAt), torch.cat((vHAt1, vHAt2), dim=1))
+            #v = torch.linalg.solve(AinvHAt, torch.cat((vHAt1, vHAt2), dim=1))
+
+        v1 = v[:, 0:H - 1].view(B, H - 1, 1)
+        v2 = v[:, H - 1:H + W - 1].view(B, W, 1)
+
+    # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} A H^{-1} B - v^T H^{-1} B
+    dJdM[:, 1:H, 0:W] -= v1 * P[:, 1:H, 0:W]
+    dJdM -= v2.view(B, 1, W) * P
+
+    # multiply by derivative of log(M) if in log-space
+    if ctx.logspace:
+        dJdM /= -1.0 * M
+
+    # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+    if dJdr is not None:
+        dJdr = ctx.inv_r_sum.view(r.shape[0], 1) / ctx.gamma * \
+               (torch.sum(r[:, 1:H] * v1.view(B, H - 1), dim=1, keepdim=True) - torch.cat((torch.zeros(B, 1, device=r.device), v1.view(B, H - 1)), dim=1))
+
+    # compute v^T H^{-1} A^T (A H^{-1] A^T)^{-1} (A H^{-1} B - C) - v^T H^{-1} B
+    if dJdc is not None:
+        dJdc = ctx.inv_c_sum.view(c.shape[0], 1) / ctx.gamma * (torch.sum(c * v2.view(B, W), dim=1, keepdim=True) - v2.view(B, W))
+
+    # return gradients (None for gamma, eps, maxiters and logspace)
+    return dJdM, dJdr, dJdc, None, None, None, None, None, None</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.optimal_transport.OptimalTransportFcn.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>ctx, M, r=None, c=None, gamma=1.0, eps=1e-06, maxiters=1000, logspace=False, method='block')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solve optimal transport using skinhorn. Method can be 'block', 'full', 'fullchol' or 'approx'.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def forward(ctx, M, r=None, c=None, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method=&#39;block&#39;):
+    &#34;&#34;&#34;Solve optimal transport using skinhorn. Method can be &#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39; or &#39;approx&#39;.&#34;&#34;&#34;
+    assert method in (&#39;block&#39;, &#39;full&#39;, &#39;fullchol&#39;, &#39;approx&#39;)
+
+    with torch.no_grad():
+        # normalize r and c to ensure that they sum to one (and save normalization factor for backward pass)
+        if r is not None:
+            ctx.inv_r_sum = 1.0 / torch.sum(r, dim=1, keepdim=True)
+            r = ctx.inv_r_sum * r
+        if c is not None:
+            ctx.inv_c_sum = 1.0 / torch.sum(c, dim=1, keepdim=True)
+            c = ctx.inv_c_sum * c
+
+        # run sinkhorn
+        P = _sinkhorn_inline(M, r, c, gamma, eps, maxiters, logspace)
+
+    ctx.save_for_backward(M, r, c, P)
+    ctx.gamma = gamma
+    ctx.logspace = logspace
+    ctx.method = method
+
+    return P</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.optimal_transport.OptimalTransportLayer"><code class="flex name class">
+<span>class <span class="ident">OptimalTransportLayer</span></span>
+<span>(</span><span>gamma=1.0, eps=1e-06, maxiters=1000, logspace=False, method='block')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Neural network layer to implement optimal transport.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>gamma: float, default: 1.0
+Inverse of the coefficient on the entropy regularisation term.
+eps: float, default: 1.0e-6
+Tolerance used to determine the stop condition.
+maxiters: int, default: 1000
+The maximum number of iterations.
+logspace: bool, default: False
+If <code>True</code>, assumes that the input is provided as log M
+If <code>False</code>, assumes that the input is provided as M (standard optimal transport)
+method: str, default: 'block'
+If <code>approx</code>, approximate the gradient by assuming exp(-gamma M) is already nearly doubly stochastic.
+It is faster and could potentially be useful during early stages of training.
+If <code>block</code>, exploit the block structure of matrix A H^{-1] A^T.
+If <code>full</code>, invert the full A H^{-1} A^T matrix without exploiting the block structure</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OptimalTransportLayer(nn.Module):
+    &#34;&#34;&#34;
+    Neural network layer to implement optimal transport.
+
+    Parameters:
+    -----------
+    gamma: float, default: 1.0
+        Inverse of the coefficient on the entropy regularisation term.
+    eps: float, default: 1.0e-6
+        Tolerance used to determine the stop condition.
+    maxiters: int, default: 1000
+        The maximum number of iterations.
+    logspace: bool, default: False
+        If `True`, assumes that the input is provided as log M
+        If `False`, assumes that the input is provided as M (standard optimal transport)
+    method: str, default: &#39;block&#39;
+        If `approx`, approximate the gradient by assuming exp(-gamma M) is already nearly doubly stochastic.
+        It is faster and could potentially be useful during early stages of training.
+        If `block`, exploit the block structure of matrix A H^{-1] A^T.
+        If `full`, invert the full A H^{-1} A^T matrix without exploiting the block structure
+    &#34;&#34;&#34;
+
+    def __init__(self, gamma=1.0, eps=1.0e-6, maxiters=1000, logspace=False, method=&#39;block&#39;):
+        super(OptimalTransportLayer, self).__init__()
+        self.gamma = gamma
+        self.eps = eps
+        self.maxiters = maxiters
+        self.logspace = logspace
+        self.method = method
+
+    def forward(self, M, r=None, c=None):
+        &#34;&#34;&#34;
+        Parameters:
+        -----------
+        M: torch.Tensor
+            Input matrix/matrices of size (H, W) or (B, H, W)
+        r: torch.Tensor, optional
+            Row sum constraint in the form of a 1xH or BxH matrix. Are assigned uniformly as 1/H by default.
+        c: torch.Tensor, optional
+            Column sum constraint in the form of a 1xW or BxW matrix. Are assigned uniformly as 1/W by default.
+
+        Returns:
+        --------
+        torch.Tensor
+            Normalised matrix/matrices, with the same shape as the inputs
+        &#34;&#34;&#34;
+        M_shape = M.shape
+        # Check the number of dimensions
+        ndim = len(M_shape)
+        if ndim == 2:
+            M = M.unsqueeze(dim=0)
+        elif ndim != 3:
+            raise ValueError(f&#34;The shape of the input tensor {M_shape} does not match that of an matrix&#34;)
+
+        # Handle special case of 1x1 matrices
+        nr, nc = M_shape[-2:]
+        if nr == 1 and nc == 1:
+            P = torch.ones_like(M)
+        else:
+            P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.logspace, self.method)
+
+        return P.view(*M_shape)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.optimal_transport.OptimalTransportLayer.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, M, r=None, c=None) -> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="parameters">Parameters:</h2>
+<p>M: torch.Tensor
+Input matrix/matrices of size (H, W) or (B, H, W)
+r: torch.Tensor, optional
+Row sum constraint in the form of a 1xH or BxH matrix. Are assigned uniformly as 1/H by default.
+c: torch.Tensor, optional
+Column sum constraint in the form of a 1xW or BxW matrix. Are assigned uniformly as 1/W by default.</p>
+<h2 id="returns">Returns:</h2>
+<p>torch.Tensor
+Normalised matrix/matrices, with the same shape as the inputs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, M, r=None, c=None):
+    &#34;&#34;&#34;
+    Parameters:
+    -----------
+    M: torch.Tensor
+        Input matrix/matrices of size (H, W) or (B, H, W)
+    r: torch.Tensor, optional
+        Row sum constraint in the form of a 1xH or BxH matrix. Are assigned uniformly as 1/H by default.
+    c: torch.Tensor, optional
+        Column sum constraint in the form of a 1xW or BxW matrix. Are assigned uniformly as 1/W by default.
+
+    Returns:
+    --------
+    torch.Tensor
+        Normalised matrix/matrices, with the same shape as the inputs
+    &#34;&#34;&#34;
+    M_shape = M.shape
+    # Check the number of dimensions
+    ndim = len(M_shape)
+    if ndim == 2:
+        M = M.unsqueeze(dim=0)
+    elif ndim != 3:
+        raise ValueError(f&#34;The shape of the input tensor {M_shape} does not match that of an matrix&#34;)
+
+    # Handle special case of 1x1 matrices
+    nr, nc = M_shape[-2:]
+    if nr == 1 and nc == 1:
+        P = torch.ones_like(M)
+    else:
+        P = OptimalTransportFcn.apply(M, r, c, self.gamma, self.eps, self.maxiters, self.logspace, self.method)
+
+    return P.view(*M_shape)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="ddn.pytorch.optimal_transport.sinkhorn" href="#ddn.pytorch.optimal_transport.sinkhorn">sinkhorn</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.pytorch.optimal_transport.OptimalTransportFcn" href="#ddn.pytorch.optimal_transport.OptimalTransportFcn">OptimalTransportFcn</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.optimal_transport.OptimalTransportFcn.backward" href="#ddn.pytorch.optimal_transport.OptimalTransportFcn.backward">backward</a></code></li>
+<li><code><a title="ddn.pytorch.optimal_transport.OptimalTransportFcn.forward" href="#ddn.pytorch.optimal_transport.OptimalTransportFcn.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.optimal_transport.OptimalTransportLayer" href="#ddn.pytorch.optimal_transport.OptimalTransportLayer">OptimalTransportLayer</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.optimal_transport.OptimalTransportLayer.forward" href="#ddn.pytorch.optimal_transport.OptimalTransportLayer.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

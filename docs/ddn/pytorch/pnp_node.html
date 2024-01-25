@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.pnp_node API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.pnp_node</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># PnP Node
+#
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+
+import torch
+import cv2
+import numpy as np
+from ddn.pytorch.node import *
+import ddn.pytorch.geometry_utilities as geo
+
+class PnP(AbstractDeclarativeNode):
+    &#34;&#34;&#34;&#34;&#34;&#34;
+    def __init__(self,
+        eps=1e-8,
+        gamma=None,
+        objective_type=&#39;reproj&#39;,
+        alpha=1.0,
+        chunk_size=None,
+        ransac_max_num_iterations=1000,
+        ransac_threshold=0.1
+        ):
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
+        self.objective_type = objective_type
+        self.alpha = alpha
+        self.ransac_max_num_iterations = ransac_max_num_iterations
+        self.ransac_threshold = ransac_threshold
+        
+    def objective(self, p2d, p3d, w, K, y):
+        &#34;&#34;&#34;Weighted PnP error
+
+        Arguments:
+            p2d: (b, n, 2) Torch tensor,
+                batch of 2D point-sets
+
+            p3d: (b, n, 3) Torch tensor,
+                batch of 3D point-sets,
+
+            w: (b, n) Torch tensor,
+                batch of weight vectors
+
+            K: (b, 4) Torch tensor or None,
+                batch of camera intrinsic parameters (fx, fy, cx, cy),
+                set to None if points are already K-normalised
+
+            y: (b, 6) Torch tensor,
+                batch of transformation parameters
+                format:
+                    y[:, 0:3]: angle-axis rotation vector
+                    y[:, 3:6]: translation vector
+
+        Return Values:
+            objective value: (b, ) Torch tensor
+        &#34;&#34;&#34;
+        if self.objective_type == &#39;cosine&#39;:
+            return self.objective_cosine(p2d, p3d, w, K, y)
+        elif self.objective_type == &#39;reproj&#39;:
+            return self.objective_reproj(p2d, p3d, w, K, y)
+        elif self.objective_type == &#39;reproj_huber&#39;:
+            return self.objective_reproj_huber(p2d, p3d, w, K, y)
+
+    def objective_cosine(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted cosine distance error
+        f(p2d, p3d, w, y) = sum_{i=1}^n
+            w_i * (1 - p2d_i^T N(R(y) p3d_i + t(y)))
+            where N(p) = p / ||p||
+        &#34;&#34;&#34;
+        p2d_bearings = geo.points_to_bearings(p2d, K)
+        p3d_transform = geo.transform_and_normalise_points_by_theta(p3d, theta)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, 1.0 - torch.einsum(&#39;bnd,bnd-&gt;bn&#39;,
+            (p2d_bearings, p3d_transform))))
+
+    def objective_reproj(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted squared reprojection error
+        f(p2d, p3d, w, K, y) = sum_{i=1}^n
+            w_i * ||pi(p3d_i, K, y) - p2d_i||_2^2
+            where pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+            where h2i(x) = [x1 / x3, x2 / x3]
+        &#34;&#34;&#34;
+        p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+        z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, z2))
+
+    def objective_reproj_huber(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted Huber reprojection error
+        f(p2d, p3d, w, K, y) = sum_{i=1}^n
+            w_i * rho(pi(p3d_i, K, y) - p2d_i, alpha)
+            where rho(z, alpha) = 0.5 z^2 for |z| &lt;= alpha
+                                  alpha * (|z| - 0.5 * alpha) else
+            and pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+            where h2i(x) = [x1 / x3, x2 / x3]
+        &#34;&#34;&#34;
+        def huber(z2, alpha=1.0):
+            return torch.where(z2 &lt;= alpha ** 2, 0.5 * z2, alpha * (
+                z2.sqrt() - 0.5 * alpha))
+        p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+        z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, huber(z2, self.alpha)))
+
+    def solve(self, p2d, p3d, w, K=None):
+        p2d = p2d.detach()
+        p3d = p3d.detach()
+        w = w.detach()
+        K = K.detach() if K is not None else None
+        theta = self._initialise_theta(p2d, p3d, w, K).requires_grad_()
+        theta = self._run_optimisation(p2d, p3d, w, K, y=theta)
+        # # Alternatively, disentangle batch element optimisation:
+        # for i in range(p2d.size(0)):
+        #     Ki = K[i:(i+1),...] if K is not None else None
+        #     theta[i, :] = self._run_optimisation(p2d[i:(i+1),...],
+        #         p3d[i:(i+1),...], w[i:(i+1),...], Ki, y=theta[i:(i+1),...])
+        return theta.detach(), None
+
+    def _initialise_theta(self, p2d, p3d, w, K):
+        return self._ransac_p3p(p2d, p3d, K,
+            self.ransac_max_num_iterations, self.ransac_threshold)
+
+    def _ransac_p3p(self, p2d, p3d, K, max_num_iterations,
+        reprojection_error_threshold):
+        theta = p2d.new_zeros(p2d.size(0), 6)
+        p2d_np = p2d.cpu().numpy()
+        p3d_np = p3d.cpu().numpy()
+        if K is None:
+            K_np = np.float32(np.array(
+                [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]))
+        dist_coeff_np = None
+        for i in range(p2d_np.shape[0]): # loop over batch
+            if K is not None:
+                K_np = np.float32(np.array(
+                    [[K[i, 0], 0.0, K[i, 2]],
+                    [0.0, K[i, 1], K[i, 3]],
+                    [0.0, 0.0, 1.0]]))
+            retval, rvec, tvec, inliers = cv2.solvePnPRansac(
+                p3d_np[i, :, :], p2d_np[i, :, :], K_np, dist_coeff_np,
+                iterationsCount=max_num_iterations,
+                reprojectionError=reprojection_error_threshold,
+                flags=cv2.SOLVEPNP_EPNP)
+            # print(inliers.shape[0], &#39;/&#39;,  p2d_np.shape[1])
+            # Optionally, refine estimate with LM:
+            # rvec, tvec = cv2.solvePnPRefineLM(
+            #     p3d_np[i, :, :], p2d_np[i, :, :], K_np, dist_coeff_np,
+            #     rvec, tvec)
+            if rvec is not None and tvec is not None and retval:
+                rvec = torch.as_tensor(
+                    rvec, dtype=p2d.dtype, device=p2d.device).squeeze(-1)
+                tvec = torch.as_tensor(
+                    tvec, dtype=p2d.dtype, device=p2d.device).squeeze(-1)
+                if torch.isfinite(rvec).all() and torch.isfinite(tvec).all():
+                    theta[i, :3] = rvec
+                    theta[i, 3:] = tvec
+        return theta
+
+    def _run_optimisation(self, *xs, y):
+        with torch.enable_grad():
+            opt = torch.optim.LBFGS([y],
+                                    lr=1.0,
+                                    max_iter=1000,
+                                    max_eval=None,
+                                    tolerance_grad=1e-40,
+                                    tolerance_change=1e-40,
+                                    history_size=100,
+                                    line_search_fn=&#34;strong_wolfe&#34;
+                                    )
+            def reevaluate():
+                opt.zero_grad()
+                f = self.objective(*xs, y=y).sum() # sum over batch elements
+                f.backward()
+                return f
+            opt.step(reevaluate)
+        return y</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.pytorch.pnp_node.PnP"><code class="flex name class">
+<span>class <span class="ident">PnP</span></span>
+<span>(</span><span>eps=1e-08, gamma=None, objective_type='reproj', alpha=1.0, chunk_size=None, ransac_max_num_iterations=1000, ransac_threshold=0.1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PnP(AbstractDeclarativeNode):
+    &#34;&#34;&#34;&#34;&#34;&#34;
+    def __init__(self,
+        eps=1e-8,
+        gamma=None,
+        objective_type=&#39;reproj&#39;,
+        alpha=1.0,
+        chunk_size=None,
+        ransac_max_num_iterations=1000,
+        ransac_threshold=0.1
+        ):
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
+        self.objective_type = objective_type
+        self.alpha = alpha
+        self.ransac_max_num_iterations = ransac_max_num_iterations
+        self.ransac_threshold = ransac_threshold
+        
+    def objective(self, p2d, p3d, w, K, y):
+        &#34;&#34;&#34;Weighted PnP error
+
+        Arguments:
+            p2d: (b, n, 2) Torch tensor,
+                batch of 2D point-sets
+
+            p3d: (b, n, 3) Torch tensor,
+                batch of 3D point-sets,
+
+            w: (b, n) Torch tensor,
+                batch of weight vectors
+
+            K: (b, 4) Torch tensor or None,
+                batch of camera intrinsic parameters (fx, fy, cx, cy),
+                set to None if points are already K-normalised
+
+            y: (b, 6) Torch tensor,
+                batch of transformation parameters
+                format:
+                    y[:, 0:3]: angle-axis rotation vector
+                    y[:, 3:6]: translation vector
+
+        Return Values:
+            objective value: (b, ) Torch tensor
+        &#34;&#34;&#34;
+        if self.objective_type == &#39;cosine&#39;:
+            return self.objective_cosine(p2d, p3d, w, K, y)
+        elif self.objective_type == &#39;reproj&#39;:
+            return self.objective_reproj(p2d, p3d, w, K, y)
+        elif self.objective_type == &#39;reproj_huber&#39;:
+            return self.objective_reproj_huber(p2d, p3d, w, K, y)
+
+    def objective_cosine(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted cosine distance error
+        f(p2d, p3d, w, y) = sum_{i=1}^n
+            w_i * (1 - p2d_i^T N(R(y) p3d_i + t(y)))
+            where N(p) = p / ||p||
+        &#34;&#34;&#34;
+        p2d_bearings = geo.points_to_bearings(p2d, K)
+        p3d_transform = geo.transform_and_normalise_points_by_theta(p3d, theta)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, 1.0 - torch.einsum(&#39;bnd,bnd-&gt;bn&#39;,
+            (p2d_bearings, p3d_transform))))
+
+    def objective_reproj(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted squared reprojection error
+        f(p2d, p3d, w, K, y) = sum_{i=1}^n
+            w_i * ||pi(p3d_i, K, y) - p2d_i||_2^2
+            where pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+            where h2i(x) = [x1 / x3, x2 / x3]
+        &#34;&#34;&#34;
+        p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+        z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, z2))
+
+    def objective_reproj_huber(self, p2d, p3d, w, K, theta):
+        &#34;&#34;&#34;Weighted Huber reprojection error
+        f(p2d, p3d, w, K, y) = sum_{i=1}^n
+            w_i * rho(pi(p3d_i, K, y) - p2d_i, alpha)
+            where rho(z, alpha) = 0.5 z^2 for |z| &lt;= alpha
+                                  alpha * (|z| - 0.5 * alpha) else
+            and pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+            where h2i(x) = [x1 / x3, x2 / x3]
+        &#34;&#34;&#34;
+        def huber(z2, alpha=1.0):
+            return torch.where(z2 &lt;= alpha ** 2, 0.5 * z2, alpha * (
+                z2.sqrt() - 0.5 * alpha))
+        p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+        z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+        return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, huber(z2, self.alpha)))
+
+    def solve(self, p2d, p3d, w, K=None):
+        p2d = p2d.detach()
+        p3d = p3d.detach()
+        w = w.detach()
+        K = K.detach() if K is not None else None
+        theta = self._initialise_theta(p2d, p3d, w, K).requires_grad_()
+        theta = self._run_optimisation(p2d, p3d, w, K, y=theta)
+        # # Alternatively, disentangle batch element optimisation:
+        # for i in range(p2d.size(0)):
+        #     Ki = K[i:(i+1),...] if K is not None else None
+        #     theta[i, :] = self._run_optimisation(p2d[i:(i+1),...],
+        #         p3d[i:(i+1),...], w[i:(i+1),...], Ki, y=theta[i:(i+1),...])
+        return theta.detach(), None
+
+    def _initialise_theta(self, p2d, p3d, w, K):
+        return self._ransac_p3p(p2d, p3d, K,
+            self.ransac_max_num_iterations, self.ransac_threshold)
+
+    def _ransac_p3p(self, p2d, p3d, K, max_num_iterations,
+        reprojection_error_threshold):
+        theta = p2d.new_zeros(p2d.size(0), 6)
+        p2d_np = p2d.cpu().numpy()
+        p3d_np = p3d.cpu().numpy()
+        if K is None:
+            K_np = np.float32(np.array(
+                [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]))
+        dist_coeff_np = None
+        for i in range(p2d_np.shape[0]): # loop over batch
+            if K is not None:
+                K_np = np.float32(np.array(
+                    [[K[i, 0], 0.0, K[i, 2]],
+                    [0.0, K[i, 1], K[i, 3]],
+                    [0.0, 0.0, 1.0]]))
+            retval, rvec, tvec, inliers = cv2.solvePnPRansac(
+                p3d_np[i, :, :], p2d_np[i, :, :], K_np, dist_coeff_np,
+                iterationsCount=max_num_iterations,
+                reprojectionError=reprojection_error_threshold,
+                flags=cv2.SOLVEPNP_EPNP)
+            # print(inliers.shape[0], &#39;/&#39;,  p2d_np.shape[1])
+            # Optionally, refine estimate with LM:
+            # rvec, tvec = cv2.solvePnPRefineLM(
+            #     p3d_np[i, :, :], p2d_np[i, :, :], K_np, dist_coeff_np,
+            #     rvec, tvec)
+            if rvec is not None and tvec is not None and retval:
+                rvec = torch.as_tensor(
+                    rvec, dtype=p2d.dtype, device=p2d.device).squeeze(-1)
+                tvec = torch.as_tensor(
+                    tvec, dtype=p2d.dtype, device=p2d.device).squeeze(-1)
+                if torch.isfinite(rvec).all() and torch.isfinite(tvec).all():
+                    theta[i, :3] = rvec
+                    theta[i, 3:] = tvec
+        return theta
+
+    def _run_optimisation(self, *xs, y):
+        with torch.enable_grad():
+            opt = torch.optim.LBFGS([y],
+                                    lr=1.0,
+                                    max_iter=1000,
+                                    max_eval=None,
+                                    tolerance_grad=1e-40,
+                                    tolerance_change=1e-40,
+                                    history_size=100,
+                                    line_search_fn=&#34;strong_wolfe&#34;
+                                    )
+            def reevaluate():
+                opt.zero_grad()
+                f = self.objective(*xs, y=y).sum() # sum over batch elements
+                f.backward()
+                return f
+            opt.step(reevaluate)
+        return y</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.pnp_node.PnP.objective"><code class="name flex">
+<span>def <span class="ident">objective</span></span>(<span>self, p2d, p3d, w, K, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Weighted PnP error</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>p2d</code></strong> :&ensp;<code>(b, n, 2) Torch tensor,</code></dt>
+<dd>batch of 2D point-sets</dd>
+<dt><strong><code>p3d</code></strong> :&ensp;<code>(b, n, 3) Torch tensor,</code></dt>
+<dd>batch of 3D point-sets,</dd>
+<dt><strong><code>w</code></strong> :&ensp;<code>(b, n) Torch tensor,</code></dt>
+<dd>batch of weight vectors</dd>
+<dt><strong><code>K</code></strong> :&ensp;<code>(b, 4) Torch tensor</code> or <code>None,</code></dt>
+<dd>batch of camera intrinsic parameters (fx, fy, cx, cy),
+set to None if points are already K-normalised</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>(b, 6) Torch tensor,</code></dt>
+<dd>batch of transformation parameters
+format:
+y[:, 0:3]: angle-axis rotation vector
+y[:, 3:6]: translation vector</dd>
+</dl>
+<p>Return Values:
+objective value: (b, ) Torch tensor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def objective(self, p2d, p3d, w, K, y):
+    &#34;&#34;&#34;Weighted PnP error
+
+    Arguments:
+        p2d: (b, n, 2) Torch tensor,
+            batch of 2D point-sets
+
+        p3d: (b, n, 3) Torch tensor,
+            batch of 3D point-sets,
+
+        w: (b, n) Torch tensor,
+            batch of weight vectors
+
+        K: (b, 4) Torch tensor or None,
+            batch of camera intrinsic parameters (fx, fy, cx, cy),
+            set to None if points are already K-normalised
+
+        y: (b, 6) Torch tensor,
+            batch of transformation parameters
+            format:
+                y[:, 0:3]: angle-axis rotation vector
+                y[:, 3:6]: translation vector
+
+    Return Values:
+        objective value: (b, ) Torch tensor
+    &#34;&#34;&#34;
+    if self.objective_type == &#39;cosine&#39;:
+        return self.objective_cosine(p2d, p3d, w, K, y)
+    elif self.objective_type == &#39;reproj&#39;:
+        return self.objective_reproj(p2d, p3d, w, K, y)
+    elif self.objective_type == &#39;reproj_huber&#39;:
+        return self.objective_reproj_huber(p2d, p3d, w, K, y)</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.pnp_node.PnP.objective_cosine"><code class="name flex">
+<span>def <span class="ident">objective_cosine</span></span>(<span>self, p2d, p3d, w, K, theta)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Weighted cosine distance error
+f(p2d, p3d, w, y) = sum_{i=1}^n
+w_i * (1 - p2d_i^T N(R(y) p3d_i + t(y)))
+where N(p) = p / ||p||</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def objective_cosine(self, p2d, p3d, w, K, theta):
+    &#34;&#34;&#34;Weighted cosine distance error
+    f(p2d, p3d, w, y) = sum_{i=1}^n
+        w_i * (1 - p2d_i^T N(R(y) p3d_i + t(y)))
+        where N(p) = p / ||p||
+    &#34;&#34;&#34;
+    p2d_bearings = geo.points_to_bearings(p2d, K)
+    p3d_transform = geo.transform_and_normalise_points_by_theta(p3d, theta)
+    return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, 1.0 - torch.einsum(&#39;bnd,bnd-&gt;bn&#39;,
+        (p2d_bearings, p3d_transform))))</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.pnp_node.PnP.objective_reproj"><code class="name flex">
+<span>def <span class="ident">objective_reproj</span></span>(<span>self, p2d, p3d, w, K, theta)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Weighted squared reprojection error
+f(p2d, p3d, w, K, y) = sum_{i=1}^n
+w_i * ||pi(p3d_i, K, y) - p2d_i||_2^2
+where pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+where h2i(x) = [x1 / x3, x2 / x3]</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def objective_reproj(self, p2d, p3d, w, K, theta):
+    &#34;&#34;&#34;Weighted squared reprojection error
+    f(p2d, p3d, w, K, y) = sum_{i=1}^n
+        w_i * ||pi(p3d_i, K, y) - p2d_i||_2^2
+        where pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+        where h2i(x) = [x1 / x3, x2 / x3]
+    &#34;&#34;&#34;
+    p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+    z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+    return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, z2))</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.pnp_node.PnP.objective_reproj_huber"><code class="name flex">
+<span>def <span class="ident">objective_reproj_huber</span></span>(<span>self, p2d, p3d, w, K, theta)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Weighted Huber reprojection error
+f(p2d, p3d, w, K, y) = sum_{i=1}^n
+w_i * rho(pi(p3d_i, K, y) - p2d_i, alpha)
+where rho(z, alpha) = 0.5 z^2 for |z| &lt;= alpha
+alpha * (|z| - 0.5 * alpha) else
+and pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+where h2i(x) = [x1 / x3, x2 / x3]</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def objective_reproj_huber(self, p2d, p3d, w, K, theta):
+    &#34;&#34;&#34;Weighted Huber reprojection error
+    f(p2d, p3d, w, K, y) = sum_{i=1}^n
+        w_i * rho(pi(p3d_i, K, y) - p2d_i, alpha)
+        where rho(z, alpha) = 0.5 z^2 for |z| &lt;= alpha
+                              alpha * (|z| - 0.5 * alpha) else
+        and pi(p, K, y) = h2i(K * (R(y) * p + t(y)))
+        where h2i(x) = [x1 / x3, x2 / x3]
+    &#34;&#34;&#34;
+    def huber(z2, alpha=1.0):
+        return torch.where(z2 &lt;= alpha ** 2, 0.5 * z2, alpha * (
+            z2.sqrt() - 0.5 * alpha))
+    p3d_projected = geo.project_points_by_theta(p3d, theta, K)
+    z2 = torch.sum((p3d_projected - p2d) ** 2, dim=-1)
+    return torch.einsum(&#39;bn,bn-&gt;b&#39;, (w, huber(z2, self.alpha)))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.gradient" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.solve" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.pytorch.pnp_node.PnP" href="#ddn.pytorch.pnp_node.PnP">PnP</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.pnp_node.PnP.objective" href="#ddn.pytorch.pnp_node.PnP.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.pnp_node.PnP.objective_cosine" href="#ddn.pytorch.pnp_node.PnP.objective_cosine">objective_cosine</a></code></li>
+<li><code><a title="ddn.pytorch.pnp_node.PnP.objective_reproj" href="#ddn.pytorch.pnp_node.PnP.objective_reproj">objective_reproj</a></code></li>
+<li><code><a title="ddn.pytorch.pnp_node.PnP.objective_reproj_huber" href="#ddn.pytorch.pnp_node.PnP.objective_reproj_huber">objective_reproj_huber</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

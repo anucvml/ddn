@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.basic.robust_nodes API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.basic.robust_nodes</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># ROBUST AVERAGING DEEP DECLARATIVE NODES
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+#
+
+import autograd.numpy as np
+from autograd import grad
+import scipy.optimize as opt
+
+from ddn.basic.node import *
+
+class RobustAverage(NonUniqueDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves for the one-dimensional robust average,
+        minimize f(x, y) = sum_{i=1}^{n} phi(y - x_i; alpha)
+    where phi(z; alpha) is one of the following robust penalties,
+        &#39;quadratic&#39;:    1/2 z^2
+        &#39;pseudo-huber&#39;: alpha^2 (sqrt(1 + (z/alpha)^2) - 1)
+        &#39;huber&#39;:        1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+        &#39;welsch&#39;:       1 - exp(-z^2 / 2 alpha^2)
+        &#39;trunc-quad&#39;:   1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise
+    &#34;&#34;&#34;
+
+    # number of random restarts when solving non-convex penalties
+    restarts = 10
+
+    def __init__(self, n, penalty=&#39;huber&#39;, alpha=1.0):
+        assert (alpha &gt; 0.0)
+        self.alpha = alpha
+        self.alpha_sq = alpha ** 2
+        self.penalty = penalty.lower()
+        if (self.penalty == &#39;quadratic&#39;):
+            self.phi = lambda z: 0.5 * np.power(z, 2.0)
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            self.phi = lambda z: self.alpha_sq * (np.sqrt(1.0 + np.power(z, 2.0) / self.alpha_sq) - 1.0)
+        elif (self.penalty == &#39;huber&#39;):
+            self.phi = lambda z: np.where(np.abs(z) &lt;= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * self.alpha_sq)
+        elif (self.penalty == &#39;welsch&#39;):
+            self.phi = lambda z: 1.0 - np.exp(-0.5 * np.power(z, 2.0) / self.alpha_sq)
+        elif (self.penalty == &#39;trunc-quad&#39;):
+            self.phi = lambda z: np.minimum(0.5 * np.power(z, 2.0), 0.5 * self.alpha_sq)
+        else:
+            assert False, &#34;unrecognized penalty function {}&#34;.format(penalty)
+
+        super().__init__(n, 1) # make sure node is properly constructed
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+
+    def objective(self, x, y):
+        assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
+        return np.sum([self.phi(y - xi) for xi in x])
+
+    def solve(self, x):
+        assert(len(x) == self.dim_x)
+
+        J = lambda y : self.objective(x, y)
+        dJ = lambda y : self.fY(x, y)
+
+        result = opt.minimize(J, np.mean(x), args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+        if not result.success: print(result.message)
+        y_star, J_star = result.x, result.fun
+
+        # run with different intial guesses for non-convex penalties
+        if (self.penalty == &#39;welsch&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            guesses = np.random.permutation(x)
+            if len(guesses) &gt; self.restarts: guesses = guesses[:self.restarts]
+            for x_init in guesses:
+                result = opt.minimize(J, x_init, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+                if not result.success: print(result.message)
+                if (result.fun &lt; J_star):
+                    y_star, J_star = result.x, result.fun
+
+        return y_star, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        if y is None:
+            y, _ = self.solve(x)
+
+        if (self.penalty == &#39;quadratic&#39;):
+            dy = np.ones((1, self.dim_x))
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            dy = np.array([np.power(1.0 + np.power(y - xi, 2.0) / self.alpha_sq, -1.5) for xi in x])
+        elif (self.penalty == &#39;huber&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            dy = np.array([1.0 if np.abs(y - xi) &lt;= self.alpha else 0.0 for xi in x])
+        elif (self.penalty == &#39;welsch&#39;):
+            z = np.power(x - y, 2.0)
+            dy = np.array([(self.alpha_sq - zi) / (self.alpha_sq * self.alpha_sq) * np.exp(-0.5 * zi / self.alpha_sq) for zi in z])
+
+        return dy.reshape((1, self.dim_x)) / np.sum(dy)
+
+
+class RobustVectorAverage(NonUniqueDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves for the multi-dimensional robust average,
+        minimize f(x, y) = sum_{i=1}^{n} phi(||y - x_i||; alpha)
+    where phi(z; alpha) is one of the following robust penalties,
+        &#39;quadratic&#39;:    1/2 z^2
+        &#39;pseudo-huber&#39;: alpha^2 (sqrt(1 + (z/alpha)^2 - 1)
+        &#39;huber&#39;:        1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+        &#39;welsch&#39;:       1 - exp(-z^2 / 2 alpha^2)
+        &#39;trunc-quad&#39;:   1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise
+
+    The input is assumed to be flattened from an (n times m)-matrix to an nm-vector.
+    &#34;&#34;&#34;
+
+    restarts = 10 # number of random restarts when solving non-convex penalties
+
+    def __init__(self, n, m, penalty=&#39;huber&#39;, alpha=1.0):
+        assert (alpha &gt; 0.0)
+        self.alpha = alpha
+        self.alpha_sq = alpha ** 2
+        self.penalty = penalty.lower()
+        if (self.penalty == &#39;quadratic&#39;):
+            self.phi = lambda z: 0.5 * np.power(z, 2.0)
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            self.phi = lambda z: self.alpha_sq * (np.sqrt(1.0 + np.power(z, 2.0) / self.alpha_sq) - 1.0)
+        elif (self.penalty == &#39;huber&#39;):
+            self.phi = lambda z: np.where(np.abs(z) &lt;= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * self.alpha_sq)
+        elif (self.penalty == &#39;welsch&#39;):
+            self.phi = lambda z: 1.0 - np.exp(-0.5 * np.power(z, 2.0) / self.alpha_sq)
+        elif (self.penalty == &#39;trunc-quad&#39;):
+            self.phi = lambda z: np.minimum(0.5 * np.power(z, 2.0), 0.5 * self.alpha_sq)
+        else:
+            assert False, &#34;unrecognized penalty function {}&#34;.format(penalty)
+
+        super().__init__(n*m, m) # make sure node is properly constructed
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+
+    def objective(self, x, y):
+        assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
+        # the inclusion of 1.0e-9 prevents division by zero during automatic differentiation when a y lands exactly on a data point xi
+        return np.sum([self.phi(np.sqrt(np.dot(y - xi, y - xi) + 1.0e-9)) for xi in x.reshape((int(self.dim_x / self.dim_y), self.dim_y))])
+
+    def solve(self, x):
+        assert(len(x) == self.dim_x)
+
+        J = lambda y : self.objective(x, y)
+        dJ = lambda y : self.fY(x, y)
+
+        y_star = np.mean(x.reshape((int(self.dim_x / self.dim_y), self.dim_y)), 0)
+        if (self.penalty != &#39;quadratic&#39;):
+            result = opt.minimize(J, y_star, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+            if not result.success: print(result.message)
+            y_star, J_star = result.x, result.fun
+
+        # run with different intial guesses for non-convex penalties
+        if (self.penalty == &#39;welsch&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            guesses = np.random.permutation(x.reshape((int(self.dim_x / self.dim_y), self.dim_y)))
+            if self.dim_x &gt; self.restarts: guesses = guesses[0:self.restarts, :]
+            for y_init in guesses:
+                result = opt.minimize(J, y_init, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+                if not result.success: print(result.message)
+                if (result.fun &lt; J_star):
+                    y_star, J_star = result.x, result.fun
+
+        return y_star, None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.basic.robust_nodes.RobustAverage"><code class="flex name class">
+<span>class <span class="ident">RobustAverage</span></span>
+<span>(</span><span>n, penalty='huber', alpha=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves for the one-dimensional robust average,
+minimize f(x, y) = sum_{i=1}^{n} phi(y - x_i; alpha)
+where phi(z; alpha) is one of the following robust penalties,
+'quadratic':
+1/2 z^2
+'pseudo-huber': alpha^2 (sqrt(1 + (z/alpha)^2) - 1)
+'huber':
+1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+'welsch':
+1 - exp(-z^2 / 2 alpha^2)
+'trunc-quad':
+1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RobustAverage(NonUniqueDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves for the one-dimensional robust average,
+        minimize f(x, y) = sum_{i=1}^{n} phi(y - x_i; alpha)
+    where phi(z; alpha) is one of the following robust penalties,
+        &#39;quadratic&#39;:    1/2 z^2
+        &#39;pseudo-huber&#39;: alpha^2 (sqrt(1 + (z/alpha)^2) - 1)
+        &#39;huber&#39;:        1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+        &#39;welsch&#39;:       1 - exp(-z^2 / 2 alpha^2)
+        &#39;trunc-quad&#39;:   1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise
+    &#34;&#34;&#34;
+
+    # number of random restarts when solving non-convex penalties
+    restarts = 10
+
+    def __init__(self, n, penalty=&#39;huber&#39;, alpha=1.0):
+        assert (alpha &gt; 0.0)
+        self.alpha = alpha
+        self.alpha_sq = alpha ** 2
+        self.penalty = penalty.lower()
+        if (self.penalty == &#39;quadratic&#39;):
+            self.phi = lambda z: 0.5 * np.power(z, 2.0)
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            self.phi = lambda z: self.alpha_sq * (np.sqrt(1.0 + np.power(z, 2.0) / self.alpha_sq) - 1.0)
+        elif (self.penalty == &#39;huber&#39;):
+            self.phi = lambda z: np.where(np.abs(z) &lt;= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * self.alpha_sq)
+        elif (self.penalty == &#39;welsch&#39;):
+            self.phi = lambda z: 1.0 - np.exp(-0.5 * np.power(z, 2.0) / self.alpha_sq)
+        elif (self.penalty == &#39;trunc-quad&#39;):
+            self.phi = lambda z: np.minimum(0.5 * np.power(z, 2.0), 0.5 * self.alpha_sq)
+        else:
+            assert False, &#34;unrecognized penalty function {}&#34;.format(penalty)
+
+        super().__init__(n, 1) # make sure node is properly constructed
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+
+    def objective(self, x, y):
+        assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
+        return np.sum([self.phi(y - xi) for xi in x])
+
+    def solve(self, x):
+        assert(len(x) == self.dim_x)
+
+        J = lambda y : self.objective(x, y)
+        dJ = lambda y : self.fY(x, y)
+
+        result = opt.minimize(J, np.mean(x), args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+        if not result.success: print(result.message)
+        y_star, J_star = result.x, result.fun
+
+        # run with different intial guesses for non-convex penalties
+        if (self.penalty == &#39;welsch&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            guesses = np.random.permutation(x)
+            if len(guesses) &gt; self.restarts: guesses = guesses[:self.restarts]
+            for x_init in guesses:
+                result = opt.minimize(J, x_init, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+                if not result.success: print(result.message)
+                if (result.fun &lt; J_star):
+                    y_star, J_star = result.x, result.fun
+
+        return y_star, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        if y is None:
+            y, _ = self.solve(x)
+
+        if (self.penalty == &#39;quadratic&#39;):
+            dy = np.ones((1, self.dim_x))
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            dy = np.array([np.power(1.0 + np.power(y - xi, 2.0) / self.alpha_sq, -1.5) for xi in x])
+        elif (self.penalty == &#39;huber&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            dy = np.array([1.0 if np.abs(y - xi) &lt;= self.alpha else 0.0 for xi in x])
+        elif (self.penalty == &#39;welsch&#39;):
+            z = np.power(x - y, 2.0)
+            dy = np.array([(self.alpha_sq - zi) / (self.alpha_sq * self.alpha_sq) * np.exp(-0.5 * zi / self.alpha_sq) for zi in z])
+
+        return dy.reshape((1, self.dim_x)) / np.sum(dy)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="node.html#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="node.html#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="node.html#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.basic.robust_nodes.RobustAverage.restarts"><code class="name">var <span class="ident">restarts</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.robust_nodes.RobustAverage.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    if y is None:
+        y, _ = self.solve(x)
+
+    if (self.penalty == &#39;quadratic&#39;):
+        dy = np.ones((1, self.dim_x))
+    elif (self.penalty == &#39;pseudo-huber&#39;):
+        dy = np.array([np.power(1.0 + np.power(y - xi, 2.0) / self.alpha_sq, -1.5) for xi in x])
+    elif (self.penalty == &#39;huber&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+        dy = np.array([1.0 if np.abs(y - xi) &lt;= self.alpha else 0.0 for xi in x])
+    elif (self.penalty == &#39;welsch&#39;):
+        z = np.power(x - y, 2.0)
+        dy = np.array([(self.alpha_sq - zi) / (self.alpha_sq * self.alpha_sq) * np.exp(-0.5 * zi / self.alpha_sq) for zi in z])
+
+    return dy.reshape((1, self.dim_x)) / np.sum(dy)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="node.html#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.objective" href="node.html#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.solve" href="node.html#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.robust_nodes.RobustVectorAverage"><code class="flex name class">
+<span>class <span class="ident">RobustVectorAverage</span></span>
+<span>(</span><span>n, m, penalty='huber', alpha=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves for the multi-dimensional robust average,
+minimize f(x, y) = sum_{i=1}^{n} phi(||y - x_i||; alpha)
+where phi(z; alpha) is one of the following robust penalties,
+'quadratic':
+1/2 z^2
+'pseudo-huber': alpha^2 (sqrt(1 + (z/alpha)^2 - 1)
+'huber':
+1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+'welsch':
+1 - exp(-z^2 / 2 alpha^2)
+'trunc-quad':
+1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise</p>
+<p>The input is assumed to be flattened from an (n times m)-matrix to an nm-vector.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RobustVectorAverage(NonUniqueDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves for the multi-dimensional robust average,
+        minimize f(x, y) = sum_{i=1}^{n} phi(||y - x_i||; alpha)
+    where phi(z; alpha) is one of the following robust penalties,
+        &#39;quadratic&#39;:    1/2 z^2
+        &#39;pseudo-huber&#39;: alpha^2 (sqrt(1 + (z/alpha)^2 - 1)
+        &#39;huber&#39;:        1/2 z^2 for |z| &lt;= alpha and alpha |z| - 1/2 alpha^2 otherwise
+        &#39;welsch&#39;:       1 - exp(-z^2 / 2 alpha^2)
+        &#39;trunc-quad&#39;:   1/2 z^2 for |z| &lt;= alpha and 1/2 alpha^2 otherwise
+
+    The input is assumed to be flattened from an (n times m)-matrix to an nm-vector.
+    &#34;&#34;&#34;
+
+    restarts = 10 # number of random restarts when solving non-convex penalties
+
+    def __init__(self, n, m, penalty=&#39;huber&#39;, alpha=1.0):
+        assert (alpha &gt; 0.0)
+        self.alpha = alpha
+        self.alpha_sq = alpha ** 2
+        self.penalty = penalty.lower()
+        if (self.penalty == &#39;quadratic&#39;):
+            self.phi = lambda z: 0.5 * np.power(z, 2.0)
+        elif (self.penalty == &#39;pseudo-huber&#39;):
+            self.phi = lambda z: self.alpha_sq * (np.sqrt(1.0 + np.power(z, 2.0) / self.alpha_sq) - 1.0)
+        elif (self.penalty == &#39;huber&#39;):
+            self.phi = lambda z: np.where(np.abs(z) &lt;= alpha, 0.5 * np.power(z, 2.0), alpha * np.abs(z) - 0.5 * self.alpha_sq)
+        elif (self.penalty == &#39;welsch&#39;):
+            self.phi = lambda z: 1.0 - np.exp(-0.5 * np.power(z, 2.0) / self.alpha_sq)
+        elif (self.penalty == &#39;trunc-quad&#39;):
+            self.phi = lambda z: np.minimum(0.5 * np.power(z, 2.0), 0.5 * self.alpha_sq)
+        else:
+            assert False, &#34;unrecognized penalty function {}&#34;.format(penalty)
+
+        super().__init__(n*m, m) # make sure node is properly constructed
+        self.eps = 1.0e-4 # relax tolerance on optimality test
+
+    def objective(self, x, y):
+        assert (len(x) == self.dim_x) and (len(y) == self.dim_y)
+        # the inclusion of 1.0e-9 prevents division by zero during automatic differentiation when a y lands exactly on a data point xi
+        return np.sum([self.phi(np.sqrt(np.dot(y - xi, y - xi) + 1.0e-9)) for xi in x.reshape((int(self.dim_x / self.dim_y), self.dim_y))])
+
+    def solve(self, x):
+        assert(len(x) == self.dim_x)
+
+        J = lambda y : self.objective(x, y)
+        dJ = lambda y : self.fY(x, y)
+
+        y_star = np.mean(x.reshape((int(self.dim_x / self.dim_y), self.dim_y)), 0)
+        if (self.penalty != &#39;quadratic&#39;):
+            result = opt.minimize(J, y_star, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+            if not result.success: print(result.message)
+            y_star, J_star = result.x, result.fun
+
+        # run with different intial guesses for non-convex penalties
+        if (self.penalty == &#39;welsch&#39;) or (self.penalty == &#39;trunc-quad&#39;):
+            guesses = np.random.permutation(x.reshape((int(self.dim_x / self.dim_y), self.dim_y)))
+            if self.dim_x &gt; self.restarts: guesses = guesses[0:self.restarts, :]
+            for y_init in guesses:
+                result = opt.minimize(J, y_init, args=(), method=&#39;L-BFGS-B&#39;, jac=dJ, options={&#39;maxiter&#39;: 100, &#39;disp&#39;: False})
+                if not result.success: print(result.message)
+                if (result.fun &lt; J_star):
+                    y_star, J_star = result.x, result.fun
+
+        return y_star, None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="node.html#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="node.html#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="node.html#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.basic.robust_nodes.RobustVectorAverage.restarts"><code class="name">var <span class="ident">restarts</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="node.html#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.gradient" href="node.html#ddn.basic.node.NonUniqueDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.objective" href="node.html#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.solve" href="node.html#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.basic" href="index.html">ddn.basic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.basic.robust_nodes.RobustAverage" href="#ddn.basic.robust_nodes.RobustAverage">RobustAverage</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.robust_nodes.RobustAverage.gradient" href="#ddn.basic.robust_nodes.RobustAverage.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.robust_nodes.RobustAverage.restarts" href="#ddn.basic.robust_nodes.RobustAverage.restarts">restarts</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.robust_nodes.RobustVectorAverage" href="#ddn.basic.robust_nodes.RobustVectorAverage">RobustVectorAverage</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.robust_nodes.RobustVectorAverage.restarts" href="#ddn.basic.robust_nodes.RobustVectorAverage.restarts">restarts</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,1815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.basic.node API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.basic.node</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># DEEP DECLARATIVE NODES
+# Defines the interface for data processing nodes and declarative nodes. The implementation here is kept simple
+# with inputs and outputs assumed to be vectors. There is no distinction between data and parameters and no
+# concept of batches. For using deep declarative nodes in a network for end-to-end learning see code in the
+# `ddn.pytorch` package.
+#
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+#
+
+import autograd.numpy as np
+import scipy as sci
+from autograd import grad, jacobian
+import warnings
+
+class AbstractNode:
+    &#34;&#34;&#34;
+    Minimal interface for generic data processing node that produces an output vector given an input vector.
+    &#34;&#34;&#34;
+
+    def __init__(self, n=1, m=1):
+        &#34;&#34;&#34;
+        Create a node
+        :param n: dimensionality of the input (parameters)
+        :param m: dimensionality of the output (optimization solution)
+        &#34;&#34;&#34;
+        assert (n &gt; 0) and (m &gt; 0)
+        self.dim_x = n # dimensionality of input variable
+        self.dim_y = m # dimensionality of output variable
+
+    def solve(self, x):
+        &#34;&#34;&#34;Computes the output of the node given the input. The second returned object provides context
+        for computing the gradient if necessary. Otherwise it&#39;s None.&#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Computes the gradient of the node for given input x and, optional, output y and context cxt.
+        If y or ctx is not provided then they are recomputed from x as needed.&#34;&#34;&#34;
+        raise NotImplementedError()
+        return None
+
+
+class AbstractDeclarativeNode(AbstractNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by an unconstrained parameterized optimization problems of the form
+        minimize (over y) f(x, y)
+    where x is given (as a vector) and f is a scalar-valued function. Derived classes must implement the `objective`
+    and `solve` functions.
+    &#34;&#34;&#34;
+
+    eps = 1.0e-6 # tolerance for checking that optimality conditions are satisfied
+
+    def __init__(self, n=1, m=1):
+        &#34;&#34;&#34;
+        Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+        partial derivatives of the objective function for use in computing gradients.
+        &#34;&#34;&#34;
+        super().__init__(n, m)
+
+        # partial derivatives of objective
+        self.fY = grad(self.objective, 1)
+        self.fYY = jacobian(self.fY, 1)
+        self.fXY = jacobian(self.fY, 0)
+
+    def objective(self, x, y):
+        &#34;&#34;&#34;Evaluates the objective function on a given input-output pair.&#34;&#34;&#34;
+        warnings.warn(&#34;objective function not implemented.&#34;)
+        return 0.0
+
+    def solve(self, x):
+        &#34;&#34;&#34;
+        Solves the optimization problem
+            y in argmin_u f(x, u)
+        and returns two outputs. The first is the optimal solution y and the second contains the context for
+        computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
+        if no context is available/needed.
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;
+        Computes the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+        Can be overridden by the derived class to provide a more efficient implementation.
+        &#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y)
+
+        return -1.0 * sci.linalg.solve(self.fYY(x, y), self.fXY(x, y), assume_a=&#39;pos&#39;)
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        return (abs(self.fY(x, y)) &lt;= self.eps).all()
+
+
+class EqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+    equality constraint of the form
+        minimize (over y) f(x, y)
+        subject to        h(x, y) = 0
+    where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of constraint function
+        self.hY = grad(self.constraint, 1)
+        self.hX = grad(self.constraint, 0)
+        self.hYY = jacobian(self.hY, 1)
+        self.hXY = jacobian(self.hY, 0)
+
+    def constraint(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint function on a given input-output pair.&#34;&#34;&#34;
+        warnings.warn(&#34;constraint function not implemented.&#34;)
+        return 0.0
+
+    def solve(self, x):
+        &#34;&#34;&#34;
+        Solves the optimization problem
+            y in argmin_u f(x, u) subject to h(x, u) = 0
+        and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
+        equality constraint where the Lagrangian is defined as
+            L(x, y, nu) = f(x, y) - ctx[&#39;nu&#39;] * h(x, y)
+        Otherwise, should return None as second return variable.
+        If the calling function only cares about the optimal solution (and not the context) then call as
+            y_star, _ = self.solve(x)
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y), [x, y, abs(self.constraint(x, y))]
+        assert self._check_optimality_cond(x, y, ctx), [x, y, ctx]
+
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+
+        # return unconstrained gradient if nu is undefined
+        if np.isnan(nu):
+            return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
+
+        H = self.fYY(x, y) - nu * self.hYY(x, y)
+        a = self.hY(x, y)
+        B = self.fXY(x, y) - nu * self.hXY(x, y)
+        C = self.hX(x, y)
+        try:
+            v = sci.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1), assume_a=&#39;pos&#39;)
+        except:
+            return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
+        assert v[:, 0].dot(a) != 0.0, &#34;a^T H^{-1} a is zero&#34;
+        return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Compute nu_star if not provided by the problem&#39;s solver.&#34;&#34;&#34;
+        indx = np.nonzero(self.hY(x, y))
+        if len(indx[0]) == 0:
+            return 0.0
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return abs(self.constraint(x, y)) &lt;= self.eps
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu):
+            return (abs(self.fY(x, y)) &lt;= self.eps).all()
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(self.hY(x, y)) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+        return (abs(self.fY(x, y) - nu * self.hY(x, y)) &lt;= self.eps).all()
+
+
+class IneqConstDeclarativeNode(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+    inequality constraint of the form
+        minimize (over y) f(x, y)
+        subject to        h(x, y) &lt;= 0
+    where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Compute nu_star if not provided by the problem&#39;s solver.&#34;&#34;&#34;
+        if np.all(np.abs(self.fY(x, y)) &lt; self.eps):
+            return np.nan # flag that unconstrained gradient should be used
+        indx = np.nonzero(self.hY(x, y))
+        if len(indx[0]) == 0:
+            return 0.0 # still use constrained gradient
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return self.constraint(x, y) &lt;= self.eps
+
+
+class MultiEqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with multiple (non-linear)
+    equality constraints of the form
+        minimize (over y) f(x, y)
+        subject to        h_i(x, y) = 0, for i = 1, ..., p
+    where x is given (as a vector) and f and h_i are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions. The `constraint` function should return a vector of length p.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of constraint function
+        self.hY = jacobian(self.constraint, 1)
+        self.hX = jacobian(self.constraint, 0)
+        self.hYY = jacobian(self.hY, 1)
+        self.hXY = jacobian(self.hY, 0)
+
+    def constraint(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint functions on a given input-output pair. Returns vector of length p.&#34;&#34;&#34;
+        warnings.warn(&#34;constraint function not implemented.&#34;)
+        return 0.0
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+            assert self._check_constraints(x, y)
+            assert self._check_optimality_cond(x, y, ctx)
+
+        nu = self._get_nu_star(x, y) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+
+        p = len(self.hY(x, y))
+
+        H = self.fYY(x, y) - np.sum(nu[i] * self.hYY(x, y)[i, :, :] for i in range(p))  # m-by-m
+        H = (H + H.T) / 2   # make sure H is symmetric
+
+        A = self.hY(x, y)   # p-by-m
+        B = self.fXY(x, y) - np.sum(nu[i] * self.hXY(x, y)[i, :, :] for i in range(p))  # m-by-n
+        C = self.hX(x, y)   # p-by-n
+
+        # try to use cholesky to solve H^{-1}A^T and H^-1 B
+        try:
+            CC, L = sci.linalg.cho_factor(H)
+            invHAT = sci.linalg.cho_solve((CC, L), A.T)
+            invHB = sci.linalg.cho_solve((CC, L), B)
+        # if H is not positive definite, revert to LU to solve
+        except:
+            invHAT = sci.linalg.solve(H, A.T)
+            invHB = sci.linalg.solve(H, B)
+
+        # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+        return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Solve: hY^T nu = fY^T.&#34;&#34;&#34;
+        nu = sci.linalg.lstsq(self.hY(x, y).T, self.fY(x, y))[0]
+        return nu
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return (abs(self.constraint(x, y)) &lt;= self.eps).all()
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu).all():
+            return super()._check_optimality_cond(x, y)
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(self.hY(x, y)) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+
+        success = (abs(self.fY(x, y) - np.dot(nu.T, self.hY(x, y))) &lt;= self.eps).all()
+        if not success:
+            warnings.warn(&#34;non-zero Lagrangian gradient {} at y={}, fY={}, hY={}, nu={}&#34;.format(
+                (self.fY(x, y) - np.dot(nu.T, self.hY(x, y))), y, self.fY(x, y), self.hY(x, y), nu))
+
+        return success
+
+
+class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A deep declarative node defined by a linear equality constrained parameterized optimization problem of the form:
+        minimize (over y) f(x, y)
+        subject to        A y = b
+    where x is given. Derived classes must implement the objective and solve functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m, A, b):
+        super().__init__(n, m)
+        assert A.shape[1] == m, &#34;second dimension of A must match dimension of y&#34;
+        assert A.shape[0] == b.shape[0], &#34;dimension of A must match dimension of b&#34;
+        self.A, self.b = A, b
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y)
+        assert self._check_optimality_cond(x, y, ctx)
+
+        # TODO: write test case for LinEqConstDeclarativeNode
+        # use cholesky to solve H^{-1}A^T and H^{-1}B
+        C, L = sci.linalg.cho_factor(self.fYY(x, y))
+        invHAT = sci.linalg.cho_solve((C, L), self.A.T)
+        invHB = sci.linalg.cho_solve((C, L), self.fXY(x, y))
+        # compute W = H^{-1}A^T (A H^{-1} A^T)^{-1} A
+        W = np.dot(invHAT, sci.linalg.solve(np.dot(self.A, invHAT), self.A))
+        # return H^{-1}A^T (A H^{-1} A^T)^{-1} A H^{-1} B - H^{-1} B
+        return np.dot(W, invHB) - invHB
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        residual = np.dot(self.A, y) - self.b
+        return np.all(np.abs(residual) &lt;= self.eps)
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        warnings.warn(&#34;optimality check not implemented yet&#34;)
+        return True
+
+
+class GeneralConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with multiple equality and
+    inequality constraint of the form:
+        minimize (over y) f(x, y)
+        subject to        h_i(x, y) = 0, i = 1, ..., p
+                          g_i(x, y) &lt;= 0, i = 1, ..., q
+    where x is given (as a vector) and f, h and g are scalar-valued functions. Derived classes must implement the
+    `objective`, `eq_constraints`, `ineq_constraints` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of objective
+        self.fY = grad(self.objective, 1)
+        self.fYY = jacobian(self.fY, 1)
+        self.fXY = jacobian(self.fY, 0)
+
+    def eq_constraints(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint functions on an input-output pair. Return a p-length vector or None.&#34;&#34;&#34;
+        warnings.warn(&#34;no equality constraints.&#34;)
+        return None
+
+    def ineq_constraints(self, x, y):
+        &#34;&#34;&#34;Evaluates the inequality constraint functions on an input-output pair. Return a q-length vector or None.&#34;&#34;&#34;
+        warnings.warn(&#34;no inequality constraints.&#34;)
+        return None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Overrides base class gradient function.&#34;&#34;&#34;
+        if y is None:
+            y, ctx = self.solve(x)
+            assert self._check_eq_constraints(x, y)
+            assert self._check_ineq_constraints(x, y)
+            assert self._check_optimality_cond(x, y, ctx)
+
+        # TODO: write test case for GeneralConstDeclarativeNode
+
+        h_hatY, h_hatX, h_hatYY, h_hatXY = self._get_constraint_derivatives(x, y)
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+        if nu.any() is None or nu.any() == float(&#39;-inf&#39;):
+            warnings.warn(&#34;non-regular solution.&#34;)
+
+        p_plus_q = len(h_hatY)
+
+        H = self.fYY(x, y) - np.sum(nu[i] * h_hatYY[i, :, :] for i in range(p_plus_q))  # m-by-m
+        H = (H + H.T) / 2   # make sure H is symmetric
+
+        A = h_hatY   # (p+q)-by-m
+        B = self.fXY(x, y) - np.sum(nu[i] * h_hatXY[i, :, :] for i in range(p_plus_q))  # m-by-n
+        C = h_hatX   # (p+q)-by-n
+
+        # try to use cholesky to solve H^{-1}A^T and H^-1 B
+        try:
+            CC, L = sci.linalg.cho_factor(H)
+            invHAT = sci.linalg.cho_solve((CC, L), A.T)
+            invHB = sci.linalg.cho_solve((CC, L), B)
+        # if H is not positive definite, revert to LU to solve
+        except:
+            invHAT = sci.linalg.solve(H, A.T)
+            invHB = sci.linalg.solve(H, B)
+
+        # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+        return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB
+
+
+    def _get_constraint_derivatives(self, x, y):
+        &#34;&#34;&#34;Return derivatives of active constraints.&#34;&#34;&#34;
+        h = self.eq_constraints(x, y)   # p-by-1
+        if h is not None:
+            self._check_eq_constraints(x, y)
+
+        g = self.ineq_constraints(x, y) # q-by-1
+        if g is not None:
+            self._check_ineq_constraints(x, y)
+
+            # identify active constraints
+            mask = np.array([abs(g[i]) &lt;= self.eps for i in range(len(g))])
+            if not mask.any():
+                mask = None
+        else:
+            mask = None
+
+        # construct gradient
+        if (h is not None) and (mask is None):
+            h_hatY = jacobian(self.eq_constraints, 1)(x, y)
+            h_hatX = jacobian(self.eq_constraints, 0)(x, y)
+            h_hatYY = jacobian(jacobian(self.eq_constraints, 1), 1)(x, y)
+            h_hatXY = jacobian(jacobian(self.eq_constraints, 1), 0)(x, y)
+
+        elif (h is None) and (mask is not None):
+            h_hatY = jacobian(self.ineq_constraints, 1)(x, y)[mask]
+            h_hatX = jacobian(self.ineq_constraints, 0)(x, y)[mask]
+            h_hatYY = jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]
+            h_hatXY = jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]
+
+        elif (h is not None) and (mask is not None):
+            h_hatY = np.vstack((jacobian(self.eq_constraints, 1)(x, y), jacobian(self.ineq_constraints, 1)(x, y)[mask]))
+            h_hatX = np.vstack((jacobian(self.eq_constraints, 0)(x, y), jacobian(self.ineq_constraints, 0)(x, y)[mask]))
+            h_hatYY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 1)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]))
+            h_hatXY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 0)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]))
+
+        else:
+            h_hatY, h_hatX, h_hatYY, h_hatXY = None, None, None, None
+
+        return h_hatY, h_hatX, h_hatYY, h_hatXY
+
+    def _get_nu_star(self, x, y, h_hatY):
+        &#34;&#34;&#34;Solve: hY^T nu = fY^T.&#34;&#34;&#34;
+        nu = sci.linalg.lstsq(h_hatY.T, self.fY(x, y))[0]
+        return nu
+
+    def _check_eq_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s equality constraints are satisfied.&#34;&#34;&#34;
+        h = self.eq_constraints(x, y)
+        return (h is None) or (abs(h) &lt;= self.eps).all()
+
+    def _check_ineq_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s inequality constraints are satisfied.&#34;&#34;&#34;
+        g = self.ineq_constraints(x, y)
+        return (g is None) or (g &lt;= self.eps).all()
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+
+        h_hatY = self._get_constraint_derivatives(x, y)[0]
+        if h_hatY is None:
+            return super()._check_optimality_cond(x, y)
+
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu).all():
+            return super()._check_optimality_cond(x, y)
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(h_hatY) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+
+        success = (abs(self.fY(x, y) - np.dot(nu.T, h_hatY)) &lt;= self.eps).all()
+        if not success:
+            warnings.warn(&#34;non-zero Lagrangian gradient {} at y={}, fY={}, hY={}, nu={}&#34;.format(
+                (self.fY(x, y) - np.dot(nu.T, h_hatY)), y, self.fY(x, y), h_hatY, nu))
+
+        return success
+
+
+class NonUniqueDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node having non-unique solutions so that the pseudo-inverse is required
+    in computing the gradient.
+    &#34;&#34;&#34;
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;
+        Computes the gradient of the output (problem solution) with respect to the problem parameters
+        using a pseudo-inverse. The returned gradient is an ndarray of size (self.dim_y, self.dim_x).
+        In the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+        &#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y, ctx), abs(self.fY(x, y))
+
+        return -1.0 * np.linalg.pinv(self.fYY(x, y)).dot(self.fXY(x, y))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.basic.node.AbstractDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">AbstractDeclarativeNode</span></span>
+<span>(</span><span>n=1, m=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node defined by an unconstrained parameterized optimization problems of the form
+minimize (over y) f(x, y)
+where x is given (as a vector) and f is a scalar-valued function. Derived classes must implement the <code>objective</code>
+and <code>solve</code> functions.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AbstractDeclarativeNode(AbstractNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by an unconstrained parameterized optimization problems of the form
+        minimize (over y) f(x, y)
+    where x is given (as a vector) and f is a scalar-valued function. Derived classes must implement the `objective`
+    and `solve` functions.
+    &#34;&#34;&#34;
+
+    eps = 1.0e-6 # tolerance for checking that optimality conditions are satisfied
+
+    def __init__(self, n=1, m=1):
+        &#34;&#34;&#34;
+        Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+        partial derivatives of the objective function for use in computing gradients.
+        &#34;&#34;&#34;
+        super().__init__(n, m)
+
+        # partial derivatives of objective
+        self.fY = grad(self.objective, 1)
+        self.fYY = jacobian(self.fY, 1)
+        self.fXY = jacobian(self.fY, 0)
+
+    def objective(self, x, y):
+        &#34;&#34;&#34;Evaluates the objective function on a given input-output pair.&#34;&#34;&#34;
+        warnings.warn(&#34;objective function not implemented.&#34;)
+        return 0.0
+
+    def solve(self, x):
+        &#34;&#34;&#34;
+        Solves the optimization problem
+            y in argmin_u f(x, u)
+        and returns two outputs. The first is the optimal solution y and the second contains the context for
+        computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
+        if no context is available/needed.
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;
+        Computes the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+        Can be overridden by the derived class to provide a more efficient implementation.
+        &#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y)
+
+        return -1.0 * sci.linalg.solve(self.fYY(x, y), self.fXY(x, y), assume_a=&#39;pos&#39;)
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        return (abs(self.fY(x, y)) &lt;= self.eps).all()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.EqConstDeclarativeNode" href="#ddn.basic.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.GeneralConstDeclarativeNode" href="#ddn.basic.node.GeneralConstDeclarativeNode">GeneralConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.LinEqConstDeclarativeNode" href="#ddn.basic.node.LinEqConstDeclarativeNode">LinEqConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.MultiEqConstDeclarativeNode" href="#ddn.basic.node.MultiEqConstDeclarativeNode">MultiEqConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></li>
+<li><a title="ddn.basic.sample_nodes.UnconstPolynomial" href="sample_nodes.html#ddn.basic.sample_nodes.UnconstPolynomial">UnconstPolynomial</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.basic.node.AbstractDeclarativeNode.eps"><code class="name">var <span class="ident">eps</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.AbstractDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the gradient of the output (problem solution) with respect to the problem
+parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
+the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+Can be overridden by the derived class to provide a more efficient implementation.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;
+    Computes the gradient of the output (problem solution) with respect to the problem
+    parameters. The returned gradient is an ndarray of size (self.dim_y, self.dim_x). In
+    the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+    Can be overridden by the derived class to provide a more efficient implementation.
+    &#34;&#34;&#34;
+
+    # compute optimal value if not already done so
+    if y is None:
+        y, ctx = self.solve(x)
+    assert self._check_optimality_cond(x, y)
+
+    return -1.0 * sci.linalg.solve(self.fYY(x, y), self.fXY(x, y), assume_a=&#39;pos&#39;)</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.AbstractDeclarativeNode.objective"><code class="name flex">
+<span>def <span class="ident">objective</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the objective function on a given input-output pair.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def objective(self, x, y):
+    &#34;&#34;&#34;Evaluates the objective function on a given input-output pair.&#34;&#34;&#34;
+    warnings.warn(&#34;objective function not implemented.&#34;)
+    return 0.0</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.AbstractDeclarativeNode.solve"><code class="name flex">
+<span>def <span class="ident">solve</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the optimization problem
+y in argmin_u f(x, u)
+and returns two outputs. The first is the optimal solution y and the second contains the context for
+computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
+if no context is available/needed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def solve(self, x):
+    &#34;&#34;&#34;
+    Solves the optimization problem
+        y in argmin_u f(x, u)
+    and returns two outputs. The first is the optimal solution y and the second contains the context for
+    computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
+    if no context is available/needed.
+    &#34;&#34;&#34;
+    raise NotImplementedError()
+    return None, None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.basic.node.AbstractNode"><code class="flex name class">
+<span>class <span class="ident">AbstractNode</span></span>
+<span>(</span><span>n=1, m=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Minimal interface for generic data processing node that produces an output vector given an input vector.</p>
+<p>Create a node
+:param n: dimensionality of the input (parameters)
+:param m: dimensionality of the output (optimization solution)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AbstractNode:
+    &#34;&#34;&#34;
+    Minimal interface for generic data processing node that produces an output vector given an input vector.
+    &#34;&#34;&#34;
+
+    def __init__(self, n=1, m=1):
+        &#34;&#34;&#34;
+        Create a node
+        :param n: dimensionality of the input (parameters)
+        :param m: dimensionality of the output (optimization solution)
+        &#34;&#34;&#34;
+        assert (n &gt; 0) and (m &gt; 0)
+        self.dim_x = n # dimensionality of input variable
+        self.dim_y = m # dimensionality of output variable
+
+    def solve(self, x):
+        &#34;&#34;&#34;Computes the output of the node given the input. The second returned object provides context
+        for computing the gradient if necessary. Otherwise it&#39;s None.&#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Computes the gradient of the node for given input x and, optional, output y and context cxt.
+        If y or ctx is not provided then they are recomputed from x as needed.&#34;&#34;&#34;
+        raise NotImplementedError()
+        return None</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.composition.ComposedNode" href="composition.html#ddn.basic.composition.ComposedNode">ComposedNode</a></li>
+<li><a title="ddn.basic.composition.ParallelNode" href="composition.html#ddn.basic.composition.ParallelNode">ParallelNode</a></li>
+<li><a title="ddn.basic.composition.SelectNode" href="composition.html#ddn.basic.composition.SelectNode">SelectNode</a></li>
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.sample_nodes.SquaredErrorNode" href="sample_nodes.html#ddn.basic.sample_nodes.SquaredErrorNode">SquaredErrorNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.AbstractNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the gradient of the node for given input x and, optional, output y and context cxt.
+If y or ctx is not provided then they are recomputed from x as needed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Computes the gradient of the node for given input x and, optional, output y and context cxt.
+    If y or ctx is not provided then they are recomputed from x as needed.&#34;&#34;&#34;
+    raise NotImplementedError()
+    return None</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.AbstractNode.solve"><code class="name flex">
+<span>def <span class="ident">solve</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the output of the node given the input. The second returned object provides context
+for computing the gradient if necessary. Otherwise it's None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def solve(self, x):
+    &#34;&#34;&#34;Computes the output of the node given the input. The second returned object provides context
+    for computing the gradient if necessary. Otherwise it&#39;s None.&#34;&#34;&#34;
+    raise NotImplementedError()
+    return None, None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.basic.node.EqConstDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">EqConstDeclarativeNode</span></span>
+<span>(</span><span>n, m)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+equality constraint of the form
+minimize (over y) f(x, y)
+subject to
+h(x, y) = 0
+where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+<code>objective</code>, <code>constraint</code> and <code>solve</code> functions.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+    equality constraint of the form
+        minimize (over y) f(x, y)
+        subject to        h(x, y) = 0
+    where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of constraint function
+        self.hY = grad(self.constraint, 1)
+        self.hX = grad(self.constraint, 0)
+        self.hYY = jacobian(self.hY, 1)
+        self.hXY = jacobian(self.hY, 0)
+
+    def constraint(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint function on a given input-output pair.&#34;&#34;&#34;
+        warnings.warn(&#34;constraint function not implemented.&#34;)
+        return 0.0
+
+    def solve(self, x):
+        &#34;&#34;&#34;
+        Solves the optimization problem
+            y in argmin_u f(x, u) subject to h(x, u) = 0
+        and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
+        equality constraint where the Lagrangian is defined as
+            L(x, y, nu) = f(x, y) - ctx[&#39;nu&#39;] * h(x, y)
+        Otherwise, should return None as second return variable.
+        If the calling function only cares about the optimal solution (and not the context) then call as
+            y_star, _ = self.solve(x)
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+        return None, None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y), [x, y, abs(self.constraint(x, y))]
+        assert self._check_optimality_cond(x, y, ctx), [x, y, ctx]
+
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+
+        # return unconstrained gradient if nu is undefined
+        if np.isnan(nu):
+            return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
+
+        H = self.fYY(x, y) - nu * self.hYY(x, y)
+        a = self.hY(x, y)
+        B = self.fXY(x, y) - nu * self.hXY(x, y)
+        C = self.hX(x, y)
+        try:
+            v = sci.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1), assume_a=&#39;pos&#39;)
+        except:
+            return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
+        assert v[:, 0].dot(a) != 0.0, &#34;a^T H^{-1} a is zero&#34;
+        return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Compute nu_star if not provided by the problem&#39;s solver.&#34;&#34;&#34;
+        indx = np.nonzero(self.hY(x, y))
+        if len(indx[0]) == 0:
+            return 0.0
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return abs(self.constraint(x, y)) &lt;= self.eps
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu):
+            return (abs(self.fY(x, y)) &lt;= self.eps).all()
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(self.hY(x, y)) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+        return (abs(self.fY(x, y) - nu * self.hY(x, y)) &lt;= self.eps).all()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.IneqConstDeclarativeNode" href="#ddn.basic.node.IneqConstDeclarativeNode">IneqConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.sample_nodes.ConstLinFcnOnParameterizedCircle" href="sample_nodes.html#ddn.basic.sample_nodes.ConstLinFcnOnParameterizedCircle">ConstLinFcnOnParameterizedCircle</a></li>
+<li><a title="ddn.basic.sample_nodes.LinFcnOnParameterizedCircle" href="sample_nodes.html#ddn.basic.sample_nodes.LinFcnOnParameterizedCircle">LinFcnOnParameterizedCircle</a></li>
+<li><a title="ddn.basic.sample_nodes.LinFcnOnUnitCircle" href="sample_nodes.html#ddn.basic.sample_nodes.LinFcnOnUnitCircle">LinFcnOnUnitCircle</a></li>
+<li><a title="ddn.basic.sample_nodes.QuadFcnOnSphere" href="sample_nodes.html#ddn.basic.sample_nodes.QuadFcnOnSphere">QuadFcnOnSphere</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.EqConstDeclarativeNode.constraint"><code class="name flex">
+<span>def <span class="ident">constraint</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the equality constraint function on a given input-output pair.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def constraint(self, x, y):
+    &#34;&#34;&#34;Evaluates the equality constraint function on a given input-output pair.&#34;&#34;&#34;
+    warnings.warn(&#34;constraint function not implemented.&#34;)
+    return 0.0</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.EqConstDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the gradient of the output (problem solution) with respect to the problem
+parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+    parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+    the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+    # compute optimal value if not already done so
+    if y is None:
+        y, ctx = self.solve(x)
+    assert self._check_constraints(x, y), [x, y, abs(self.constraint(x, y))]
+    assert self._check_optimality_cond(x, y, ctx), [x, y, ctx]
+
+    nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+
+    # return unconstrained gradient if nu is undefined
+    if np.isnan(nu):
+        return -1.0 * np.linalg.solve(self.fYY(x, y), self.fXY(x, y))
+
+    H = self.fYY(x, y) - nu * self.hYY(x, y)
+    a = self.hY(x, y)
+    B = self.fXY(x, y) - nu * self.hXY(x, y)
+    C = self.hX(x, y)
+    try:
+        v = sci.linalg.solve(H, np.concatenate((a.reshape((self.dim_y, 1)), B), axis=1), assume_a=&#39;pos&#39;)
+    except:
+        return np.full((self.dim_y, self.dim_x), np.nan).squeeze()
+    assert v[:, 0].dot(a) != 0.0, &#34;a^T H^{-1} a is zero&#34;
+    return (np.outer(v[:, 0], (v[:, 0].dot(B) - C) / v[:, 0].dot(a)) - v[:, 1:self.dim_x + 1]).squeeze()</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.EqConstDeclarativeNode.solve"><code class="name flex">
+<span>def <span class="ident">solve</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the optimization problem
+y in argmin_u f(x, u) subject to h(x, u) = 0
+and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
+equality constraint where the Lagrangian is defined as
+L(x, y, nu) = f(x, y) - ctx['nu'] * h(x, y)
+Otherwise, should return None as second return variable.
+If the calling function only cares about the optimal solution (and not the context) then call as
+y_star, _ = self.solve(x)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def solve(self, x):
+    &#34;&#34;&#34;
+    Solves the optimization problem
+        y in argmin_u f(x, u) subject to h(x, u) = 0
+    and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
+    equality constraint where the Lagrangian is defined as
+        L(x, y, nu) = f(x, y) - ctx[&#39;nu&#39;] * h(x, y)
+    Otherwise, should return None as second return variable.
+    If the calling function only cares about the optimal solution (and not the context) then call as
+        y_star, _ = self.solve(x)
+    &#34;&#34;&#34;
+    raise NotImplementedError()
+    return None, None</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.node.GeneralConstDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">GeneralConstDeclarativeNode</span></span>
+<span>(</span><span>n, m)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node defined by a parameterized optimization problem with multiple equality and
+inequality constraint of the form:
+minimize (over y) f(x, y)
+subject to
+h_i(x, y) = 0, i = 1, &hellip;, p
+g_i(x, y) &lt;= 0, i = 1, &hellip;, q
+where x is given (as a vector) and f, h and g are scalar-valued functions. Derived classes must implement the
+<code>objective</code>, <code>eq_constraints</code>, <code>ineq_constraints</code> and <code>solve</code> functions.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneralConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with multiple equality and
+    inequality constraint of the form:
+        minimize (over y) f(x, y)
+        subject to        h_i(x, y) = 0, i = 1, ..., p
+                          g_i(x, y) &lt;= 0, i = 1, ..., q
+    where x is given (as a vector) and f, h and g are scalar-valued functions. Derived classes must implement the
+    `objective`, `eq_constraints`, `ineq_constraints` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of objective
+        self.fY = grad(self.objective, 1)
+        self.fYY = jacobian(self.fY, 1)
+        self.fXY = jacobian(self.fY, 0)
+
+    def eq_constraints(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint functions on an input-output pair. Return a p-length vector or None.&#34;&#34;&#34;
+        warnings.warn(&#34;no equality constraints.&#34;)
+        return None
+
+    def ineq_constraints(self, x, y):
+        &#34;&#34;&#34;Evaluates the inequality constraint functions on an input-output pair. Return a q-length vector or None.&#34;&#34;&#34;
+        warnings.warn(&#34;no inequality constraints.&#34;)
+        return None
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Overrides base class gradient function.&#34;&#34;&#34;
+        if y is None:
+            y, ctx = self.solve(x)
+            assert self._check_eq_constraints(x, y)
+            assert self._check_ineq_constraints(x, y)
+            assert self._check_optimality_cond(x, y, ctx)
+
+        # TODO: write test case for GeneralConstDeclarativeNode
+
+        h_hatY, h_hatX, h_hatYY, h_hatXY = self._get_constraint_derivatives(x, y)
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+        if nu.any() is None or nu.any() == float(&#39;-inf&#39;):
+            warnings.warn(&#34;non-regular solution.&#34;)
+
+        p_plus_q = len(h_hatY)
+
+        H = self.fYY(x, y) - np.sum(nu[i] * h_hatYY[i, :, :] for i in range(p_plus_q))  # m-by-m
+        H = (H + H.T) / 2   # make sure H is symmetric
+
+        A = h_hatY   # (p+q)-by-m
+        B = self.fXY(x, y) - np.sum(nu[i] * h_hatXY[i, :, :] for i in range(p_plus_q))  # m-by-n
+        C = h_hatX   # (p+q)-by-n
+
+        # try to use cholesky to solve H^{-1}A^T and H^-1 B
+        try:
+            CC, L = sci.linalg.cho_factor(H)
+            invHAT = sci.linalg.cho_solve((CC, L), A.T)
+            invHB = sci.linalg.cho_solve((CC, L), B)
+        # if H is not positive definite, revert to LU to solve
+        except:
+            invHAT = sci.linalg.solve(H, A.T)
+            invHB = sci.linalg.solve(H, B)
+
+        # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+        return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB
+
+
+    def _get_constraint_derivatives(self, x, y):
+        &#34;&#34;&#34;Return derivatives of active constraints.&#34;&#34;&#34;
+        h = self.eq_constraints(x, y)   # p-by-1
+        if h is not None:
+            self._check_eq_constraints(x, y)
+
+        g = self.ineq_constraints(x, y) # q-by-1
+        if g is not None:
+            self._check_ineq_constraints(x, y)
+
+            # identify active constraints
+            mask = np.array([abs(g[i]) &lt;= self.eps for i in range(len(g))])
+            if not mask.any():
+                mask = None
+        else:
+            mask = None
+
+        # construct gradient
+        if (h is not None) and (mask is None):
+            h_hatY = jacobian(self.eq_constraints, 1)(x, y)
+            h_hatX = jacobian(self.eq_constraints, 0)(x, y)
+            h_hatYY = jacobian(jacobian(self.eq_constraints, 1), 1)(x, y)
+            h_hatXY = jacobian(jacobian(self.eq_constraints, 1), 0)(x, y)
+
+        elif (h is None) and (mask is not None):
+            h_hatY = jacobian(self.ineq_constraints, 1)(x, y)[mask]
+            h_hatX = jacobian(self.ineq_constraints, 0)(x, y)[mask]
+            h_hatYY = jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]
+            h_hatXY = jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]
+
+        elif (h is not None) and (mask is not None):
+            h_hatY = np.vstack((jacobian(self.eq_constraints, 1)(x, y), jacobian(self.ineq_constraints, 1)(x, y)[mask]))
+            h_hatX = np.vstack((jacobian(self.eq_constraints, 0)(x, y), jacobian(self.ineq_constraints, 0)(x, y)[mask]))
+            h_hatYY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 1)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 1)(x, y)[mask]))
+            h_hatXY = np.vstack((jacobian(jacobian(self.eq_constraints, 1), 0)(x, y), jacobian(jacobian(self.ineq_constraints, 1), 0)(x, y)[mask]))
+
+        else:
+            h_hatY, h_hatX, h_hatYY, h_hatXY = None, None, None, None
+
+        return h_hatY, h_hatX, h_hatYY, h_hatXY
+
+    def _get_nu_star(self, x, y, h_hatY):
+        &#34;&#34;&#34;Solve: hY^T nu = fY^T.&#34;&#34;&#34;
+        nu = sci.linalg.lstsq(h_hatY.T, self.fY(x, y))[0]
+        return nu
+
+    def _check_eq_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s equality constraints are satisfied.&#34;&#34;&#34;
+        h = self.eq_constraints(x, y)
+        return (h is None) or (abs(h) &lt;= self.eps).all()
+
+    def _check_ineq_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s inequality constraints are satisfied.&#34;&#34;&#34;
+        g = self.ineq_constraints(x, y)
+        return (g is None) or (g &lt;= self.eps).all()
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+
+        h_hatY = self._get_constraint_derivatives(x, y)[0]
+        if h_hatY is None:
+            return super()._check_optimality_cond(x, y)
+
+        nu = self._get_nu_star(x, y, h_hatY) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu).all():
+            return super()._check_optimality_cond(x, y)
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(h_hatY) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+
+        success = (abs(self.fY(x, y) - np.dot(nu.T, h_hatY)) &lt;= self.eps).all()
+        if not success:
+            warnings.warn(&#34;non-zero Lagrangian gradient {} at y={}, fY={}, hY={}, nu={}&#34;.format(
+                (self.fY(x, y) - np.dot(nu.T, h_hatY)), y, self.fY(x, y), h_hatY, nu))
+
+        return success</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.GeneralConstDeclarativeNode.eq_constraints"><code class="name flex">
+<span>def <span class="ident">eq_constraints</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the equality constraint functions on an input-output pair. Return a p-length vector or None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def eq_constraints(self, x, y):
+    &#34;&#34;&#34;Evaluates the equality constraint functions on an input-output pair. Return a p-length vector or None.&#34;&#34;&#34;
+    warnings.warn(&#34;no equality constraints.&#34;)
+    return None</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.GeneralConstDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Overrides base class gradient function.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Overrides base class gradient function.&#34;&#34;&#34;
+    if y is None:
+        y, ctx = self.solve(x)
+        assert self._check_eq_constraints(x, y)
+        assert self._check_ineq_constraints(x, y)
+        assert self._check_optimality_cond(x, y, ctx)
+
+    # TODO: write test case for GeneralConstDeclarativeNode
+
+    h_hatY, h_hatX, h_hatYY, h_hatXY = self._get_constraint_derivatives(x, y)
+    nu = self._get_nu_star(x, y, h_hatY) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+    if nu.any() is None or nu.any() == float(&#39;-inf&#39;):
+        warnings.warn(&#34;non-regular solution.&#34;)
+
+    p_plus_q = len(h_hatY)
+
+    H = self.fYY(x, y) - np.sum(nu[i] * h_hatYY[i, :, :] for i in range(p_plus_q))  # m-by-m
+    H = (H + H.T) / 2   # make sure H is symmetric
+
+    A = h_hatY   # (p+q)-by-m
+    B = self.fXY(x, y) - np.sum(nu[i] * h_hatXY[i, :, :] for i in range(p_plus_q))  # m-by-n
+    C = h_hatX   # (p+q)-by-n
+
+    # try to use cholesky to solve H^{-1}A^T and H^-1 B
+    try:
+        CC, L = sci.linalg.cho_factor(H)
+        invHAT = sci.linalg.cho_solve((CC, L), A.T)
+        invHB = sci.linalg.cho_solve((CC, L), B)
+    # if H is not positive definite, revert to LU to solve
+    except:
+        invHAT = sci.linalg.solve(H, A.T)
+        invHB = sci.linalg.solve(H, B)
+
+    # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+    return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.GeneralConstDeclarativeNode.ineq_constraints"><code class="name flex">
+<span>def <span class="ident">ineq_constraints</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the inequality constraint functions on an input-output pair. Return a q-length vector or None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ineq_constraints(self, x, y):
+    &#34;&#34;&#34;Evaluates the inequality constraint functions on an input-output pair. Return a q-length vector or None.&#34;&#34;&#34;
+    warnings.warn(&#34;no inequality constraints.&#34;)
+    return None</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.solve" href="#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.node.IneqConstDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">IneqConstDeclarativeNode</span></span>
+<span>(</span><span>n, m)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+inequality constraint of the form
+minimize (over y) f(x, y)
+subject to
+h(x, y) &lt;= 0
+where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+<code>objective</code>, <code>constraint</code> and <code>solve</code> functions.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IneqConstDeclarativeNode(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with single (non-linear)
+    inequality constraint of the form
+        minimize (over y) f(x, y)
+        subject to        h(x, y) &lt;= 0
+    where x is given (as a vector) and f and h are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Compute nu_star if not provided by the problem&#39;s solver.&#34;&#34;&#34;
+        if np.all(np.abs(self.fY(x, y)) &lt; self.eps):
+            return np.nan # flag that unconstrained gradient should be used
+        indx = np.nonzero(self.hY(x, y))
+        if len(indx[0]) == 0:
+            return 0.0 # still use constrained gradient
+        return self.fY(x, y)[indx[0][0]] / self.hY(x, y)[indx[0][0]]
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return self.constraint(x, y) &lt;= self.eps</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.EqConstDeclarativeNode" href="#ddn.basic.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.sample_nodes.QuadFcnOnBall" href="sample_nodes.html#ddn.basic.sample_nodes.QuadFcnOnBall">QuadFcnOnBall</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.EqConstDeclarativeNode" href="#ddn.basic.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.constraint" href="#ddn.basic.node.EqConstDeclarativeNode.constraint">constraint</a></code></li>
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.gradient" href="#ddn.basic.node.EqConstDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.solve" href="#ddn.basic.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.node.LinEqConstDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">LinEqConstDeclarativeNode</span></span>
+<span>(</span><span>n, m, A, b)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A deep declarative node defined by a linear equality constrained parameterized optimization problem of the form:
+minimize (over y) f(x, y)
+subject to
+A y = b
+where x is given. Derived classes must implement the objective and solve functions.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LinEqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A deep declarative node defined by a linear equality constrained parameterized optimization problem of the form:
+        minimize (over y) f(x, y)
+        subject to        A y = b
+    where x is given. Derived classes must implement the objective and solve functions.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m, A, b):
+        super().__init__(n, m)
+        assert A.shape[1] == m, &#34;second dimension of A must match dimension of y&#34;
+        assert A.shape[0] == b.shape[0], &#34;dimension of A must match dimension of b&#34;
+        self.A, self.b = A, b
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_constraints(x, y)
+        assert self._check_optimality_cond(x, y, ctx)
+
+        # TODO: write test case for LinEqConstDeclarativeNode
+        # use cholesky to solve H^{-1}A^T and H^{-1}B
+        C, L = sci.linalg.cho_factor(self.fYY(x, y))
+        invHAT = sci.linalg.cho_solve((C, L), self.A.T)
+        invHB = sci.linalg.cho_solve((C, L), self.fXY(x, y))
+        # compute W = H^{-1}A^T (A H^{-1} A^T)^{-1} A
+        W = np.dot(invHAT, sci.linalg.solve(np.dot(self.A, invHAT), self.A))
+        # return H^{-1}A^T (A H^{-1} A^T)^{-1} A H^{-1} B - H^{-1} B
+        return np.dot(W, invHB) - invHB
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        residual = np.dot(self.A, y) - self.b
+        return np.all(np.abs(residual) &lt;= self.eps)
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+        warnings.warn(&#34;optimality check not implemented yet&#34;)
+        return True</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.LinEqConstDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the gradient of the output (problem solution) with respect to the problem
+parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+    parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+    the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+    # compute optimal value if not already done so
+    if y is None:
+        y, ctx = self.solve(x)
+    assert self._check_constraints(x, y)
+    assert self._check_optimality_cond(x, y, ctx)
+
+    # TODO: write test case for LinEqConstDeclarativeNode
+    # use cholesky to solve H^{-1}A^T and H^{-1}B
+    C, L = sci.linalg.cho_factor(self.fYY(x, y))
+    invHAT = sci.linalg.cho_solve((C, L), self.A.T)
+    invHB = sci.linalg.cho_solve((C, L), self.fXY(x, y))
+    # compute W = H^{-1}A^T (A H^{-1} A^T)^{-1} A
+    W = np.dot(invHAT, sci.linalg.solve(np.dot(self.A, invHAT), self.A))
+    # return H^{-1}A^T (A H^{-1} A^T)^{-1} A H^{-1} B - H^{-1} B
+    return np.dot(W, invHB) - invHB</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.solve" href="#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.node.MultiEqConstDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">MultiEqConstDeclarativeNode</span></span>
+<span>(</span><span>n, m)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node defined by a parameterized optimization problem with multiple (non-linear)
+equality constraints of the form
+minimize (over y) f(x, y)
+subject to
+h_i(x, y) = 0, for i = 1, &hellip;, p
+where x is given (as a vector) and f and h_i are scalar-valued functions. Derived classes must implement the
+<code>objective</code>, <code>constraint</code> and <code>solve</code> functions. The <code>constraint</code> function should return a vector of length p.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultiEqConstDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node defined by a parameterized optimization problem with multiple (non-linear)
+    equality constraints of the form
+        minimize (over y) f(x, y)
+        subject to        h_i(x, y) = 0, for i = 1, ..., p
+    where x is given (as a vector) and f and h_i are scalar-valued functions. Derived classes must implement the
+    `objective`, `constraint` and `solve` functions. The `constraint` function should return a vector of length p.
+    &#34;&#34;&#34;
+
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+        # partial derivatives of constraint function
+        self.hY = jacobian(self.constraint, 1)
+        self.hX = jacobian(self.constraint, 0)
+        self.hYY = jacobian(self.hY, 1)
+        self.hXY = jacobian(self.hY, 0)
+
+    def constraint(self, x, y):
+        &#34;&#34;&#34;Evaluates the equality constraint functions on a given input-output pair. Returns vector of length p.&#34;&#34;&#34;
+        warnings.warn(&#34;constraint function not implemented.&#34;)
+        return 0.0
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+        parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+        the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+            assert self._check_constraints(x, y)
+            assert self._check_optimality_cond(x, y, ctx)
+
+        nu = self._get_nu_star(x, y) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+
+        p = len(self.hY(x, y))
+
+        H = self.fYY(x, y) - np.sum(nu[i] * self.hYY(x, y)[i, :, :] for i in range(p))  # m-by-m
+        H = (H + H.T) / 2   # make sure H is symmetric
+
+        A = self.hY(x, y)   # p-by-m
+        B = self.fXY(x, y) - np.sum(nu[i] * self.hXY(x, y)[i, :, :] for i in range(p))  # m-by-n
+        C = self.hX(x, y)   # p-by-n
+
+        # try to use cholesky to solve H^{-1}A^T and H^-1 B
+        try:
+            CC, L = sci.linalg.cho_factor(H)
+            invHAT = sci.linalg.cho_solve((CC, L), A.T)
+            invHB = sci.linalg.cho_solve((CC, L), B)
+        # if H is not positive definite, revert to LU to solve
+        except:
+            invHAT = sci.linalg.solve(H, A.T)
+            invHB = sci.linalg.solve(H, B)
+
+        # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+        return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB
+
+    def _get_nu_star(self, x, y):
+        &#34;&#34;&#34;Solve: hY^T nu = fY^T.&#34;&#34;&#34;
+        nu = sci.linalg.lstsq(self.hY(x, y).T, self.fY(x, y))[0]
+        return nu
+
+    def _check_constraints(self, x, y):
+        &#34;&#34;&#34;Check that the problem&#39;s constraints are satisfied.&#34;&#34;&#34;
+        return (abs(self.constraint(x, y)) &lt;= self.eps).all()
+
+    def _check_optimality_cond(self, x, y, ctx=None):
+        &#34;&#34;&#34;Checks that the problem&#39;s first-order optimality condition is satisfied.&#34;&#34;&#34;
+
+        nu = self._get_nu_star(x, y) if (ctx is None) else ctx[&#39;nu&#39;]
+        if np.isnan(nu).all():
+            return super()._check_optimality_cond(x, y)
+
+        # check for invalid lagrangian (gradient of constraint zero at optimal point)
+        if (abs(self.hY(x, y)) &lt;= self.eps).all():
+            warnings.warn(&#34;gradient of constraint function vanishes at the optimum.&#34;)
+            return True
+
+        success = (abs(self.fY(x, y) - np.dot(nu.T, self.hY(x, y))) &lt;= self.eps).all()
+        if not success:
+            warnings.warn(&#34;non-zero Lagrangian gradient {} at y={}, fY={}, hY={}, nu={}&#34;.format(
+                (self.fY(x, y) - np.dot(nu.T, self.hY(x, y))), y, self.fY(x, y), self.hY(x, y), nu))
+
+        return success</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.MultiEqConstDeclarativeNode.constraint"><code class="name flex">
+<span>def <span class="ident">constraint</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the equality constraint functions on a given input-output pair. Returns vector of length p.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def constraint(self, x, y):
+    &#34;&#34;&#34;Evaluates the equality constraint functions on a given input-output pair. Returns vector of length p.&#34;&#34;&#34;
+    warnings.warn(&#34;constraint function not implemented.&#34;)
+    return 0.0</code></pre>
+</details>
+</dd>
+<dt id="ddn.basic.node.MultiEqConstDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the gradient of the output (problem solution) with respect to the problem
+parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;Compute the gradient of the output (problem solution) with respect to the problem
+    parameters. The returned gradient is an ndarray of size (prob.dim_y, prob.dim_x). In
+    the case of 1-dimensional parameters the gradient is a vector of size (prob.dim_y,).&#34;&#34;&#34;
+
+    # compute optimal value if not already done so
+    if y is None:
+        y, ctx = self.solve(x)
+        assert self._check_constraints(x, y)
+        assert self._check_optimality_cond(x, y, ctx)
+
+    nu = self._get_nu_star(x, y) if (ctx is None or &#39;nu&#39; not in ctx) else ctx[&#39;nu&#39;]
+
+    p = len(self.hY(x, y))
+
+    H = self.fYY(x, y) - np.sum(nu[i] * self.hYY(x, y)[i, :, :] for i in range(p))  # m-by-m
+    H = (H + H.T) / 2   # make sure H is symmetric
+
+    A = self.hY(x, y)   # p-by-m
+    B = self.fXY(x, y) - np.sum(nu[i] * self.hXY(x, y)[i, :, :] for i in range(p))  # m-by-n
+    C = self.hX(x, y)   # p-by-n
+
+    # try to use cholesky to solve H^{-1}A^T and H^-1 B
+    try:
+        CC, L = sci.linalg.cho_factor(H)
+        invHAT = sci.linalg.cho_solve((CC, L), A.T)
+        invHB = sci.linalg.cho_solve((CC, L), B)
+    # if H is not positive definite, revert to LU to solve
+    except:
+        invHAT = sci.linalg.solve(H, A.T)
+        invHB = sci.linalg.solve(H, B)
+
+    # compute Dy(x) = H^{-1}A^T(AH^{-1}A^T)^{-1}(AH^{-1}B-C) - H^{-1}B
+    return np.dot(invHAT, sci.linalg.solve(np.dot(A, invHAT), np.dot(A, invHB) - C)) - invHB</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.solve" href="#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.basic.node.NonUniqueDeclarativeNode"><code class="flex name class">
+<span>class <span class="ident">NonUniqueDeclarativeNode</span></span>
+<span>(</span><span>n, m)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A general deep declarative node having non-unique solutions so that the pseudo-inverse is required
+in computing the gradient.</p>
+<p>Creates an declarative node with optimization problem implied by the objecive function. Initializes the
+partial derivatives of the objective function for use in computing gradients.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NonUniqueDeclarativeNode(AbstractDeclarativeNode):
+    &#34;&#34;&#34;
+    A general deep declarative node having non-unique solutions so that the pseudo-inverse is required
+    in computing the gradient.
+    &#34;&#34;&#34;
+    def __init__(self, n, m):
+        super().__init__(n, m)
+
+    def gradient(self, x, y=None, ctx=None):
+        &#34;&#34;&#34;
+        Computes the gradient of the output (problem solution) with respect to the problem parameters
+        using a pseudo-inverse. The returned gradient is an ndarray of size (self.dim_y, self.dim_x).
+        In the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+        &#34;&#34;&#34;
+
+        # compute optimal value if not already done so
+        if y is None:
+            y, ctx = self.solve(x)
+        assert self._check_optimality_cond(x, y, ctx), abs(self.fY(x, y))
+
+        return -1.0 * np.linalg.pinv(self.fYY(x, y)).dot(self.fXY(x, y))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.basic.robust_nodes.RobustAverage" href="robust_nodes.html#ddn.basic.robust_nodes.RobustAverage">RobustAverage</a></li>
+<li><a title="ddn.basic.robust_nodes.RobustVectorAverage" href="robust_nodes.html#ddn.basic.robust_nodes.RobustVectorAverage">RobustVectorAverage</a></li>
+<li><a title="ddn.basic.sample_nodes.CosineDistance" href="sample_nodes.html#ddn.basic.sample_nodes.CosineDistance">CosineDistance</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.basic.node.NonUniqueDeclarativeNode.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the gradient of the output (problem solution) with respect to the problem parameters
+using a pseudo-inverse. The returned gradient is an ndarray of size (self.dim_y, self.dim_x).
+In the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, ctx=None):
+    &#34;&#34;&#34;
+    Computes the gradient of the output (problem solution) with respect to the problem parameters
+    using a pseudo-inverse. The returned gradient is an ndarray of size (self.dim_y, self.dim_x).
+    In the case of 1-dimensional parameters the gradient is a vector of size (self.dim_y,).
+    &#34;&#34;&#34;
+
+    # compute optimal value if not already done so
+    if y is None:
+        y, ctx = self.solve(x)
+    assert self._check_optimality_cond(x, y, ctx), abs(self.fY(x, y))
+
+    return -1.0 * np.linalg.pinv(self.fYY(x, y)).dot(self.fXY(x, y))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.solve" href="#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.basic" href="index.html">ddn.basic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.basic.node.AbstractDeclarativeNode" href="#ddn.basic.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.eps" href="#ddn.basic.node.AbstractDeclarativeNode.eps">eps</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.gradient" href="#ddn.basic.node.AbstractDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.objective" href="#ddn.basic.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractDeclarativeNode.solve" href="#ddn.basic.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.AbstractNode" href="#ddn.basic.node.AbstractNode">AbstractNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.AbstractNode.gradient" href="#ddn.basic.node.AbstractNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.AbstractNode.solve" href="#ddn.basic.node.AbstractNode.solve">solve</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.EqConstDeclarativeNode" href="#ddn.basic.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.constraint" href="#ddn.basic.node.EqConstDeclarativeNode.constraint">constraint</a></code></li>
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.gradient" href="#ddn.basic.node.EqConstDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.EqConstDeclarativeNode.solve" href="#ddn.basic.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.GeneralConstDeclarativeNode" href="#ddn.basic.node.GeneralConstDeclarativeNode">GeneralConstDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.GeneralConstDeclarativeNode.eq_constraints" href="#ddn.basic.node.GeneralConstDeclarativeNode.eq_constraints">eq_constraints</a></code></li>
+<li><code><a title="ddn.basic.node.GeneralConstDeclarativeNode.gradient" href="#ddn.basic.node.GeneralConstDeclarativeNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.basic.node.GeneralConstDeclarativeNode.ineq_constraints" href="#ddn.basic.node.GeneralConstDeclarativeNode.ineq_constraints">ineq_constraints</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.IneqConstDeclarativeNode" href="#ddn.basic.node.IneqConstDeclarativeNode">IneqConstDeclarativeNode</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.LinEqConstDeclarativeNode" href="#ddn.basic.node.LinEqConstDeclarativeNode">LinEqConstDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.LinEqConstDeclarativeNode.gradient" href="#ddn.basic.node.LinEqConstDeclarativeNode.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.MultiEqConstDeclarativeNode" href="#ddn.basic.node.MultiEqConstDeclarativeNode">MultiEqConstDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.MultiEqConstDeclarativeNode.constraint" href="#ddn.basic.node.MultiEqConstDeclarativeNode.constraint">constraint</a></code></li>
+<li><code><a title="ddn.basic.node.MultiEqConstDeclarativeNode.gradient" href="#ddn.basic.node.MultiEqConstDeclarativeNode.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.basic.node.NonUniqueDeclarativeNode" href="#ddn.basic.node.NonUniqueDeclarativeNode">NonUniqueDeclarativeNode</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.basic.node.NonUniqueDeclarativeNode.gradient" href="#ddn.basic.node.NonUniqueDeclarativeNode.gradient">gradient</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

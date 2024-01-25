@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.sample_nodes API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.sample_nodes</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># SAMPLE DEEP DECLARATIVE NODES
+#
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+
+import torch
+import math
+from ddn.pytorch.node import *
+
+class SquaredErrorNode(AbstractNode):
+    &#34;&#34;&#34;Computes the squared difference between the input and a given target vector.&#34;&#34;&#34;
+    def __init__(self, x_target):
+        super().__init__()
+        self.x_target = x_target
+
+    def solve(self, x):
+        return 0.5 * ((x - self.x_target) ** 2).sum(dim=-1), None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        if v is None:
+            v = x.new_ones(x.size(0)) # b
+        return torch.einsum(&#39;b,bm-&gt;bm&#39;, (v, x - self.x_target)),
+
+
+class UnconstPolynomial(AbstractDeclarativeNode):
+    &#34;&#34;&#34;Solves min. f(x, y) = xy^4 + 2x^2y^3 - 12y^2  from Gould et al., 2016. Takes smallest x over the three
+    stationary points.&#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+        
+    def objective(self, x, y):
+        return (x * y ** 2.0 + 2 * x ** 2.0 * y - 12) * y ** 2.0
+
+    def solve(self, x):
+        delta = (9.0 * x ** 4.0 + 96.0 * x).sqrt()
+        y_stationary = torch.cat((torch.zeros_like(x), (-3.0 * x ** 2.0 - delta) / (4.0 * x), (-3.0 * x ** 2.0 + delta) / (4.0 * x)), dim=-1)
+        y_min_indx = self.objective(x, y_stationary).argmin(dim=-1)
+        y = torch.cat([torch.index_select(a, dim=0, index=i).unsqueeze(0) for a, i in zip(y_stationary, y_min_indx)])
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if y is None:
+            y, ctx = self.solve(x)
+        y = y.detach()
+        if v is None:
+            v = torch.ones_like(y)
+        return torch.einsum(&#39;bm,bm-&gt;bm&#39;, (v, -1.0 * (y ** 3 + 3.0 * x * y ** 2) / (3.0 * x * y ** 2 + 3.0 * x ** 2 * y - 6.0))),
+
+class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
+    &#34;&#34;&#34;&#34;&#34;&#34;
+    def __init__(self, chunk_size=None):
+        super().__init__(chunk_size=chunk_size)
+        
+    def objective(self, x, alpha, y):
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(x)
+        z = y.unsqueeze(-1).unsqueeze(-1) - x
+        phi = alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2) / alpha2) - 1.0)
+        return phi.sum(dim=(-2,-1)) # b
+
+    def runOptimisation(self, x, alpha, y):
+        with torch.enable_grad():
+            opt = torch.optim.LBFGS([y],
+                                    lr=1, # Default: 1
+                                    max_iter=100, # Default: 20
+                                    max_eval=None, # Default: None
+                                    tolerance_grad=1e-05, # Default: 1e-05
+                                    tolerance_change=1e-09, # Default: 1e-09
+                                    history_size=100, # Default: 100
+                                    line_search_fn=None # Default: None, Alternative: &#34;strong_wolfe&#34;
+                                    )
+            def reevaluate():
+                opt.zero_grad()
+                f = self.objective(x, alpha, y).sum() # sum over batch elements
+                f.backward()
+                return f
+            opt.step(reevaluate)
+        return y
+
+    def solve(self, x, alpha):
+        x = x.detach()
+        y = x.mean([-2, -1]).clone().requires_grad_()
+        y = self.runOptimisation(x, alpha, y)
+        y = y.detach()
+        z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
+        ctx = {&#39;z&#39;: z}
+        return y, ctx
+
+    def gradient(self, x, alpha, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        if y is None:
+            y, ctx = self.solve(x, alpha)
+        if v is None:
+            v = torch.ones_like(y)
+        z = ctx[&#39;z&#39;] # b x n1 x n2
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(z)
+        w = torch.pow(1.0 + torch.pow(z, 2) / alpha2, -1.5)
+        w_sum = w.sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True).expand_as(w)
+        Dy_at_x = torch.where(w_sum.abs() &lt;= 1e-9, torch.zeros_like(w), w.div(w_sum))  # b x n1 x n2
+        return torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (v, Dy_at_x)), None
+
+class LinFcnOnUnitCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, x)^Ty
+        subject to h(y) = ||y||^2 = 1
+    for 1d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + y[:, 1] * x[:, 0]
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        x_aug = torch.cat((torch.ones_like(x), x), dim=-1) # bx2
+        t = torch.sqrt(1.0 + torch.pow(x, 2.0))
+        y = -1.0 * x_aug / t # bx2
+        ctx = {&#39;nu&#39;: -0.5 * t} # b
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        x_aug = torch.cat((x, -1.0 * torch.ones_like(x)), dim=-1) # bx2
+        t = torch.pow(1.0 + torch.pow(x, 2.0), 1.5)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, (x_aug / t).unsqueeze(-1))),
+
+class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, 1)^Ty
+        subject to h(y) = ||y||^2 = x^2
+    for 1d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + y[:, 1]
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 0], x[:, 0]))
+
+    def solve(self, x):
+        y = -1.0 * torch.abs(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+        nu = torch.where(x[:, 0] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {&#39;nu&#39;: nu}
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        Dy_at_x = -1.0 * torch.sign(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x.unsqueeze(-1))), #
+
+class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, x_1)^Ty
+        subject to h(y) = ||y||^2 = x_2^2
+    for 2d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 0], y[:, 1]))
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 1], x[:, 1]))
+
+    def solve(self, x):
+        y = -1.0 * torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+        nu = torch.where(x[:, 1] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {&#39;nu&#39;: nu}
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        a = torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((x[:, 0:1], -1.0 * torch.ones_like(x[:, 0:1])), dim=-1) / torch.pow(1.0 + torch.pow(x[:, 0], 2.0), 1.5).unsqueeze(-1) # bx2
+        b = -1.0 * torch.sign(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+        Dy_at_x = torch.stack((a, b), dim=-1)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),
+
+class QuadFcnOnSphere(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = 0.5 * y^Ty - x^T y
+        subject to h(y) = ||y||^2 = 1
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return 0.5 * torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, x))
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        y = x / torch.sqrt(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))).unsqueeze(-1)
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = torch.ones_like(x) # bxm
+        x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+        x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+        eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+        Dy_at_x = (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),
+
+class QuadFcnOnBall(IneqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the (inequality constrained) problem
+        minimize   f(x, y) = 0.5 * y^Ty - x^T y
+        subject to h(y) = ||y||^2 &lt;= 1
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return 0.5 * torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, x))
+
+    def inequality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        x_norm_sq = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)).unsqueeze(-1) # bx1
+        y = torch.where(x_norm_sq &lt;= 1.0, x.clone(), x / torch.sqrt(x_norm_sq))
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = torch.ones_like(x) # bxm
+        x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+        x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+        eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+        Dy_at_x = torch.where(x_inner.unsqueeze(-1).unsqueeze(-1) &lt;= 1.0, eye_batch,
+            (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1))
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle"><code class="flex name class">
+<span>class <span class="ident">ConstLinFcnOnParameterizedCircle</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the problem
+minimize
+f(x, y) = (1, 1)^Ty
+subject to h(y) = ||y||^2 = x^2
+for 1d input (x) and 2d output (y).</p>
+<p>Create an equality constrained declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, 1)^Ty
+        subject to h(y) = ||y||^2 = x^2
+    for 1d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + y[:, 1]
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 0], x[:, 0]))
+
+    def solve(self, x):
+        y = -1.0 * torch.abs(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+        nu = torch.where(x[:, 0] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {&#39;nu&#39;: nu}
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        Dy_at_x = -1.0 * torch.sign(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x.unsqueeze(-1))), #</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if v is None:
+        v = x.new_ones(x.size(0), 2) # bx2
+    Dy_at_x = -1.0 * torch.sign(x[:, 0]).unsqueeze(-1) * x.new_ones(x.size(0), 2) / math.sqrt(2.0) # bx2
+    return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x.unsqueeze(-1))), #</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints">equality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.solve" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d"><code class="flex name class">
+<span>class <span class="ident">GlobalPseudoHuberPool2d</span></span>
+<span>(</span><span>chunk_size=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
+    &#34;&#34;&#34;&#34;&#34;&#34;
+    def __init__(self, chunk_size=None):
+        super().__init__(chunk_size=chunk_size)
+        
+    def objective(self, x, alpha, y):
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(x)
+        z = y.unsqueeze(-1).unsqueeze(-1) - x
+        phi = alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2) / alpha2) - 1.0)
+        return phi.sum(dim=(-2,-1)) # b
+
+    def runOptimisation(self, x, alpha, y):
+        with torch.enable_grad():
+            opt = torch.optim.LBFGS([y],
+                                    lr=1, # Default: 1
+                                    max_iter=100, # Default: 20
+                                    max_eval=None, # Default: None
+                                    tolerance_grad=1e-05, # Default: 1e-05
+                                    tolerance_change=1e-09, # Default: 1e-09
+                                    history_size=100, # Default: 100
+                                    line_search_fn=None # Default: None, Alternative: &#34;strong_wolfe&#34;
+                                    )
+            def reevaluate():
+                opt.zero_grad()
+                f = self.objective(x, alpha, y).sum() # sum over batch elements
+                f.backward()
+                return f
+            opt.step(reevaluate)
+        return y
+
+    def solve(self, x, alpha):
+        x = x.detach()
+        y = x.mean([-2, -1]).clone().requires_grad_()
+        y = self.runOptimisation(x, alpha, y)
+        y = y.detach()
+        z = (y.unsqueeze(-1).unsqueeze(-1) - x).clone()
+        ctx = {&#39;z&#39;: z}
+        return y, ctx
+
+    def gradient(self, x, alpha, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        if y is None:
+            y, ctx = self.solve(x, alpha)
+        if v is None:
+            v = torch.ones_like(y)
+        z = ctx[&#39;z&#39;] # b x n1 x n2
+        alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(z)
+        w = torch.pow(1.0 + torch.pow(z, 2) / alpha2, -1.5)
+        w_sum = w.sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True).expand_as(w)
+        Dy_at_x = torch.where(w_sum.abs() &lt;= 1e-9, torch.zeros_like(w), w.div(w_sum))  # b x n1 x n2
+        return torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (v, Dy_at_x)), None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, alpha, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, alpha, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    if y is None:
+        y, ctx = self.solve(x, alpha)
+    if v is None:
+        v = torch.ones_like(y)
+    z = ctx[&#39;z&#39;] # b x n1 x n2
+    alpha2 = (alpha * alpha).unsqueeze(-1).expand_as(z)
+    w = torch.pow(1.0 + torch.pow(z, 2) / alpha2, -1.5)
+    w_sum = w.sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True).expand_as(w)
+    Dy_at_x = torch.where(w_sum.abs() &lt;= 1e-9, torch.zeros_like(w), w.div(w_sum))  # b x n1 x n2
+    return torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (v, Dy_at_x)), None</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.runOptimisation"><code class="name flex">
+<span>def <span class="ident">runOptimisation</span></span>(<span>self, x, alpha, y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def runOptimisation(self, x, alpha, y):
+    with torch.enable_grad():
+        opt = torch.optim.LBFGS([y],
+                                lr=1, # Default: 1
+                                max_iter=100, # Default: 20
+                                max_eval=None, # Default: None
+                                tolerance_grad=1e-05, # Default: 1e-05
+                                tolerance_change=1e-09, # Default: 1e-09
+                                history_size=100, # Default: 100
+                                line_search_fn=None # Default: None, Alternative: &#34;strong_wolfe&#34;
+                                )
+        def reevaluate():
+            opt.zero_grad()
+            f = self.objective(x, alpha, y).sum() # sum over batch elements
+            f.backward()
+            return f
+        opt.step(reevaluate)
+    return y</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.solve" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle"><code class="flex name class">
+<span>class <span class="ident">LinFcnOnParameterizedCircle</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the problem
+minimize
+f(x, y) = (1, x_1)^Ty
+subject to h(y) = ||y||^2 = x_2^2
+for 2d input (x) and 2d output (y).</p>
+<p>Create an equality constrained declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, x_1)^Ty
+        subject to h(y) = ||y||^2 = x_2^2
+    for 2d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 0], y[:, 1]))
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;b,b-&gt;b&#39;, (x[:, 1], x[:, 1]))
+
+    def solve(self, x):
+        y = -1.0 * torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+        nu = torch.where(x[:, 1] == 0.0, torch.zeros_like(x[:, 0]), 0.5 / y[:, 0])
+        ctx = {&#39;nu&#39;: nu}
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        a = torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((x[:, 0:1], -1.0 * torch.ones_like(x[:, 0:1])), dim=-1) / torch.pow(1.0 + torch.pow(x[:, 0], 2.0), 1.5).unsqueeze(-1) # bx2
+        b = -1.0 * torch.sign(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+        Dy_at_x = torch.stack((a, b), dim=-1)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if v is None:
+        v = x.new_ones(x.size(0), 2) # bx2
+    a = torch.abs(x[:, 1]).unsqueeze(-1) * torch.cat((x[:, 0:1], -1.0 * torch.ones_like(x[:, 0:1])), dim=-1) / torch.pow(1.0 + torch.pow(x[:, 0], 2.0), 1.5).unsqueeze(-1) # bx2
+    b = -1.0 * torch.sign(x[:, 1]).unsqueeze(-1) * torch.cat((torch.ones_like(x[:, 0:1]), x[:, 0:1]), dim=-1) / torch.sqrt(1.0 + torch.pow(x[:, 0], 2.0)).unsqueeze(-1) # bx2
+    Dy_at_x = torch.stack((a, b), dim=-1)
+    return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints">equality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.solve" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.LinFcnOnUnitCircle"><code class="flex name class">
+<span>class <span class="ident">LinFcnOnUnitCircle</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the problem
+minimize
+f(x, y) = (1, x)^Ty
+subject to h(y) = ||y||^2 = 1
+for 1d input (x) and 2d output (y).</p>
+<p>Create an equality constrained declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LinFcnOnUnitCircle(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = (1, x)^Ty
+        subject to h(y) = ||y||^2 = 1
+    for 1d input (x) and 2d output (y).
+    &#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return y[:, 0] + y[:, 1] * x[:, 0]
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        x_aug = torch.cat((torch.ones_like(x), x), dim=-1) # bx2
+        t = torch.sqrt(1.0 + torch.pow(x, 2.0))
+        y = -1.0 * x_aug / t # bx2
+        ctx = {&#39;nu&#39;: -0.5 * t} # b
+        return y, ctx
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = x.new_ones(x.size(0), 2) # bx2
+        x_aug = torch.cat((x, -1.0 * torch.ones_like(x)), dim=-1) # bx2
+        t = torch.pow(1.0 + torch.pow(x, 2.0), 1.5)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, (x_aug / t).unsqueeze(-1))),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.LinFcnOnUnitCircle.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if v is None:
+        v = x.new_ones(x.size(0), 2) # bx2
+    x_aug = torch.cat((x, -1.0 * torch.ones_like(x)), dim=-1) # bx2
+    t = torch.pow(1.0 + torch.pow(x, 2.0), 1.5)
+    return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, (x_aug / t).unsqueeze(-1))),</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints">equality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.solve" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.QuadFcnOnBall"><code class="flex name class">
+<span>class <span class="ident">QuadFcnOnBall</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the (inequality constrained) problem
+minimize
+f(x, y) = 0.5 * y^Ty - x^T y
+subject to h(y) = ||y||^2 &lt;= 1</p>
+<p>Create an inequality constrained declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class QuadFcnOnBall(IneqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the (inequality constrained) problem
+        minimize   f(x, y) = 0.5 * y^Ty - x^T y
+        subject to h(y) = ||y||^2 &lt;= 1
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return 0.5 * torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, x))
+
+    def inequality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        x_norm_sq = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)).unsqueeze(-1) # bx1
+        y = torch.where(x_norm_sq &lt;= 1.0, x.clone(), x / torch.sqrt(x_norm_sq))
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = torch.ones_like(x) # bxm
+        x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+        x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+        eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+        Dy_at_x = torch.where(x_inner.unsqueeze(-1).unsqueeze(-1) &lt;= 1.0, eye_batch,
+            (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1))
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.IneqConstDeclarativeNode" href="node.html#ddn.pytorch.node.IneqConstDeclarativeNode">IneqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.QuadFcnOnBall.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if v is None:
+        v = torch.ones_like(x) # bxm
+    x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+    x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+    eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+    Dy_at_x = torch.where(x_inner.unsqueeze(-1).unsqueeze(-1) &lt;= 1.0, eye_batch,
+        (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1))
+    return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.IneqConstDeclarativeNode" href="node.html#ddn.pytorch.node.IneqConstDeclarativeNode">IneqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.IneqConstDeclarativeNode.equality_constraints" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints">equality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.IneqConstDeclarativeNode.inequality_constraints" href="node.html#ddn.pytorch.node.IneqConstDeclarativeNode.inequality_constraints">inequality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.IneqConstDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.IneqConstDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.IneqConstDeclarativeNode.solve" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.QuadFcnOnSphere"><code class="flex name class">
+<span>class <span class="ident">QuadFcnOnSphere</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the problem
+minimize
+f(x, y) = 0.5 * y^Ty - x^T y
+subject to h(y) = ||y||^2 = 1</p>
+<p>Create an equality constrained declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class QuadFcnOnSphere(EqConstDeclarativeNode):
+    &#34;&#34;&#34;
+    Solves the problem
+        minimize   f(x, y) = 0.5 * y^Ty - x^T y
+        subject to h(y) = ||y||^2 = 1
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        super().__init__()
+
+    def objective(self, x, y):
+        return 0.5 * torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, x))
+
+    def equality_constraints(self, x, y):
+        return torch.einsum(&#39;bm,bm-&gt;b&#39;, (y, y)) - 1.0
+
+    def solve(self, x):
+        y = x / torch.sqrt(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))).unsqueeze(-1)
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if v is None:
+            v = torch.ones_like(x) # bxm
+        x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+        x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+        eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+        Dy_at_x = (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1)
+        return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.QuadFcnOnSphere.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if v is None:
+        v = torch.ones_like(x) # bxm
+    x_inner = torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x))
+    x_outer = torch.einsum(&#39;bm,bn-&gt;bmn&#39;, (x, x))
+    eye_batch = torch.eye(x.size(1), dtype=x.dtype, device=x.device).expand_as(x_outer)
+    Dy_at_x = (torch.einsum(&#39;b,bmn-&gt;bmn&#39;, (x_inner, eye_batch)) - x_outer) / torch.pow(torch.einsum(&#39;bm,bm-&gt;b&#39;, (x, x)), 1.5).unsqueeze(-1).unsqueeze(-1)
+    return torch.einsum(&#39;bm,bmn-&gt;bn&#39;, (v, Dy_at_x)),</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.EqConstDeclarativeNode" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode">EqConstDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.equality_constraints">equality_constraints</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.EqConstDeclarativeNode.solve" href="node.html#ddn.pytorch.node.EqConstDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.SquaredErrorNode"><code class="flex name class">
+<span>class <span class="ident">SquaredErrorNode</span></span>
+<span>(</span><span>x_target)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the squared difference between the input and a given target vector.</p>
+<p>Create a node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SquaredErrorNode(AbstractNode):
+    &#34;&#34;&#34;Computes the squared difference between the input and a given target vector.&#34;&#34;&#34;
+    def __init__(self, x_target):
+        super().__init__()
+        self.x_target = x_target
+
+    def solve(self, x):
+        return 0.5 * ((x - self.x_target) ** 2).sum(dim=-1), None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        if v is None:
+            v = x.new_ones(x.size(0)) # b
+        return torch.einsum(&#39;b,bm-&gt;bm&#39;, (v, x - self.x_target)),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.AbstractNode.gradient" href="node.html#ddn.pytorch.node.AbstractNode.gradient">gradient</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractNode.solve" href="node.html#ddn.pytorch.node.AbstractNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.sample_nodes.UnconstPolynomial"><code class="flex name class">
+<span>class <span class="ident">UnconstPolynomial</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves min. f(x, y) = xy^4 + 2x^2y^3 - 12y^2
+from Gould et al., 2016. Takes smallest x over the three
+stationary points.</p>
+<p>Create a declarative node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UnconstPolynomial(AbstractDeclarativeNode):
+    &#34;&#34;&#34;Solves min. f(x, y) = xy^4 + 2x^2y^3 - 12y^2  from Gould et al., 2016. Takes smallest x over the three
+    stationary points.&#34;&#34;&#34;
+    def __init__(self):
+        super().__init__()
+        
+    def objective(self, x, y):
+        return (x * y ** 2.0 + 2 * x ** 2.0 * y - 12) * y ** 2.0
+
+    def solve(self, x):
+        delta = (9.0 * x ** 4.0 + 96.0 * x).sqrt()
+        y_stationary = torch.cat((torch.zeros_like(x), (-3.0 * x ** 2.0 - delta) / (4.0 * x), (-3.0 * x ** 2.0 + delta) / (4.0 * x)), dim=-1)
+        y_min_indx = self.objective(x, y_stationary).argmin(dim=-1)
+        y = torch.cat([torch.index_select(a, dim=0, index=i).unsqueeze(0) for a, i in zip(y_stationary, y_min_indx)])
+        return y, None
+
+    def gradient(self, x, y=None, v=None, ctx=None):
+        &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+        x = x.detach()
+        if y is None:
+            y, ctx = self.solve(x)
+        y = y.detach()
+        if v is None:
+            v = torch.ones_like(y)
+        return torch.einsum(&#39;bm,bm-&gt;bm&#39;, (v, -1.0 * (y ** 3 + 3.0 * x * y ** 2) / (3.0 * x * y ** 2 + 3.0 * x ** 2 * y - 6.0))),</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></li>
+<li><a title="ddn.pytorch.node.AbstractNode" href="node.html#ddn.pytorch.node.AbstractNode">AbstractNode</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.sample_nodes.UnconstPolynomial.gradient"><code class="name flex">
+<span>def <span class="ident">gradient</span></span>(<span>self, x, y=None, v=None, ctx=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override base class to compute the analytic gradient of the optimal solution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gradient(self, x, y=None, v=None, ctx=None):
+    &#34;&#34;&#34;Override base class to compute the analytic gradient of the optimal solution.&#34;&#34;&#34;
+    x = x.detach()
+    if y is None:
+        y, ctx = self.solve(x)
+    y = y.detach()
+    if v is None:
+        v = torch.ones_like(y)
+    return torch.einsum(&#39;bm,bm-&gt;bm&#39;, (v, -1.0 * (y ** 3 + 3.0 * x * y ** 2) / (3.0 * x * y ** 2 + 3.0 * x ** 2 * y - 6.0))),</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.node.AbstractDeclarativeNode" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode">AbstractDeclarativeNode</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.jacobian" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.jacobian">jacobian</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.objective" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.objective">objective</a></code></li>
+<li><code><a title="ddn.pytorch.node.AbstractDeclarativeNode.solve" href="node.html#ddn.pytorch.node.AbstractDeclarativeNode.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle" href="#ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle">ConstLinFcnOnParameterizedCircle</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle.gradient" href="#ddn.pytorch.sample_nodes.ConstLinFcnOnParameterizedCircle.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d" href="#ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d">GlobalPseudoHuberPool2d</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.gradient" href="#ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.gradient">gradient</a></code></li>
+<li><code><a title="ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.runOptimisation" href="#ddn.pytorch.sample_nodes.GlobalPseudoHuberPool2d.runOptimisation">runOptimisation</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle" href="#ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle">LinFcnOnParameterizedCircle</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle.gradient" href="#ddn.pytorch.sample_nodes.LinFcnOnParameterizedCircle.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.LinFcnOnUnitCircle" href="#ddn.pytorch.sample_nodes.LinFcnOnUnitCircle">LinFcnOnUnitCircle</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.LinFcnOnUnitCircle.gradient" href="#ddn.pytorch.sample_nodes.LinFcnOnUnitCircle.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.QuadFcnOnBall" href="#ddn.pytorch.sample_nodes.QuadFcnOnBall">QuadFcnOnBall</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.QuadFcnOnBall.gradient" href="#ddn.pytorch.sample_nodes.QuadFcnOnBall.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.QuadFcnOnSphere" href="#ddn.pytorch.sample_nodes.QuadFcnOnSphere">QuadFcnOnSphere</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.QuadFcnOnSphere.gradient" href="#ddn.pytorch.sample_nodes.QuadFcnOnSphere.gradient">gradient</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.SquaredErrorNode" href="#ddn.pytorch.sample_nodes.SquaredErrorNode">SquaredErrorNode</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.sample_nodes.UnconstPolynomial" href="#ddn.pytorch.sample_nodes.UnconstPolynomial">UnconstPolynomial</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.sample_nodes.UnconstPolynomial.gradient" href="#ddn.pytorch.sample_nodes.UnconstPolynomial.gradient">gradient</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

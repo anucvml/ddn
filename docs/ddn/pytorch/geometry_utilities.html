@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.geometry_utilities API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.geometry_utilities</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import torch
+
+def angle_axis_to_rotation_matrix(angle_axis):
+    &#34;&#34;&#34;Convert batch of 3D angle-axis vectors into a batch of 3D rotation matrices
+
+    Arguments:
+        angle_axis: (b, 3) Torch tensor,
+            batch of 3D angle-axis vectors
+
+    Return Values:
+        rotation_matrix: (b, 3, 3) Torch tensor,
+            batch of 3D rotation matrices
+    &#34;&#34;&#34;
+    assert angle_axis.shape[-1] == 3, &#34;Angle-axis vector must be a (*, 3) tensor, received {}&#34;.format(
+        angle_axis.shape)
+
+    def angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2):
+        theta = torch.sqrt(theta2).unsqueeze(-1) # bx1
+        r = angle_axis / theta # bx3
+        rx = r[..., 0] # b
+        ry = r[..., 1] # b
+        rz = r[..., 2] # b
+        r_skew = torch.zeros_like(r).unsqueeze(-1).repeat_interleave(3, dim=-1) # bx3x3
+        r_skew[..., 2, 1] = rx
+        r_skew[..., 1, 2] = -rx
+        r_skew[..., 0, 2] = ry
+        r_skew[..., 2, 0] = -ry
+        r_skew[..., 1, 0] = rz
+        r_skew[..., 0, 1] = -rz
+        R = torch.eye(3, dtype=r.dtype, device=r.device).unsqueeze(0) \
+            + theta.sin().unsqueeze(-1) * r_skew \
+            + (1.0 - theta.cos().unsqueeze(-1)) * torch.matmul(r_skew, r_skew) # bx3x3
+        return R
+
+    def angle_axis_to_rotation_matrix_taylor(angle_axis):
+        rx, ry, rz = torch.chunk(angle_axis, 3, dim=-1)
+        ones = torch.ones_like(rx)
+        R = torch.cat([ones, -rz, ry, rz, ones, -rx, -ry, rx, ones], dim=1).view(-1, 3, 3)
+        return R
+
+    theta2 = torch.einsum(&#39;bi,bi-&gt;b&#39;, (angle_axis, angle_axis))
+
+    eps = 1e-6
+    if (theta2 &gt; eps).all():
+        rotation_matrix = angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2)
+    else:
+        rotation_matrix = angle_axis_to_rotation_matrix_taylor(angle_axis)
+        rotation_matrix_rodrigues = angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2)
+        # Iterate over batch dimension
+        # Note: cannot use masking or torch.where because any NaNs in the gradient
+        # of the unused branch get propagated
+        # See: https://github.com/pytorch/pytorch/issues/9688
+        for b in range(angle_axis.shape[0]):
+            if theta2[b, ...] &gt; eps:
+                rotation_matrix[b, ...] = rotation_matrix_rodrigues[b:(b+1), ...]
+    return rotation_matrix
+
+def normalise_points(p):
+    return torch.nn.functional.normalize(p, p=2, dim=-1)
+
+def transform_points(p, R, t):
+    return torch.einsum(&#39;brs,bms-&gt;bmr&#39;, (R, p)) + t.unsqueeze(-2)
+    # return torch.einsum(&#39;brs,bns-&gt;bnr&#39;, (R, p - t.unsqueeze(-2))) # R(p-t)
+
+def transform_and_normalise_points(p, R, t):
+    return normalise_points(transform_points(p, R, t))
+
+def transform_points_by_theta(p, theta):
+    R = angle_axis_to_rotation_matrix(theta[..., :3])
+    t = theta[..., 3:]
+    return transform_points(p, R, t)
+
+def transform_and_normalise_points_by_theta(p, theta):
+    return normalise_points(transform_points_by_theta(p, theta))
+
+def project_points_by_theta(p, theta, K=None):
+    p_transformed = transform_points_by_theta(p, theta)
+    return bearings_to_points(p_transformed, K)
+
+def points_to_bearings(p, K=None):
+    &#34;&#34;&#34;
+    Arguments:
+        p: (b, n, 2) Torch tensor,
+            batch of 2D point-sets
+
+        K: (b, 4) Torch tensor or None,
+            batch of camera intrinsic parameters (fx, fy, cx, cy),
+            set to None if points are already K-normalised
+    &#34;&#34;&#34;
+    bearings = torch.nn.functional.pad(p, (0, 1), &#34;constant&#34;, 1.0)
+    if K is not None: # p is in image coordinates, apply (px - cx) / fx
+        K = K.unsqueeze(-2) # (b, 1, 4)
+        bearings[:, :, :2] = (points - K[:, :, 2:]) / K[:, :, :2]
+    return torch.nn.functional.normalize(bearings, p=2, dim=-1)
+
+def bearings_to_points(bearings, K=None):
+    &#34;&#34;&#34;
+    Arguments:
+        bearings: (b, n, 3) Torch tensor,
+            batch of bearing vector sets
+
+        K: (b, 4) Torch tensor or None,
+            batch of camera intrinsic parameters (fx, fy, cx, cy),
+            set to None if points are already K-normalised
+    &#34;&#34;&#34;
+    points = bearings[:, :, :2] / bearings[:, :, 2:3]
+    if K is not None: # p is in image coordinates, apply (px - cx) / fx
+        K = K.unsqueeze(-2) # (b, 1, 4)
+        points = points * K[:, :, :2] + K[:, :, 2:]
+    return points</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ddn.pytorch.geometry_utilities.angle_axis_to_rotation_matrix"><code class="name flex">
+<span>def <span class="ident">angle_axis_to_rotation_matrix</span></span>(<span>angle_axis)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert batch of 3D angle-axis vectors into a batch of 3D rotation matrices</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>angle_axis</code></strong> :&ensp;<code>(b, 3) Torch tensor,</code></dt>
+<dd>batch of 3D angle-axis vectors</dd>
+</dl>
+<p>Return Values:
+rotation_matrix: (b, 3, 3) Torch tensor,
+batch of 3D rotation matrices</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def angle_axis_to_rotation_matrix(angle_axis):
+    &#34;&#34;&#34;Convert batch of 3D angle-axis vectors into a batch of 3D rotation matrices
+
+    Arguments:
+        angle_axis: (b, 3) Torch tensor,
+            batch of 3D angle-axis vectors
+
+    Return Values:
+        rotation_matrix: (b, 3, 3) Torch tensor,
+            batch of 3D rotation matrices
+    &#34;&#34;&#34;
+    assert angle_axis.shape[-1] == 3, &#34;Angle-axis vector must be a (*, 3) tensor, received {}&#34;.format(
+        angle_axis.shape)
+
+    def angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2):
+        theta = torch.sqrt(theta2).unsqueeze(-1) # bx1
+        r = angle_axis / theta # bx3
+        rx = r[..., 0] # b
+        ry = r[..., 1] # b
+        rz = r[..., 2] # b
+        r_skew = torch.zeros_like(r).unsqueeze(-1).repeat_interleave(3, dim=-1) # bx3x3
+        r_skew[..., 2, 1] = rx
+        r_skew[..., 1, 2] = -rx
+        r_skew[..., 0, 2] = ry
+        r_skew[..., 2, 0] = -ry
+        r_skew[..., 1, 0] = rz
+        r_skew[..., 0, 1] = -rz
+        R = torch.eye(3, dtype=r.dtype, device=r.device).unsqueeze(0) \
+            + theta.sin().unsqueeze(-1) * r_skew \
+            + (1.0 - theta.cos().unsqueeze(-1)) * torch.matmul(r_skew, r_skew) # bx3x3
+        return R
+
+    def angle_axis_to_rotation_matrix_taylor(angle_axis):
+        rx, ry, rz = torch.chunk(angle_axis, 3, dim=-1)
+        ones = torch.ones_like(rx)
+        R = torch.cat([ones, -rz, ry, rz, ones, -rx, -ry, rx, ones], dim=1).view(-1, 3, 3)
+        return R
+
+    theta2 = torch.einsum(&#39;bi,bi-&gt;b&#39;, (angle_axis, angle_axis))
+
+    eps = 1e-6
+    if (theta2 &gt; eps).all():
+        rotation_matrix = angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2)
+    else:
+        rotation_matrix = angle_axis_to_rotation_matrix_taylor(angle_axis)
+        rotation_matrix_rodrigues = angle_axis_to_rotation_matrix_rodrigues(angle_axis, theta2)
+        # Iterate over batch dimension
+        # Note: cannot use masking or torch.where because any NaNs in the gradient
+        # of the unused branch get propagated
+        # See: https://github.com/pytorch/pytorch/issues/9688
+        for b in range(angle_axis.shape[0]):
+            if theta2[b, ...] &gt; eps:
+                rotation_matrix[b, ...] = rotation_matrix_rodrigues[b:(b+1), ...]
+    return rotation_matrix</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.bearings_to_points"><code class="name flex">
+<span>def <span class="ident">bearings_to_points</span></span>(<span>bearings, K=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>bearings</code></strong> :&ensp;<code>(b, n, 3) Torch tensor,</code></dt>
+<dd>batch of bearing vector sets</dd>
+<dt><strong><code>K</code></strong> :&ensp;<code>(b, 4) Torch tensor</code> or <code>None,</code></dt>
+<dd>batch of camera intrinsic parameters (fx, fy, cx, cy),
+set to None if points are already K-normalised</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def bearings_to_points(bearings, K=None):
+    &#34;&#34;&#34;
+    Arguments:
+        bearings: (b, n, 3) Torch tensor,
+            batch of bearing vector sets
+
+        K: (b, 4) Torch tensor or None,
+            batch of camera intrinsic parameters (fx, fy, cx, cy),
+            set to None if points are already K-normalised
+    &#34;&#34;&#34;
+    points = bearings[:, :, :2] / bearings[:, :, 2:3]
+    if K is not None: # p is in image coordinates, apply (px - cx) / fx
+        K = K.unsqueeze(-2) # (b, 1, 4)
+        points = points * K[:, :, :2] + K[:, :, 2:]
+    return points</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.normalise_points"><code class="name flex">
+<span>def <span class="ident">normalise_points</span></span>(<span>p)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_points(p):
+    return torch.nn.functional.normalize(p, p=2, dim=-1)</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.points_to_bearings"><code class="name flex">
+<span>def <span class="ident">points_to_bearings</span></span>(<span>p, K=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>p</code></strong> :&ensp;<code>(b, n, 2) Torch tensor,</code></dt>
+<dd>batch of 2D point-sets</dd>
+<dt><strong><code>K</code></strong> :&ensp;<code>(b, 4) Torch tensor</code> or <code>None,</code></dt>
+<dd>batch of camera intrinsic parameters (fx, fy, cx, cy),
+set to None if points are already K-normalised</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def points_to_bearings(p, K=None):
+    &#34;&#34;&#34;
+    Arguments:
+        p: (b, n, 2) Torch tensor,
+            batch of 2D point-sets
+
+        K: (b, 4) Torch tensor or None,
+            batch of camera intrinsic parameters (fx, fy, cx, cy),
+            set to None if points are already K-normalised
+    &#34;&#34;&#34;
+    bearings = torch.nn.functional.pad(p, (0, 1), &#34;constant&#34;, 1.0)
+    if K is not None: # p is in image coordinates, apply (px - cx) / fx
+        K = K.unsqueeze(-2) # (b, 1, 4)
+        bearings[:, :, :2] = (points - K[:, :, 2:]) / K[:, :, :2]
+    return torch.nn.functional.normalize(bearings, p=2, dim=-1)</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.project_points_by_theta"><code class="name flex">
+<span>def <span class="ident">project_points_by_theta</span></span>(<span>p, theta, K=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def project_points_by_theta(p, theta, K=None):
+    p_transformed = transform_points_by_theta(p, theta)
+    return bearings_to_points(p_transformed, K)</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.transform_and_normalise_points"><code class="name flex">
+<span>def <span class="ident">transform_and_normalise_points</span></span>(<span>p, R, t)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform_and_normalise_points(p, R, t):
+    return normalise_points(transform_points(p, R, t))</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.transform_and_normalise_points_by_theta"><code class="name flex">
+<span>def <span class="ident">transform_and_normalise_points_by_theta</span></span>(<span>p, theta)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform_and_normalise_points_by_theta(p, theta):
+    return normalise_points(transform_points_by_theta(p, theta))</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.transform_points"><code class="name flex">
+<span>def <span class="ident">transform_points</span></span>(<span>p, R, t)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform_points(p, R, t):
+    return torch.einsum(&#39;brs,bms-&gt;bmr&#39;, (R, p)) + t.unsqueeze(-2)
+    # return torch.einsum(&#39;brs,bns-&gt;bnr&#39;, (R, p - t.unsqueeze(-2))) # R(p-t)</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.geometry_utilities.transform_points_by_theta"><code class="name flex">
+<span>def <span class="ident">transform_points_by_theta</span></span>(<span>p, theta)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform_points_by_theta(p, theta):
+    R = angle_axis_to_rotation_matrix(theta[..., :3])
+    t = theta[..., 3:]
+    return transform_points(p, R, t)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="ddn.pytorch.geometry_utilities.angle_axis_to_rotation_matrix" href="#ddn.pytorch.geometry_utilities.angle_axis_to_rotation_matrix">angle_axis_to_rotation_matrix</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.bearings_to_points" href="#ddn.pytorch.geometry_utilities.bearings_to_points">bearings_to_points</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.normalise_points" href="#ddn.pytorch.geometry_utilities.normalise_points">normalise_points</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.points_to_bearings" href="#ddn.pytorch.geometry_utilities.points_to_bearings">points_to_bearings</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.project_points_by_theta" href="#ddn.pytorch.geometry_utilities.project_points_by_theta">project_points_by_theta</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.transform_and_normalise_points" href="#ddn.pytorch.geometry_utilities.transform_and_normalise_points">transform_and_normalise_points</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.transform_and_normalise_points_by_theta" href="#ddn.pytorch.geometry_utilities.transform_and_normalise_points_by_theta">transform_and_normalise_points_by_theta</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.transform_points" href="#ddn.pytorch.geometry_utilities.transform_points">transform_points</a></code></li>
+<li><code><a title="ddn.pytorch.geometry_utilities.transform_points_by_theta" href="#ddn.pytorch.geometry_utilities.transform_points_by_theta">transform_points_by_theta</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

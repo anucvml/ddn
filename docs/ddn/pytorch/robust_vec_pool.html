@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>ddn.pytorch.robust_vec_pool API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ddn.pytorch.robust_vec_pool</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python
+#
+# ROBUST VECTOR POOLING
+# Implements robust pooling of vector arguments by solving,
+#
+#    minimize sum_{i=1}^{n} phi(||u - x_i||_2; alpha)
+#
+# over u in R^m, where phi is a (robust) penalty function, one of:
+#   quadratic
+#   pseudo-huber
+#   huber
+#   welsch
+#   truncated quadratic
+#
+# See accompanying DDN documentation at https://deepdeclarativenetworks.com.
+#
+# Stephen Gould &lt;stephen.gould@anu.edu.au&gt;
+# Dylan Campbell &lt;dylan.campbell@anu.edu.au&gt;
+# Yizhak Ben Shabat &lt;Yizhak.BenShabat@anu.edu.au&gt;
+#
+
+import torch
+import torch.nn as nn
+import warnings
+
+# --- Penalty functions -------------------------------------------------------
+
+class Penalty():
+    &#34;&#34;&#34;
+    Prototype for a penalty function, phi, including methods necessary for optimizing and back-propagation.
+    See `Quadratic` for an example.
+    &#34;&#34;&#34;
+    is_convex = None
+
+    @staticmethod
+    def phi(z, alpha):
+        &#34;&#34;&#34;Evaluates the penality function on a batch of inputs.&#34;&#34;&#34;
+        raise NotImplementedError()
+
+    @staticmethod
+    def kappa(z, alpha):
+        &#34;&#34;&#34;Evaluates phi&#39;/z and (phi&#39;&#39; - phi&#39;/z)/z^2.&#34;&#34;&#34;
+        raise NotImplementedError()
+
+
+class Quadratic(Penalty):
+    &#34;&#34;&#34;Quadratic penality function. Don&#39;t use for anything other than testing.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        return 0.5 * torch.pow(z, 2.0)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        return torch.ones_like(z), torch.zeros_like(z)
+
+
+class PseudoHuber(Penalty):
+    &#34;&#34;&#34;Pseudo-Huber penalty.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2.0) / alpha2) - 1.0)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        xi = torch.sqrt(1.0 + torch.pow(z, 2.0) / alpha2)
+        return 1.0 / xi, -1.0 / (alpha2 * torch.pow(xi, 3.0))
+
+
+class Huber(Penalty):
+    &#34;&#34;&#34;Huber penalty.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return torch.where(torch.abs(z) &lt;= alpha, 0.5 * torch.pow(z, 2.0), alpha * torch.abs(z) - 0.5 * alpha2)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        z2 = torch.pow(z, 2.0)
+        alpha_on_z = alpha / torch.abs(z)
+        return torch.where(indx, torch.ones_like(z), alpha_on_z), torch.where(indx, torch.zeros_like(z), -1.0 * alpha_on_z / z2)
+
+
+class Welsch(Penalty):
+    &#34;&#34;&#34;Welsch penalty.&#34;&#34;&#34;
+    is_convex = False
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return 1.0 - torch.exp(-0.5 * torch.pow(z, 2.0) / alpha2)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        xi = torch.exp(-0.5 * torch.pow(z, 2.0) / alpha2) / alpha2
+        return xi, -1.0 * xi / alpha2
+
+
+class TruncQuad(Penalty):
+    &#34;&#34;&#34;Truncated quadratic penalty.&#34;&#34;&#34;
+    is_convex = False
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        return 0.5 * torch.where(indx, torch.pow(z, 2.0), torch.full_like(z, alpha * alpha))
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        return torch.where(indx, torch.ones_like(z), torch.zeros_like(z)), torch.zeros_like(z)
+
+
+# --- PyTorch Function --------------------------------------------------------
+
+class RobustVectorPool2dFcn(torch.autograd.Function):
+    &#34;&#34;&#34;PyTorch autograd function for robust vector pooling. Input (B,C,*) -&gt; output (B,C).&#34;&#34;&#34;
+
+    @staticmethod
+    def _optimize(x, y, penalty, alpha):
+        B, C = x.shape[0], x.shape[1]
+        x = x.detach()
+        y = y.clone()
+        y.requires_grad = True
+        opt = torch.optim.LBFGS([y], lr=1.0, max_iter=100, max_eval=None,
+            tolerance_grad=1e-05, tolerance_change=1e-09, history_size=5, line_search_fn=None)
+
+        def reevaluate():
+            opt.zero_grad()
+            z = torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1)
+            f = penalty.phi(z, alpha).sum()
+            f.backward()
+            return f
+
+        # optimize to convergence (unlike step for other optimizers)
+        opt.step(reevaluate)
+
+        return y
+
+
+    @staticmethod
+    def forward(ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1.0e-16):
+        assert len(x.shape) &gt;= 3
+        assert alpha &gt; 0.0
+        assert restarts &gt;= 0
+
+        B, C = x.shape[0], x.shape[1]
+        with torch.no_grad():
+            if penalty.is_convex:
+                y = torch.mean(x.view(B, C, -1), dim=2)
+                if penalty is not Quadratic:
+                    y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
+            else:
+                y_mean = torch.mean(x.view(B, C, -1), dim=2)
+                y = RobustVectorPool2dFcn._optimize(x, y_mean, penalty, alpha)
+                f = penalty.phi(torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+
+                y_median, _ = torch.median(x.view(B, C, -1), dim=2)
+                y_median = RobustVectorPool2dFcn._optimize(x, y_median, penalty, alpha)
+                f_median = penalty.phi(torch.linalg.norm((y_median.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+                y = torch.where((f &lt;= f_median).view(B, 1), y, y_median)
+                f = torch.minimum(f, f_median)
+
+                if restarts &gt; 0:
+                    # choose points evenly spaced in batch (can be randomly chosen but that affects reproducibility)
+                    for i in torch.linspace(start=0, end=x.view(B, C, -1).shape[2] - 1, steps=restarts):
+                        y_init = x.view(B, C, -1)[:, :, int(i.item())]
+                        y_final = RobustVectorPool2dFcn._optimize(x, y_init, penalty, alpha)
+                        f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+                        y = torch.where((f &lt; f_final).view(B, 1), y, y_final)
+                        f = torch.minimum(f, f_final)
+
+        ctx.save_for_backward(x, y)
+        ctx.penalty = penalty
+        ctx.alpha = alpha
+        ctx.hess_reg = hess_reg
+
+        return y
+
+    @staticmethod
+    def backward(ctx, y_grad):
+        if not ctx.needs_input_grad[0]:
+            return None, None, None, None, None
+
+        x, y = ctx.saved_tensors
+        B, C = x.shape[0], x.shape[1]
+
+        x_minus_y = y.view(B, C, 1) - x.view(B, C, -1)
+        z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
+
+        k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
+        if torch.all(k2 == 0.0):
+            return (k1 * (y_grad / k1.sum(dim=2)).view(B, C, 1)).reshape(x.shape), None, None, None, None
+
+        H = k1.sum(dim=2).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
+            torch.einsum(&#34;bik,bjk-&gt;bij&#34;, x_minus_y, k2 * x_minus_y)
+        try:
+            L = torch.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
+            v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
+        except:
+            warnings.warn(&#34;backward pass encountered a singular matrix for penalty function {}&#34;.format(ctx.penalty.__name__))
+            v = torch.empty_like(y_grad)
+            for b in range(B):
+                try:
+                    L = torch.cholesky(H[b, :, :])
+                    v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
+                except:
+                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
+
+
+        w = torch.einsum(&#34;bi,bik-&gt;bk&#34;, v, k2 * x_minus_y)
+        x_grad = (k1 * v.view(B, C, 1) + torch.einsum(&#34;bk,bik-&gt;bik&#34;, w, x_minus_y)).reshape(x.shape)
+
+        return x_grad, None, None, None, None
+
+
+# --- PyTorch Layer -----------------------------------------------------------
+
+class RobustVectorPool2d(nn.Module):
+
+    def __init__(self, penalty, alpha=1.0, restarts=0):
+        super(RobustVectorPool2d, self).__init__()
+        self.penalty = penalty
+        self.alpha = alpha
+        self.restarts = restarts
+
+    def forward(self, x):
+        return RobustVectorPool2dFcn.apply(x, self.penalty, self.alpha, self.restarts)
+
+
+# --- Testing -----------------------------------------------------------------
+
+if __name__ == &#39;__main__&#39;:
+
+    from torch.autograd import gradcheck
+
+    torch.manual_seed(0)
+    x = torch.randn((2, 3, 5, 5), dtype=torch.double)
+    print(torch.mean(x, dim=(2, 3)))
+
+    # add an outlier
+    x[:, :, 0, 0] = 10.0 * x[:, :, 0, 0]
+    print(torch.mean(x, dim=(2, 3)))
+
+    # evaluate function
+    f = RobustVectorPool2dFcn().apply
+    penalties = [Quadratic, PseudoHuber, Huber, Welsch, TruncQuad]
+    for p in penalties:
+        y = f(x, p, 1.0)
+        print(&#34;{}: {}&#34;.format(p.__name__, y))
+        z = torch.linalg.norm(y.view(y.shape[0], y.shape[1], -1) - x.view(x.shape[0], x.shape[1], -1), dim=1, keepdim=True)
+        print(torch.histc(z.flatten()))
+
+    # evaluate gradient
+    x.requires_grad = True
+    for alpha in [1.0, 2.0, 10.0]:
+        print(&#34;\nalpha = {}&#34;.format(alpha))
+        for p in penalties:
+            test = gradcheck(f, (x, p, alpha, 0, 0.0), eps=1e-6, atol=1e-3, rtol=1e-6)
+            print(&#34;{}: {}&#34;.format(p.__name__, test))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Huber"><code class="flex name class">
+<span>class <span class="ident">Huber</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Huber penalty.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Huber(Penalty):
+    &#34;&#34;&#34;Huber penalty.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return torch.where(torch.abs(z) &lt;= alpha, 0.5 * torch.pow(z, 2.0), alpha * torch.abs(z) - 0.5 * alpha2)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        z2 = torch.pow(z, 2.0)
+        alpha_on_z = alpha / torch.abs(z)
+        return torch.where(indx, torch.ones_like(z), alpha_on_z), torch.where(indx, torch.zeros_like(z), -1.0 * alpha_on_z / z2)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Huber.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.Penalty"><code class="flex name class">
+<span>class <span class="ident">Penalty</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prototype for a penalty function, phi, including methods necessary for optimizing and back-propagation.
+See <code><a title="ddn.pytorch.robust_vec_pool.Quadratic" href="#ddn.pytorch.robust_vec_pool.Quadratic">Quadratic</a></code> for an example.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Penalty():
+    &#34;&#34;&#34;
+    Prototype for a penalty function, phi, including methods necessary for optimizing and back-propagation.
+    See `Quadratic` for an example.
+    &#34;&#34;&#34;
+    is_convex = None
+
+    @staticmethod
+    def phi(z, alpha):
+        &#34;&#34;&#34;Evaluates the penality function on a batch of inputs.&#34;&#34;&#34;
+        raise NotImplementedError()
+
+    @staticmethod
+    def kappa(z, alpha):
+        &#34;&#34;&#34;Evaluates phi&#39;/z and (phi&#39;&#39; - phi&#39;/z)/z^2.&#34;&#34;&#34;
+        raise NotImplementedError()</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Huber" href="#ddn.pytorch.robust_vec_pool.Huber">Huber</a></li>
+<li><a title="ddn.pytorch.robust_vec_pool.PseudoHuber" href="#ddn.pytorch.robust_vec_pool.PseudoHuber">PseudoHuber</a></li>
+<li><a title="ddn.pytorch.robust_vec_pool.Quadratic" href="#ddn.pytorch.robust_vec_pool.Quadratic">Quadratic</a></li>
+<li><a title="ddn.pytorch.robust_vec_pool.TruncQuad" href="#ddn.pytorch.robust_vec_pool.TruncQuad">TruncQuad</a></li>
+<li><a title="ddn.pytorch.robust_vec_pool.Welsch" href="#ddn.pytorch.robust_vec_pool.Welsch">Welsch</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Penalty.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Penalty.kappa"><code class="name flex">
+<span>def <span class="ident">kappa</span></span>(<span>z, alpha)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates phi'/z and (phi'' - phi'/z)/z^2.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def kappa(z, alpha):
+    &#34;&#34;&#34;Evaluates phi&#39;/z and (phi&#39;&#39; - phi&#39;/z)/z^2.&#34;&#34;&#34;
+    raise NotImplementedError()</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.Penalty.phi"><code class="name flex">
+<span>def <span class="ident">phi</span></span>(<span>z, alpha)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates the penality function on a batch of inputs.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def phi(z, alpha):
+    &#34;&#34;&#34;Evaluates the penality function on a batch of inputs.&#34;&#34;&#34;
+    raise NotImplementedError()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.PseudoHuber"><code class="flex name class">
+<span>class <span class="ident">PseudoHuber</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Pseudo-Huber penalty.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PseudoHuber(Penalty):
+    &#34;&#34;&#34;Pseudo-Huber penalty.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return alpha2 * (torch.sqrt(1.0 + torch.pow(z, 2.0) / alpha2) - 1.0)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        xi = torch.sqrt(1.0 + torch.pow(z, 2.0) / alpha2)
+        return 1.0 / xi, -1.0 / (alpha2 * torch.pow(xi, 3.0))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.PseudoHuber.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.Quadratic"><code class="flex name class">
+<span>class <span class="ident">Quadratic</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Quadratic penality function. Don't use for anything other than testing.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Quadratic(Penalty):
+    &#34;&#34;&#34;Quadratic penality function. Don&#39;t use for anything other than testing.&#34;&#34;&#34;
+    is_convex = True
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        return 0.5 * torch.pow(z, 2.0)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        return torch.ones_like(z), torch.zeros_like(z)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Quadratic.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.RobustVectorPool2d"><code class="flex name class">
+<span>class <span class="ident">RobustVectorPool2d</span></span>
+<span>(</span><span>penalty, alpha=1.0, restarts=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RobustVectorPool2d(nn.Module):
+
+    def __init__(self, penalty, alpha=1.0, restarts=0):
+        super(RobustVectorPool2d, self).__init__()
+        self.penalty = penalty
+        self.alpha = alpha
+        self.restarts = restarts
+
+    def forward(self, x):
+        return RobustVectorPool2dFcn.apply(x, self.penalty, self.alpha, self.restarts)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.RobustVectorPool2d.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) -> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    return RobustVectorPool2dFcn.apply(x, self.penalty, self.alpha, self.restarts)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn"><code class="flex name class">
+<span>class <span class="ident">RobustVectorPool2dFcn</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PyTorch autograd function for robust vector pooling. Input (B,C,*) -&gt; output (B,C).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RobustVectorPool2dFcn(torch.autograd.Function):
+    &#34;&#34;&#34;PyTorch autograd function for robust vector pooling. Input (B,C,*) -&gt; output (B,C).&#34;&#34;&#34;
+
+    @staticmethod
+    def _optimize(x, y, penalty, alpha):
+        B, C = x.shape[0], x.shape[1]
+        x = x.detach()
+        y = y.clone()
+        y.requires_grad = True
+        opt = torch.optim.LBFGS([y], lr=1.0, max_iter=100, max_eval=None,
+            tolerance_grad=1e-05, tolerance_change=1e-09, history_size=5, line_search_fn=None)
+
+        def reevaluate():
+            opt.zero_grad()
+            z = torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1)
+            f = penalty.phi(z, alpha).sum()
+            f.backward()
+            return f
+
+        # optimize to convergence (unlike step for other optimizers)
+        opt.step(reevaluate)
+
+        return y
+
+
+    @staticmethod
+    def forward(ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1.0e-16):
+        assert len(x.shape) &gt;= 3
+        assert alpha &gt; 0.0
+        assert restarts &gt;= 0
+
+        B, C = x.shape[0], x.shape[1]
+        with torch.no_grad():
+            if penalty.is_convex:
+                y = torch.mean(x.view(B, C, -1), dim=2)
+                if penalty is not Quadratic:
+                    y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
+            else:
+                y_mean = torch.mean(x.view(B, C, -1), dim=2)
+                y = RobustVectorPool2dFcn._optimize(x, y_mean, penalty, alpha)
+                f = penalty.phi(torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+
+                y_median, _ = torch.median(x.view(B, C, -1), dim=2)
+                y_median = RobustVectorPool2dFcn._optimize(x, y_median, penalty, alpha)
+                f_median = penalty.phi(torch.linalg.norm((y_median.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+                y = torch.where((f &lt;= f_median).view(B, 1), y, y_median)
+                f = torch.minimum(f, f_median)
+
+                if restarts &gt; 0:
+                    # choose points evenly spaced in batch (can be randomly chosen but that affects reproducibility)
+                    for i in torch.linspace(start=0, end=x.view(B, C, -1).shape[2] - 1, steps=restarts):
+                        y_init = x.view(B, C, -1)[:, :, int(i.item())]
+                        y_final = RobustVectorPool2dFcn._optimize(x, y_init, penalty, alpha)
+                        f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+                        y = torch.where((f &lt; f_final).view(B, 1), y, y_final)
+                        f = torch.minimum(f, f_final)
+
+        ctx.save_for_backward(x, y)
+        ctx.penalty = penalty
+        ctx.alpha = alpha
+        ctx.hess_reg = hess_reg
+
+        return y
+
+    @staticmethod
+    def backward(ctx, y_grad):
+        if not ctx.needs_input_grad[0]:
+            return None, None, None, None, None
+
+        x, y = ctx.saved_tensors
+        B, C = x.shape[0], x.shape[1]
+
+        x_minus_y = y.view(B, C, 1) - x.view(B, C, -1)
+        z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
+
+        k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
+        if torch.all(k2 == 0.0):
+            return (k1 * (y_grad / k1.sum(dim=2)).view(B, C, 1)).reshape(x.shape), None, None, None, None
+
+        H = k1.sum(dim=2).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
+            torch.einsum(&#34;bik,bjk-&gt;bij&#34;, x_minus_y, k2 * x_minus_y)
+        try:
+            L = torch.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
+            v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
+        except:
+            warnings.warn(&#34;backward pass encountered a singular matrix for penalty function {}&#34;.format(ctx.penalty.__name__))
+            v = torch.empty_like(y_grad)
+            for b in range(B):
+                try:
+                    L = torch.cholesky(H[b, :, :])
+                    v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
+                except:
+                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
+
+
+        w = torch.einsum(&#34;bi,bik-&gt;bk&#34;, v, k2 * x_minus_y)
+        x_grad = (k1 * v.view(B, C, 1) + torch.einsum(&#34;bk,bik-&gt;bik&#34;, w, x_minus_y)).reshape(x.shape)
+
+        return x_grad, None, None, None, None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.autograd.function.Function</li>
+<li>torch.autograd.function._SingleLevelFunction</li>
+<li>torch._C._FunctionBase</li>
+<li>torch.autograd.function.FunctionCtx</li>
+<li>torch.autograd.function._HookMixin</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.backward"><code class="name flex">
+<span>def <span class="ident">backward</span></span>(<span>ctx, y_grad)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines a formula for differentiating the operation with backward mode
+automatic differentiation (alias to the vjp function).</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context :attr:<code>ctx</code> as the first argument, followed by
+as many outputs as the :func:<code>forward</code> returned (None will be passed in
+for non tensor outputs of the forward function),
+and it should return as many tensors, as there were inputs to
+:func:<code>forward</code>. Each argument is the gradient w.r.t the given output,
+and each returned value should be the gradient w.r.t. the
+corresponding input. If an input is not a Tensor or is a Tensor not
+requiring grads, you can just pass None as a gradient for that input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute :attr:<code>ctx.needs_input_grad</code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+:func:<code>backward</code> will have <code>ctx.needs_input_grad[0] = True</code> if the
+first input to :func:<code>forward</code> needs gradient computed w.r.t. the
+output.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def backward(ctx, y_grad):
+    if not ctx.needs_input_grad[0]:
+        return None, None, None, None, None
+
+    x, y = ctx.saved_tensors
+    B, C = x.shape[0], x.shape[1]
+
+    x_minus_y = y.view(B, C, 1) - x.view(B, C, -1)
+    z = torch.linalg.norm(x_minus_y, dim=1, keepdim=True) + 1.0e-9
+
+    k1, k2 = ctx.penalty.kappa(z, ctx.alpha)
+    if torch.all(k2 == 0.0):
+        return (k1 * (y_grad / k1.sum(dim=2)).view(B, C, 1)).reshape(x.shape), None, None, None, None
+
+    H = k1.sum(dim=2).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
+        torch.einsum(&#34;bik,bjk-&gt;bij&#34;, x_minus_y, k2 * x_minus_y)
+    try:
+        L = torch.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
+        v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
+    except:
+        warnings.warn(&#34;backward pass encountered a singular matrix for penalty function {}&#34;.format(ctx.penalty.__name__))
+        v = torch.empty_like(y_grad)
+        for b in range(B):
+            try:
+                L = torch.cholesky(H[b, :, :])
+                v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
+            except:
+                v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
+
+
+    w = torch.einsum(&#34;bi,bik-&gt;bk&#34;, v, k2 * x_minus_y)
+    x_grad = (k1 * v.view(B, C, 1) + torch.einsum(&#34;bk,bik-&gt;bik&#34;, w, x_minus_y)).reshape(x.shape)
+
+    return x_grad, None, None, None, None</code></pre>
+</details>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1e-16)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function is to be overridden by all subclasses. There are two ways
+to define forward:</p>
+<p>Usage 1 (Combined forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(ctx: Any, *args: Any, **kwargs: Any) -&gt; Any:
+    pass
+</code></pre>
+<ul>
+<li>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</li>
+<li>See :ref:<code>combining-forward-context</code> for more details</li>
+</ul>
+<p>Usage 2 (Separate forward and ctx)::</p>
+<pre><code>@staticmethod
+def forward(*args: Any, **kwargs: Any) -&gt; Any:
+    pass
+
+@staticmethod
+def setup_context(ctx: Any, inputs: Tuple[Any, ...], output: Any) -&gt; None:
+    pass
+</code></pre>
+<ul>
+<li>The forward no longer accepts a ctx argument.</li>
+<li>Instead, you must also override the :meth:<code>torch.autograd.Function.setup_context</code>
+staticmethod to handle setting up the <code>ctx</code> object.
+<code>output</code> is the output of the forward, <code>inputs</code> are a Tuple of inputs
+to the forward.</li>
+<li>See :ref:<code>extending-autograd</code> for more details</li>
+</ul>
+<p>The context can be used to store arbitrary data that can be then
+retrieved during the backward pass. Tensors should not be stored
+directly on <code>ctx</code> (though this is not currently enforced for
+backward compatibility). Instead, tensors should be saved either with
+:func:<code>ctx.save_for_backward</code> if they are intended to be used in
+<code>backward</code> (equivalently, <code>vjp</code>) or :func:<code>ctx.save_for_forward</code>
+if they are intended to be used for in <code>jvp</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def forward(ctx, x, penalty, alpha=1.0, restarts=0, hess_reg=1.0e-16):
+    assert len(x.shape) &gt;= 3
+    assert alpha &gt; 0.0
+    assert restarts &gt;= 0
+
+    B, C = x.shape[0], x.shape[1]
+    with torch.no_grad():
+        if penalty.is_convex:
+            y = torch.mean(x.view(B, C, -1), dim=2)
+            if penalty is not Quadratic:
+                y = RobustVectorPool2dFcn._optimize(x, y, penalty, alpha)
+        else:
+            y_mean = torch.mean(x.view(B, C, -1), dim=2)
+            y = RobustVectorPool2dFcn._optimize(x, y_mean, penalty, alpha)
+            f = penalty.phi(torch.linalg.norm((y.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+
+            y_median, _ = torch.median(x.view(B, C, -1), dim=2)
+            y_median = RobustVectorPool2dFcn._optimize(x, y_median, penalty, alpha)
+            f_median = penalty.phi(torch.linalg.norm((y_median.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+            y = torch.where((f &lt;= f_median).view(B, 1), y, y_median)
+            f = torch.minimum(f, f_median)
+
+            if restarts &gt; 0:
+                # choose points evenly spaced in batch (can be randomly chosen but that affects reproducibility)
+                for i in torch.linspace(start=0, end=x.view(B, C, -1).shape[2] - 1, steps=restarts):
+                    y_init = x.view(B, C, -1)[:, :, int(i.item())]
+                    y_final = RobustVectorPool2dFcn._optimize(x, y_init, penalty, alpha)
+                    f_final = penalty.phi(torch.linalg.norm((y_final.view(B, C, 1) - x.view(B, C, -1)), dim=1), alpha).view(B, -1).sum(-1)
+                    y = torch.where((f &lt; f_final).view(B, 1), y, y_final)
+                    f = torch.minimum(f, f_final)
+
+    ctx.save_for_backward(x, y)
+    ctx.penalty = penalty
+    ctx.alpha = alpha
+    ctx.hess_reg = hess_reg
+
+    return y</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.TruncQuad"><code class="flex name class">
+<span>class <span class="ident">TruncQuad</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Truncated quadratic penalty.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TruncQuad(Penalty):
+    &#34;&#34;&#34;Truncated quadratic penalty.&#34;&#34;&#34;
+    is_convex = False
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        return 0.5 * torch.where(indx, torch.pow(z, 2.0), torch.full_like(z, alpha * alpha))
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        indx = torch.abs(z) &lt;= alpha
+        return torch.where(indx, torch.ones_like(z), torch.zeros_like(z)), torch.zeros_like(z)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.TruncQuad.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ddn.pytorch.robust_vec_pool.Welsch"><code class="flex name class">
+<span>class <span class="ident">Welsch</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Welsch penalty.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Welsch(Penalty):
+    &#34;&#34;&#34;Welsch penalty.&#34;&#34;&#34;
+    is_convex = False
+
+    @staticmethod
+    def phi(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        return 1.0 - torch.exp(-0.5 * torch.pow(z, 2.0) / alpha2)
+
+    @staticmethod
+    def kappa(z, alpha=1.0):
+        alpha2 = alpha * alpha
+        xi = torch.exp(-0.5 * torch.pow(z, 2.0) / alpha2) / alpha2
+        return xi, -1.0 * xi / alpha2</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ddn.pytorch.robust_vec_pool.Welsch.is_convex"><code class="name">var <span class="ident">is_convex</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ddn.pytorch" href="index.html">ddn.pytorch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.Huber" href="#ddn.pytorch.robust_vec_pool.Huber">Huber</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Huber.is_convex" href="#ddn.pytorch.robust_vec_pool.Huber.is_convex">is_convex</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.Penalty" href="#ddn.pytorch.robust_vec_pool.Penalty">Penalty</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.is_convex" href="#ddn.pytorch.robust_vec_pool.Penalty.is_convex">is_convex</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.kappa" href="#ddn.pytorch.robust_vec_pool.Penalty.kappa">kappa</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.Penalty.phi" href="#ddn.pytorch.robust_vec_pool.Penalty.phi">phi</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.PseudoHuber" href="#ddn.pytorch.robust_vec_pool.PseudoHuber">PseudoHuber</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.PseudoHuber.is_convex" href="#ddn.pytorch.robust_vec_pool.PseudoHuber.is_convex">is_convex</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.Quadratic" href="#ddn.pytorch.robust_vec_pool.Quadratic">Quadratic</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Quadratic.is_convex" href="#ddn.pytorch.robust_vec_pool.Quadratic.is_convex">is_convex</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.RobustVectorPool2d" href="#ddn.pytorch.robust_vec_pool.RobustVectorPool2d">RobustVectorPool2d</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.RobustVectorPool2d.forward" href="#ddn.pytorch.robust_vec_pool.RobustVectorPool2d.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn" href="#ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn">RobustVectorPool2dFcn</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.backward" href="#ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.backward">backward</a></code></li>
+<li><code><a title="ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.forward" href="#ddn.pytorch.robust_vec_pool.RobustVectorPool2dFcn.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.TruncQuad" href="#ddn.pytorch.robust_vec_pool.TruncQuad">TruncQuad</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.TruncQuad.is_convex" href="#ddn.pytorch.robust_vec_pool.TruncQuad.is_convex">is_convex</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ddn.pytorch.robust_vec_pool.Welsch" href="#ddn.pytorch.robust_vec_pool.Welsch">Welsch</a></code></h4>
+<ul class="">
+<li><code><a title="ddn.pytorch.robust_vec_pool.Welsch.is_convex" href="#ddn.pytorch.robust_vec_pool.Welsch.is_convex">is_convex</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
