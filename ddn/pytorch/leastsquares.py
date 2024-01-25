@@ -20,7 +20,7 @@ class BasicLeastSquaresFcn(torch.autograd.Function):
     """
     PyTorch autograd function for basic least squares problems,
 
-        y = argmin_u \|Au - b\|
+        y = argmin_u ||Au - b||
 
     solved via QR decomposition.
     """
@@ -72,7 +72,7 @@ class WeightedLeastSquaresFcn(torch.autograd.Function):
     """
     PyTorch autograd function for weighted least squares,
 
-        y, y_0 = argmin_{u, u_0} 1/2 \sum_i w_i (x_i^T u + u_0 - t_i)^2 + beta/2 \|u\|^2,
+        y, y_0 = argmin_{u, u_0} 1/2 sum_i w_i (x_i^T u + u_0 - t_i)^2 + beta/2 ||u||^2,
 
     returning y and y_0. Features x, target t and weights w are all provided as input.
 
