@@ -71,7 +71,7 @@ class AbstractDeclarativeNode(AbstractNode):
     def solve(self, x):
         """
         Solves the optimization problem
-            y \in argmin_u f(x, u)
+            y in argmin_u f(x, u)
         and returns two outputs. The first is the optimal solution y and the second contains the context for
         computing the gradient, such as the largrange multipliers in the case of a constrained problem, or None
         if no context is available/needed.
@@ -126,7 +126,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
     def solve(self, x):
         """
         Solves the optimization problem
-            y \in argmin_u f(x, u) subject to h(x, u) = 0
+            y in argmin_u f(x, u) subject to h(x, u) = 0
         and returns the vector y. Optionally, also returns the Lagrange multiplier associated with the
         equality constraint where the Lagrangian is defined as
             L(x, y, nu) = f(x, y) - ctx['nu'] * h(x, y)

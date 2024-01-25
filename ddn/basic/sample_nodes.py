@@ -44,7 +44,7 @@ class LinFcnOnUnitCircle(EqConstDeclarativeNode):
     """
     Solves the problem
         minimize   f(x, y) = (1, x)^Ty
-        subject to h(y) = \|y\|^2 = 1
+        subject to h(y) = ||y||^2 = 1
     for 1d input (x) and 2d output (y).
     """
     def __init__(self):
@@ -70,7 +70,7 @@ class ConstLinFcnOnParameterizedCircle(EqConstDeclarativeNode):
     """
     Solves the problem
         minimize   f(x, y) = (1, 1)^Ty
-        subject to h(y) = \|y\|^2 = x^2
+        subject to h(y) = ||y||^2 = x^2
     for 1d input (x) and 2d output (y).
     """
     def __init__(self):
@@ -96,7 +96,7 @@ class LinFcnOnParameterizedCircle(EqConstDeclarativeNode):
     """
     Solves the problem
         minimize   f(x, y) = (1, x_1)^Ty
-        subject to h(y) = \|y\|^2 = x_2^2
+        subject to h(y) = ||y||^2 = x_2^2
     for 2d input (x) and 2d output (y).
     """
     def __init__(self):
@@ -123,7 +123,7 @@ class QuadFcnOnSphere(EqConstDeclarativeNode):
     """
     Solves the problem
         minimize   f(x, y) = 0.5 * y^Ty - x^T y
-        subject to h(y) = \|y\|^2 = 1
+        subject to h(y) = ||y||^2 = 1
     """
 
     def __init__(self, n=2, m=2):
@@ -148,7 +148,7 @@ class QuadFcnOnBall(IneqConstDeclarativeNode):
     """
     Solves the (inequality constrained) problem
         minimize   f(x, y) = 0.5 * y^Ty - x^T y
-        subject to h(y) = \|y\|^2 <= 1
+        subject to h(y) = ||y||^2 <= 1
     """
 
     def __init__(self, n=2, m=2):
@@ -176,7 +176,7 @@ class QuadFcnOnBall(IneqConstDeclarativeNode):
 class CosineDistance(NonUniqueDeclarativeNode):
     """
     Solves the unconstrained problem
-       minimize f(x, y) = x^T y / \|y\|
+       minimize f(x, y) = x^T y / ||y||
     """
     def __init__(self):
         super().__init__(2, 2)
