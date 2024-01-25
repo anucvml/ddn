@@ -5,17 +5,17 @@
 # to solve the entropy regularized problem (Cuturi, NeurIPS 2013) in the forward pass. The problem can be written as
 # Let us write the entropy regularized optimal transport problem in the following form,
 #
-#    minimize (over P) <P, M> + 1/\gamma KL(P || rc^T)
+#    minimize (over P) <P, M> + 1/gamma KL(P || rc^T)
 #    subject to        P1 = r and P^T1 = c
 #
 # where r and c are m- and n-dimensional positive vectors, respectively, each summing to one. Here m-by-n matrix M is
 # the input and m-by-n dimensional positive matrix P is the output. The above problem leads to a solution of the form
 #
-#   P_{ij} = \alpha_i \beta_j e^{-\gamma M_{ij}}
+#   P_{ij} = alpha_i beta_j e^{-gamma M_{ij}}
 #
-# where \alpha and \beta are found by iteratively applying row and column normalizations.
+# where alpha and beta are found by iteratively applying row and column normalizations.
 #
-# We also provide an option to parametrize the input in log-space as M_{ij} = -\log Q_{ij} where Q is a positive matrix.
+# We also provide an option to parametrize the input in log-space as M_{ij} = -log Q_{ij} where Q is a positive matrix.
 # The matrix Q becomes the input. This is more numerically stable for inputs M with large positive or negative values.
 #
 # See accompanying Jupyter Notebook at https://deepdeclarativenetworks.com.
@@ -105,7 +105,7 @@ class OptimalTransportFcn(torch.autograd.Function):
         c:  (B,W) tensor, (1,W) tensor or None for constant uniform vector
 
     Allows for approximate gradient calculations, which is faster and may be useful during early stages of learning,
-    when exp(-\gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.
+    when exp(-gamma M) is already nearly doubly stochastic, or when gradients are otherwise noisy.
 
     Both r and c must be positive, if provided. They will be normalized to sum to one.
     """
@@ -235,10 +235,10 @@ class OptimalTransportLayer(nn.Module):
     maxiters: int, default: 1000
         The maximum number of iterations.
     logspace: bool, default: False
-        If `True`, assumes that the input is provided as \log M
+        If `True`, assumes that the input is provided as log M
         If `False`, assumes that the input is provided as M (standard optimal transport)
     method: str, default: 'block'
-        If `approx`, approximate the gradient by assuming exp(-\gamma M) is already nearly doubly stochastic.
+        If `approx`, approximate the gradient by assuming exp(-gamma M) is already nearly doubly stochastic.
         It is faster and could potentially be useful during early stages of training.
         If `block`, exploit the block structure of matrix A H^{-1] A^T.
         If `full`, invert the full A H^{-1} A^T matrix without exploiting the block structure
