@@ -31,4 +31,4 @@ in an end-to-end learnable model. The code builds on the PyTorch framework and c
 * `ddn.pytorch.robustpool`: differentiable robust pooling layers treating each dimension independently.
 * `ddn.pytorch.robust_vec_pool`: differentiable robust vector pooling layers (see [tutorial](https://nbviewer.jupyter.org/github/anucvml/ddn/blob/master/tutorials/09_robust_vector_pooling.ipynb)).
 * `ddn.pytorch.sample_nodes`: simple example implementations of deep declarative nodes for PyTorch.
-* `ddn.pytorch.tridiagsolve`: differentiable tridiagonal matrix solvers (see [tutorial](https://nbviewer.org/github/anucvml/ddn/blob/master/tutorials/15_tridiagonal_systems.ipynb))
+* `ddn.pytorch.tridiagsolve`: differentiable tridiagonal matrix and block tridiagonal solvers (see [tutorial](https://nbviewer.org/github/anucvml/ddn/blob/master/tutorials/15_tridiagonal_systems.ipynb))
