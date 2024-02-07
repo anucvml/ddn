@@ -16,7 +16,7 @@ def tridiagsolve(b, a, c, d, method='cyclic'):
         |        .            | |     |   |  .  |
         |           .         | |     | = |  .  |
         |              .      | |     |   |  .  |
-        |             ... b_n | | x_n |   | d_n |
+        |  0          ... b_n | | x_n |   | d_n |
 
     The Thomas algorithm is an efficient implementation of Gaussian elimination and good for single-threaded hardware
     or on large batches of data. The input matrix needs to be diagonally dominant or positive semi-definite for stable
@@ -109,11 +109,12 @@ def blocktridiagsolve(b, a, c, d, method='thomas'):
         |        .            | |      |   |  .   |
         |           .         | |      | = |  .   |
         |              .      | |      |   |  .   |
-        |             ... B_n | | x_mn |   | d_mn |
+        |  0          ... B_n | | x_mn |   | d_mn |
 
-    where B_i, A_i and C_i and m-by-m matrices. See `tridiagsolve` for the case of 1-by-1 blocks. The cyclic reduction
-    method may become numerically unstable when the B_i are not very well conditioned and the Thomas algorithm is
-    recommended.
+    where B_i, A_i and C_i and m-by-m matrices. See `tridiagsolve` for the case of 1-by-1 blocks. The results of
+    cyclic reduction may be inaccurate when the B_i are not very well conditioned. See Yalamov and Pavlov, "Stability
+    of the Block Cyclic Reduction", Linear Algebra and its Applications, 1996 for a theoretical study. The Thomas
+    algorithm appears to perform better and faster in our testing, and is recommended for the block tridiagonal case.
 
     :param b: main diagonal, (B_1, ..., B_n), of size (B x N x M x M)
     :param a: lower diagonal, (A_2, ..., A_n), of size (B x N-1 x M x M)
