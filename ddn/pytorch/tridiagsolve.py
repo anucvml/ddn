@@ -68,7 +68,6 @@ def tridiagsolve(b, a, c, d, method='cyclic'):
 
     elif method == 'thomas':
         # initialize
-        x = torch.empty_like(d)
         c_dash = torch.empty_like(c)
         d_dash = torch.empty_like(d)
 
@@ -85,9 +84,13 @@ def tridiagsolve(b, a, c, d, method='cyclic'):
         d_dash[:, N-1, :] = (d[:, N-1, :] - a[:, N-2].view(B, 1) * d_dash[:, N-2, :]) / w.view(B, 1)
 
         # backward substitution
-        x[:, N-1, :] = d_dash[:, N-1, :]
+        #x = torch.empty_like(d)
+        #x[:, N-1, :] = d_dash[:, N-1, :]
+        #for i in range(N-1, 0, -1):
+        #    x[:, i-1, :] = d_dash[:, i-1, :] - c_dash[:, i-1].view(B, 1) * x[:, i, :]
+        x = d_dash
         for i in range(N-1, 0, -1):
-            x[:, i-1, :] = d_dash[:, i-1, :] - c_dash[:, i-1].view(B, 1) * x[:, i, :]
+            x[:, i-1, :] -= c_dash[:, i-1].view(B, 1) * x[:, i, :]
 
         return x
 
@@ -164,7 +167,6 @@ def blocktridiagsolve(b, a, c, d, method='thomas'):
 
     elif method == 'thomas':
         # initialize
-        x = torch.empty_like(d)
         c_dash = torch.empty_like(c)
         d_dash = torch.empty_like(d)
 
@@ -182,9 +184,13 @@ def blocktridiagsolve(b, a, c, d, method='thomas'):
         d_dash[:, (N-1)*M:MN, :] = torch.linalg.solve(w, d[:, (N-1)*M:MN, :] - a[:, N-2, :, :] @ d_dash[:, (N-2)*M:(N-1)*M, :])
 
         # backward substitution
-        x[:, (N-1)*M:MN, :] = d_dash[:, (N-1)*M:MN, :]
+        #x = torch.empty_like(d)
+        #x[:, (N-1)*M:MN, :] = d_dash[:, (N-1)*M:MN, :]
+        #for i in range(N-1, 0, -1):
+        #    x[:, (i-1)*M:i*M, :] = d_dash[:, (i-1)*M:i*M, :] - c_dash[:, i-1, :, :] @ x[:, i*M:(i+1)*M, :]
+        x = d_dash
         for i in range(N-1, 0, -1):
-            x[:, (i-1)*M:i*M, :] = d_dash[:, (i-1)*M:i*M, :] - c_dash[:, i-1, :, :] @ x[:, i*M:(i+1)*M, :]
+            x[:, (i-1)*M:i*M, :] -= c_dash[:, i-1, :, :] @ x[:, i*M:(i+1)*M, :]
 
         return x
 
@@ -249,17 +255,11 @@ class BlockTriDiagSolveFcn(torch.autograd.Function):
         grad_b, grad_a, grad_c = None, None, None
 
         if ctx.needs_input_grad[0]:
-            grad_b = torch.empty_like(b)
-            for i in range(N):
-                grad_b[:, i, :, :] = -1.0 * torch.einsum("bik,bjk->bij",  w[:, i*M:(i+1)*M, :], x[:, i*M:(i+1)*M, :])
+            grad_b = -1.0 * torch.matmul(w.reshape(B, N, M, -1), x.reshape(B, N, M, -1).transpose(2, 3))
         if ctx.needs_input_grad[1]:
-            grad_a = torch.empty_like(a)
-            for i in range(N - 1):
-                grad_a[:, i, :, :] = -1.0 * torch.einsum("bik,bjk->bij",  w[:, (i+1)*M:(i+2)*M, :], x[:, i*M:(i+1)*M, :])
+            grad_a = -1.0 * torch.matmul(w.reshape(B, N, M, -1)[:, 1:, :, :], x.reshape(B, N, M, -1).transpose(2, 3)[:, :-1, :, :])
         if ctx.needs_input_grad[2]:
-            grad_c = torch.empty_like(c)
-            for i in range(N - 1):
-                grad_c[:, i, :, :] = -1.0 * torch.einsum("bik,bjk->bij",  w[:, i*M:(i+1)*M, :], x[:, (i+1)*M:(i+2)*M, :])
+            grad_c = -1.0 * torch.matmul(w.reshape(B, N, M, -1)[:, :-1, :, :], x.reshape(B, N, M, -1).transpose(2, 3)[:, 1:, :, :])
 
         grad_d = w if ctx.needs_input_grad[3] else None
 
