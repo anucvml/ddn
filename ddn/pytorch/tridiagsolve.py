@@ -169,15 +169,14 @@ def blocktridiagsolve(b, a, c, d, method='thomas'):
         d_dash = torch.empty_like(d)
 
         # forward elimination
-        # TODO: solve for c and d jointly
-        c_dash[:, 0, :, :] = torch.linalg.solve(b[:, 0, :, :], c[:, 0, :, :])
-        d_dash[:, 0:M, :] = torch.linalg.solve(b[:, 0, :, :], d[:, 0:M, :])
+        LU, pivots = torch.linalg.lu_factor(b[:, 0, :, :])
+        c_dash[:, 0, :, :] = torch.linalg.lu_solve(LU, pivots, c[:, 0, :, :])
+        d_dash[:, 0:M, :] = torch.linalg.lu_solve(LU, pivots, d[:, 0:M, :])
 
         for i in range(1, N-1):
-            # TODO: solve for c and d jointly
-            w = b[:, i, :, :] - a[:, i-1, :, :] @ c_dash[:, i-1, :, :]
-            c_dash[:, i, :, :] = torch.linalg.solve(w, c[:, i, :, :])
-            d_dash[:, i*M:(i+1)*M, :] = torch.linalg.solve(w, d[:, i*M:(i+1)*M, :] - a[:, i-1, :, :] @ d_dash[:, (i-1)*M:i*M, :])
+            LU, pivots = torch.linalg.lu_factor(b[:, i, :, :] - a[:, i-1, :, :] @ c_dash[:, i-1, :, :])
+            c_dash[:, i, :, :] = torch.linalg.lu_solve(LU, pivots, c[:, i, :, :])
+            d_dash[:, i*M:(i+1)*M, :] = torch.linalg.lu_solve(LU, pivots, d[:, i*M:(i+1)*M, :] - a[:, i-1, :, :] @ d_dash[:, (i-1)*M:i*M, :])
 
         w = b[:, N-1, :, :] - a[:, N-2, :, :] @ c_dash[:, N-2, :, :]
         d_dash[:, (N-1)*M:MN, :] = torch.linalg.solve(w, d[:, (N-1)*M:MN, :] - a[:, N-2, :, :] @ d_dash[:, (N-2)*M:(N-1)*M, :])
