@@ -1,5 +1,9 @@
 # DEEP DECLARATIVE NODES
-# Defines the PyTorch interface for data processing nodes and declarative nodes
+# Defines the PyTorch interface for prototyping declarative nodes. Choose the appropriate base class for your
+# problem (unconstrained, equality constrained, etc). In most cases you will only need to implement the solver,
+# objective and constraint methods. Gradients in the backward pass will then be automatically calculated. This
+# will be most efficient if the code in your objective and constraint methods avoids looping over individual
+# batch elements, i.e., use vectorized implementation wherever possible.
 #
 # Dylan Campbell <dylan.campbell@anu.edu.au>
 # Stephen Gould <stephen.gould@anu.edu.au>
@@ -67,7 +71,9 @@ class AbstractDeclarativeNode(AbstractNode):
     def objective(self, *xs, y):
         """Evaluates the objective function on a given input-output pair.
         Multiple input tensors can be passed as arguments, but the final
-        argument must be the output tensor.
+        argument must be the output tensor. For good performance during the
+        backward pass it's best to vectorize calculations over the batch rather
+        than looping over individual elements.
         """
         warnings.warn("objective function not implemented")
         return None
@@ -354,7 +360,9 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
         pair. Multiple input tensors can be passed as arguments, but the final
-        argument must be the output tensor.
+        argument must be the output tensor. For good performance during the
+        backward pass it's best to vectorize calculations over the batch rather
+        than looping over individual elements.
         """
         warnings.warn("equality constraint function not implemented")
         return None
@@ -558,14 +566,18 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
         pair. Multiple input tensors can be passed as arguments, but the final
-        argument must be the output tensor.
+        argument must be the output tensor. For good performance during the
+        backward pass it's best to vectorize calculations over the batch rather
+        than looping over individual elements.
         """
         return None
 
     def inequality_constraints(self, *xs, y):
         """Evaluates the inequality constraint functions on a given input-output
         pair. Multiple input tensors can be passed as arguments, but the final
-        argument must be the output tensor.
+        argument must be the output tensor. For good performance during the
+        backward pass it's best to vectorize calculations over the batch rather
+        than looping over individual elements.
         """
         warnings.warn("inequality constraint function not implemented")
         return None
