@@ -5,6 +5,16 @@
 # will be most efficient if the code in your objective and constraint methods avoids looping over individual
 # batch elements, i.e., use vectorized implementation wherever possible.
 #
+# When incorporating into a larger network, the typical pattern is wrap a node into a `DeclarativeLayer`,
+#   class MyDeclarativeNode(AbstractDeclarativeNode):
+#      def __init__(self, ...)
+#      def solve(self, ...)
+#      def objective(self, ...)
+#
+#   node = MyDeclarativeNode()
+#   layer = DeclarativeLayer(node)
+# The module `layer` can now be used as you would any other module in PyTorch (e.g., torch.nn.Linear).
+#
 # Dylan Campbell <dylan.campbell@anu.edu.au>
 # Stephen Gould <stephen.gould@anu.edu.au>
 
