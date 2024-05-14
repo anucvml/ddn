@@ -306,7 +306,7 @@ class AbstractDeclarativeNode(AbstractNode):
                     A_decomp = torch.linalg.cholesky(A[i, ...], upper=False)
                     X[i, ...] = torch.cholesky_solve(B[i, ...], A_decomp, upper=False) # mxn
                 except RuntimeError: # Revert to LU solve
-                    X[i, ...] = torch.linalg.solve(A[i, ...], B[i, ...])[0] # mxn
+                    X[i, ...] = torch.linalg.solve(A[i, ...], B[i, ...]) # mxn
         if B_sizes is not None:
             X = X.split(B_sizes, dim=-1)
         return X
