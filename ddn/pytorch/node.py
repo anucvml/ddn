@@ -523,14 +523,11 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         return h
 
     def _get_nu(self, fY, hY):
-        """Compute nu (ie lambda) if not provided by the problem's solver.
+        """Compute nu (i.e., lambda) if not provided by the problem's solver.
         That is, solve: hY^T nu = fY^T.
         """
         p = hY.size(1)
-        nu = fY.new_zeros(self.b, p)
-        for i in range(self.b): # loop over batch
-            solution = torch.linalg.lstsq(hY[i, :, :].t(), fY[i, :].unsqueeze(-1))[0]
-            nu[i, :] = solution[:p, :].squeeze() # extract first p values
+        nu = torch.linalg.lstsq(hY.transpose(1, 2), fY)[0][:, :p]
         return nu
 
     def _check_equality_constraints(self, h):
