@@ -20,7 +20,7 @@ class BasicLeastSquaresFcn(torch.autograd.Function):
     """
     PyTorch autograd function for basic least squares problems,
 
-        y = argmin_u ||Au - b||
+        y = argmin_u ||Au - b||^2
 
     solved via QR decomposition.
     """
@@ -63,6 +63,42 @@ class BasicLeastSquaresFcn(torch.autograd.Function):
             dA = torch.bmm(r.view(B, M, 1), w.view(B, 1, N)) - torch.bmm(Aw.view(B, M, 1), x.view(B, 1, N))
         if ctx.needs_input_grad[1]:
             db = Aw
+
+        # return gradients (None for non-tensor inputs)
+        return dA, db, None
+
+
+class BasicAutoDiffLeastSquaresFcn(BasicLeastSquaresFcn):
+    """
+    PyTorch autograd function for basic least squares problems using automatic differentiation. Included here for
+    testing purposes.
+    """
+
+    @staticmethod
+    def backward(ctx, dx):
+        # check for None tensors
+        if dx is None:
+            return None, None
+
+        # unpack cached tensors
+        A, b, x, R = ctx.saved_tensors
+        B, M, N = A.shape
+
+        if R is None:
+            Q, R = torch.linalg.qr(A, mode='r')
+
+        # explicitly compute dLdg = v^T H^{-1}
+        w = torch.linalg.solve_triangular(R, torch.linalg.solve_triangular(torch.transpose(R, 2, 1), dx, upper=False),
+                                          upper=True)
+
+        # implicitly compute dLdA and dLdb from dLdg and g = (d/dx)(objective)
+        A_var = A.detach().requires_grad_(True)
+        b_var = b.detach().requires_grad_(True)
+        x_const = x.detach().requires_grad_(False)
+
+        with torch.enable_grad():
+            g = torch.bmm(A_var.transpose(1, 2), b_var - torch.bmm(A_var, x_const))
+        dA, db = torch.autograd.grad(outputs=g, inputs=(A_var, b_var), grad_outputs=w, retain_graph=False)
 
         # return gradients (None for non-tensor inputs)
         return dA, db, None
@@ -328,6 +364,27 @@ if __name__ == '__main__':
     print("Backward test of BasicLeastSquaresFcn b grad: {}".format(test))
     test = gradcheck(fcn, (A_static, b, False), eps=1e-6, atol=1e-3, rtol=1e-6)
     print("Backward test of BasicLeastSquaresFcn (no cache) b grad: {}".format(test))
+
+    # --- test basic least squares via automatic differentiation function
+    B, M, N = 2, 10, 5
+    fcn = BasicAutoDiffLeastSquaresFcn.apply
+
+    torch.manual_seed(0)
+    A = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=True)
+    b = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=True)
+    A_static = torch.randn((B, M, N), dtype=torch.double, device=device, requires_grad=False)
+    b_static = torch.randn((B, M, 1), dtype=torch.double, device=device, requires_grad=False)
+
+    # backward pass tests
+    test = gradcheck(fcn, (A, b_static, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicAutoDiffLeastSquaresFcn A grad: {}".format(test))
+    test = gradcheck(fcn, (A, b_static, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicAutoDiffLeastSquaresFcn (no cache) A grad: {}".format(test))
+
+    test = gradcheck(fcn, (A_static, b, True), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicAutoDiffLeastSquaresFcn b grad: {}".format(test))
+    test = gradcheck(fcn, (A_static, b, False), eps=1e-6, atol=1e-3, rtol=1e-6)
+    print("Backward test of BasicAutoDiffLeastSquaresFcn (no cache) b grad: {}".format(test))
 
     # --- test weighted least squares function
 
