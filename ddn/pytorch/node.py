@@ -838,7 +838,7 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
             if isinstance(x_split[0], torch.Tensor) and x_split[0].requires_grad:
                 gradient = []
                 for i, Bi in enumerate(fXY(x_split)):
-                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, u)))
+                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, uts)))
                 gradient = torch.cat(gradient, dim=-1) # bxn
                 gradients.append(gradient.reshape(x_size))
             else:
