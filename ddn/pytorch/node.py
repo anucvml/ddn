@@ -76,7 +76,7 @@ class AbstractDeclarativeNode(AbstractNode):
         super().__init__()
         self.eps = eps # tolerance to check if optimality conditions satisfied
         self.gamma = gamma # damping factor: H <-- H + gamma * I
-        self.chunk_size = chunk_size # input is divided into chunks of at most chunk_size (None = infinity)
+        self.chunk_size = chunk_size # max. number of vector-Jacobian products computed at once (None = all)
 
     def objective(self, *xs, y):
         """Evaluates the objective function on a given input-output pair.
@@ -127,10 +127,10 @@ class AbstractDeclarativeNode(AbstractNode):
                 problem parameters;
                 strictly, returns the vector--Jacobian products J_Y(x,y) * y'(x)
         """
-        xs, xs_split, xs_sizes, y, v, ctx = self._gradient_init(xs, y, v, ctx)
+        xs, y, v, ctx = self._gradient_init(xs, y, v, ctx)
 
-        fY, fYY, fXY = self._get_objective_derivatives(xs, y)
-        
+        fY, fYY = self._get_objective_derivatives(xs, y)
+
         if not self._check_optimality_cond(fY):
             warnings.warn(
                 "Non-zero objective function gradient at y:\n{}".format(
@@ -150,18 +150,9 @@ class AbstractDeclarativeNode(AbstractNode):
 
         # ToDo: check for NaN values in u
 
-        # Compute -b_i^T H^-1 v (== b_i^T u) for all i:
-        gradients = []
-        for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
-            if isinstance(x_split[0], torch.Tensor) and x_split[0].requires_grad:
-                gradient = []
-                for Bi in fXY(x_split):
-                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, u)))
-                gradient = torch.cat(gradient, dim=-1) # bxn
-                gradients.append(gradient.reshape(x_size))
-            else:
-                gradients.append(None)
-        return tuple(gradients)
+        # Compute -B^T H^-1 v (== B^T u) for all inputs as a single vector-Jacobian product,
+        # B^T u = d/dx (fY^T u) with u held constant, without forming B = fXY:
+        return self._input_vjp(xs, (fY, u))
 
     def jacobian(self, *xs, y=None, ctx=None):
         """Computes the Jacobian, that is, the derivative of the output with
@@ -215,48 +206,14 @@ class AbstractDeclarativeNode(AbstractNode):
         self.b = y.size(0)
         self.m = y.reshape(self.b, -1).size(-1)
 
-        # Split each input x into a tuple of n//chunk_size tensors of size (b, chunk_size):
-        # Required since gradients can only be computed wrt individual
-        # tensors, not slices of a tensor. See:
-        # https://discuss.pytorch.org/t/how-to-calculate-gradients-wrt-one-of-inputs/24407
-        xs_split, xs_sizes, self.n = self._split_inputs(xs)
-        xs = self._cat_inputs(xs_split, xs_sizes)
+        # Give each input its own node in the graph so that gradients are computed
+        # per argument (even if the same tensor is passed as multiple arguments):
+        xs = torch.enable_grad()(lambda: tuple(x.view_as(x)
+            if isinstance(x, torch.Tensor) and x.requires_grad else x for x in xs))()
 
-        return xs, xs_split, xs_sizes, y, v, ctx
+        return xs, y, v, ctx
 
-    @torch.enable_grad()
-    def _split_inputs(self, xs):
-        """Split inputs into a sequence of tensors by input dimension
-        For each input x in xs, generates a tuple of n//chunk_size tensors of size (b, chunk_size)
-        """
-        xs_split, xs_sizes, xs_n = [], [], []
-        for x in xs: # Loop over input tuple
-            if isinstance(x, torch.Tensor) and x.requires_grad:
-                if self.chunk_size is None:
-                    xs_split.append((x.reshape(self.b, -1),))
-                else:
-                    xs_split.append(x.reshape(self.b, -1).split(self.chunk_size, dim=-1))
-                xs_sizes.append(x.size())
-                xs_n.append(x.reshape(self.b, -1).size(-1))
-            else:
-                xs_split.append((x,))
-                xs_sizes.append(None) # May not be a tensor
-                xs_n.append(None)
-        return tuple(xs_split), tuple(xs_sizes), tuple(xs_n)
-
-    @torch.enable_grad()
-    def _cat_inputs(self, xs_split, xs_sizes):
-        """Concatenate inputs from a sequence of tensors
-        """
-        xs = []
-        for x_split, x_size in zip(xs_split, xs_sizes): # Loop over input tuple
-            if x_size is None:
-                xs.append(x_split[0])
-            else:
-                xs.append(torch.cat(x_split, dim=-1).reshape(x_size))
-        return tuple(xs)
-
-    def _get_objective_derivatives(self, xs, y):
+    def _get_objective_derivatives(self, xs, y, hessian=True):
         # Evaluate objective function at (xs,y):
         f = torch.enable_grad()(self.objective)(*xs, y=y) # b
 
@@ -265,18 +222,40 @@ class AbstractDeclarativeNode(AbstractNode):
         fY = torch.enable_grad()(fY.reshape)(self.b, -1) # bxm
         if not fY.requires_grad: # if fY is independent of y
             fY.requires_grad = True
-        
+
         # Compute second-order partial derivative of f wrt y at (xs,y):
-        fYY = self._batch_jacobian(fY, y) # bxmxm
-        fYY = fYY.detach() if fYY is not None else y.new_zeros(
+        fYY = self._hessian(fY, y) if hessian else None # bxmxm
+
+        return fY, fYY
+
+    def _hessian(self, gY, y):
+        """Computes the (detached) Jacobian of the gradient gY (bxm) with respect to y,
+        e.g., the Hessian of the objective or Lagrangian, returning zeros if gY is
+        independent of y.
+        """
+        H = self._batch_jacobian(gY, y) # bxmxm
+        return H.detach() if H is not None else y.new_zeros(
             self.b, self.m, self.m)
 
-        # Create function that returns generator expression for fXY given input:
-        fXY = lambda x: (fXiY.detach()
-            if fXiY is not None else torch.zeros_like(fY).unsqueeze(-1)
-            for fXiY in (self._batch_jacobian(fY, xi) for xi in x))
-
-        return fY, fYY, fXY
+    @torch.enable_grad()
+    def _input_vjp(self, xs, *terms):
+        """Computes the gradient of z = sum_k sum(a_k * w_k) with respect to each
+        input tensor in xs, where terms = ((a_1, w_1), (a_2, w_2), ...) and the
+        weights w_k are held constant. Returns None for inputs that are not tensors
+        or do not require grad. Used to evaluate the vector--Jacobian products
+        B^T u and C^T s with a single backward pass rather than forming the
+        Jacobians B and C explicitly.
+        """
+        indices = [i for i, x in enumerate(xs)
+            if isinstance(x, torch.Tensor) and x.requires_grad]
+        gradients = [None] * len(xs)
+        if indices:
+            z = sum((a * w.detach()).sum() for a, w in terms)
+            vjps = grad(z, [xs[i] for i in indices], allow_unused=True)
+            for i, vjp in zip(indices, vjps):
+                # grad returns None instead of zero if z is independent of xs[i]
+                gradients[i] = torch.zeros_like(xs[i]) if vjp is None else vjp
+        return tuple(gradients)
 
     def _check_optimality_cond(self, fY):
         """Checks that the problem's 1st-order optimality condition is satisfied
@@ -336,15 +315,20 @@ class AbstractDeclarativeNode(AbstractNode):
         y = y.reshape(self.b, -1) # bxm
         m = y.size(-1)
         n = x.reshape(self.b, -1).size(-1)
-        if m > 1:
-            # Compute all m vector-Jacobian products in a single vectorized (vmap) backward pass:
-            grad_outputs = torch.eye(m, dtype=y.dtype, device=y.device).unsqueeze(1).expand(m, self.b, m) # mxbxm
+        k = m if self.chunk_size is None else min(max(1, self.chunk_size), m)
+        if k > 1:
+            # Compute the m vector-Jacobian products in vectorized (vmap) backward passes of
+            # (at most) chunk_size products each, trading memory for speed:
+            jacobian = []
             try:
-                yX, = grad(y, x, grad_outputs=grad_outputs, retain_graph=True,
-                    create_graph=create_graph, allow_unused=True, is_grads_batched=True) # mxbxn1xn2x...
-                if yX is None: # grad returns None instead of zero
-                    return None
-                return yX.reshape(m, self.b, n).transpose(0, 1) # bxmxn
+                for rows in torch.eye(m, dtype=y.dtype, device=y.device).split(k):
+                    grad_outputs = rows.unsqueeze(1).expand(-1, self.b, m) # kxbxm
+                    yX, = grad(y, x, grad_outputs=grad_outputs, retain_graph=True,
+                        create_graph=create_graph, allow_unused=True, is_grads_batched=True) # kxbxn1xn2x...
+                    if yX is None: # grad returns None instead of zero
+                        return None
+                    jacobian.append(yX.reshape(-1, self.b, n))
+                return torch.cat(jacobian).transpose(0, 1) # bxmxn
             except RuntimeError: # Revert to loop if graph contains operations unsupported by vmap
                 pass
         jacobian = y.new_zeros(self.b, m, n) # bxmxn
@@ -371,7 +355,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
     def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create an equality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -425,14 +409,15 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
                 problem parameters;
                 strictly, returns the vector--Jacobian products J_Y(x,y) * y'(x)
         """
-        xs, xs_split, xs_sizes, y, v, ctx = self._gradient_init(xs, y, v, ctx)
+        xs, y, v, ctx = self._gradient_init(xs, y, v, ctx)
 
-        fY, fYY, fXY = self._get_objective_derivatives(xs, y)
+        fY, _ = self._get_objective_derivatives(xs, y, hessian=False)
 
-        hY, hYY, hXY, hX = self._get_constraint_derivatives(xs, y)
+        h, hY = self._get_constraint_derivatives(xs, y)
 
         nu = self._get_nu(fY, hY) if (ctx is None or 'nu' not in ctx
             ) else self._ensure2d(ctx['nu'])
+        nu = nu.detach()
 
         if not self._check_optimality_cond(fY, hY, nu):
             warnings.warn("Non-zero Lagrangian gradient at y:\n{}\n"
@@ -442,9 +427,10 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
                     hY.detach().squeeze().cpu().numpy(),
                     nu.detach().squeeze().cpu().numpy()))
 
-        # Form H:
-        H = fYY - sum(torch.einsum('b,bmn->bmn', (nu[:, i], hiYY))
-            for i, hiYY in enumerate(hYY))
+        # Form H as the Jacobian of the Lagrangian gradient LY = fY - nu^T hY wrt y,
+        # H = fYY - sum_i nu_i hiYY, in a single pass:
+        LY = torch.enable_grad()(lambda: fY - torch.einsum('bp,bpm->bm', (nu, hY)))() # bxm
+        H = self._hessian(LY, y)
         H = 0.5 * (H + H.transpose(1, 2)) # Ensure that H is symmetric
         if self.gamma is not None:
             H += self.gamma * torch.eye(
@@ -468,24 +454,9 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         # Compute u + ts:
         uts = u + torch.einsum('bmp,bp->bm', (t, s)) # bxm
 
-        # Compute Bi^T (u + ts) - Ci^T s for all i:
-        gradients = []
-        for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
-            if isinstance(x_split[0],torch.Tensor) and x_split[0].requires_grad:
-                gradient = []
-                for i, Bi in enumerate(fXY(x_split)):
-                    Bi -= sum(torch.einsum('b,bmc->bmc', (nu[:, j], hjXiY))
-                        for j, hjXiY in enumerate(hXY(x_split[i])))
-                    g = torch.einsum('bmc,bm->bc', (Bi, uts))
-                    Ci = hX(x_split[i])
-                    if Ci is not None:
-                        g -= torch.einsum('bpc,bp->bc', (Ci, s))
-                    gradient.append(g)
-                gradient = torch.cat(gradient, dim=-1) # bxn
-                gradients.append(gradient.reshape(x_size))
-            else:
-                gradients.append(None)
-        return tuple(gradients)
+        # Compute B^T (u + ts) - C^T s for all inputs as a single vector-Jacobian
+        # product, where B = d/dx LY and C = d/dx h, without forming B or C:
+        return self._input_vjp(xs, (LY, uts), (h, -1.0 * s))
 
     def _get_constraint_derivatives(self, xs, y):
         # Evaluate constraint function(s) at (xs,y):
@@ -496,25 +467,7 @@ class EqConstDeclarativeNode(AbstractDeclarativeNode):
         if not hY.requires_grad: # if hY is independent of y
             hY.requires_grad = True
 
-        # Compute 2nd-order partial derivative of h wrt y at (xs,y):
-        p = h.size(-1)
-        hYY = (hiYY.detach() for hiYY in (
-            self._batch_jacobian(torch.enable_grad()(hY.select)(1, i), y)
-            for i in range(p)
-            ) if hiYY is not None)
-
-        # Compute 2nd-order partial derivative of hj wrt y and xi at (xs,y):
-        hXY = lambda x: (hiXY.detach() for hiXY in (
-            self._batch_jacobian(torch.enable_grad()(hY.select)(1, i), x)
-            for i in range(p)
-            ) if hiXY is not None)
-
-        # Compute partial derivative of h wrt xi at (xs,y):
-        def hX(x):
-            hXi = self._batch_jacobian(h, x, create_graph=False)
-            return None if hXi is None else hXi.detach()
-
-        return hY, hYY, hXY, hX
+        return h, hY
 
     def _get_constraint_set(self, xs, y):
         """Filters constraints.
@@ -574,7 +527,7 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
     def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create an inequality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
 
     def equality_constraints(self, *xs, y):
         """Evaluates the equality constraint functions on a given input-output
@@ -621,7 +574,7 @@ class IneqConstDeclarativeNode(EqConstDeclarativeNode):
                 problem parameters;
                 strictly, returns the vector--Jacobian products J_Y(x,y) * y'(x)
         """
-        xs, xs_split, xs_sizes, y, v, ctx = self._gradient_init(xs, y, v, ctx)
+        xs, y, v, ctx = self._gradient_init(xs, y, v, ctx)
 
         # Collect batch indices such that each sub-batch will have the same
         # number of active constraints:
@@ -756,7 +709,7 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
     def __init__(self, eps=1e-12, gamma=None, chunk_size=None):
         """Create a linear equality constrained declarative node
         """
-        super().__init__(eps=eps, gamma=gamma, chunk_size=None)
+        super().__init__(eps=eps, gamma=gamma, chunk_size=chunk_size)
 
     def linear_constraint_parameters(self, y):
         """Defines the linear equality constraint parameters A and d, where the
@@ -799,9 +752,9 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
                 problem parameters;
                 strictly, returns the vector--Jacobian products J_Y(x,y) * y'(x)
         """
-        xs, xs_split, xs_sizes, y, v, ctx = self._gradient_init(xs, y, v, ctx)
+        xs, y, v, ctx = self._gradient_init(xs, y, v, ctx)
 
-        fY, fYY, fXY = self._get_objective_derivatives(xs, y)
+        fY, fYY = self._get_objective_derivatives(xs, y)
 
         # Get constraint parameters and form batch:
         A, d = self.linear_constraint_parameters(y)
@@ -838,18 +791,8 @@ class LinEqConstDeclarativeNode(EqConstDeclarativeNode):
         # Compute u + ts = -H^-1 v + H^-1 A^T (A H^-1 A^T)^-1 A H^-1 v:
         uts = u + torch.einsum('bmp,bp->bm', (t, s)) # bxm
 
-        # Compute Bi^T (u + ts) for all i:
-        gradients = []
-        for x_split, x_size, n in zip(xs_split, xs_sizes, self.n):
-            if isinstance(x_split[0], torch.Tensor) and x_split[0].requires_grad:
-                gradient = []
-                for i, Bi in enumerate(fXY(x_split)):
-                    gradient.append(torch.einsum('bmc,bm->bc', (Bi, uts)))
-                gradient = torch.cat(gradient, dim=-1) # bxn
-                gradients.append(gradient.reshape(x_size))
-            else:
-                gradients.append(None)
-        return tuple(gradients)
+        # Compute B^T (u + ts) for all inputs as a single vector-Jacobian product:
+        return self._input_vjp(xs, (fY, uts))
 
 class DeclarativeFunction(torch.autograd.Function):
     """Generic declarative autograd function.
