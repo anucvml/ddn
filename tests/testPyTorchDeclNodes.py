@@ -48,6 +48,7 @@ def scalar_to_batched_tensor(a, batch_size, dtype=None, device=None, requires_gr
 	else:
 		return a
 
+torch.manual_seed(0)
 
 # Polynomial
 print("\nPolynomial Example:\n")

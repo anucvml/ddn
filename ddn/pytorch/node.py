@@ -296,17 +296,12 @@ class AbstractDeclarativeNode(AbstractNode):
         # Ensure B is 2D (bxmxn):
         if len(B.size()) == 2:
             B = B.unsqueeze(-1)
-        try: # Batchwise Cholesky solve
-            A_decomp = torch.linalg.cholesky(A, upper=False)
-            X = torch.cholesky_solve(B, A_decomp, upper=False) # bxmxn
-        except RuntimeError: # Revert to loop if batchwise solve fails
-            X = torch.zeros_like(B)
-            for i in range(A.size(0)):
-                try: # Cholesky solve
-                    A_decomp = torch.linalg.cholesky(A[i, ...], upper=False)
-                    X[i, ...] = torch.cholesky_solve(B[i, ...], A_decomp, upper=False) # mxn
-                except RuntimeError: # Revert to LU solve
-                    X[i, ...] = torch.linalg.solve(A[i, ...], B[i, ...]) # mxn
+        # Batchwise Cholesky solve (info > 0 flags batch elements where A is not positive definite)
+        A_decomp, info = torch.linalg.cholesky_ex(A, upper=False)
+        X = torch.cholesky_solve(B, A_decomp, upper=False) # bxmxn
+        failed = info > 0 # b
+        if failed.any(): # Revert to LU solve for failed batch elements only
+            X[failed] = torch.linalg.solve(A[failed], B[failed]) # kxmxn
         if B_sizes is not None:
             X = X.split(B_sizes, dim=-1)
         return X
@@ -341,6 +336,17 @@ class AbstractDeclarativeNode(AbstractNode):
         y = y.reshape(self.b, -1) # bxm
         m = y.size(-1)
         n = x.reshape(self.b, -1).size(-1)
+        if m > 1:
+            # Compute all m vector-Jacobian products in a single vectorized (vmap) backward pass:
+            grad_outputs = torch.eye(m, dtype=y.dtype, device=y.device).unsqueeze(1).expand(m, self.b, m) # mxbxm
+            try:
+                yX, = grad(y, x, grad_outputs=grad_outputs, retain_graph=True,
+                    create_graph=create_graph, allow_unused=True, is_grads_batched=True) # mxbxn1xn2x...
+                if yX is None: # grad returns None instead of zero
+                    return None
+                return yX.reshape(m, self.b, n).transpose(0, 1) # bxmxn
+            except RuntimeError: # Revert to loop if graph contains operations unsupported by vmap
+                pass
         jacobian = y.new_zeros(self.b, m, n) # bxmxn
         for i in range(m):
             grad_outputs = torch.zeros_like(y, requires_grad=False) # bxm

@@ -90,7 +90,7 @@ def points_to_bearings(p, K=None):
     bearings = torch.nn.functional.pad(p, (0, 1), "constant", 1.0)
     if K is not None: # p is in image coordinates, apply (px - cx) / fx
         K = K.unsqueeze(-2) # (b, 1, 4)
-        bearings[:, :, :2] = (points - K[:, :, 2:]) / K[:, :, :2]
+        bearings[:, :, :2] = (p - K[:, :, 2:]) / K[:, :, :2]
     return torch.nn.functional.normalize(bearings, p=2, dim=-1)
 
 def bearings_to_points(bearings, K=None):

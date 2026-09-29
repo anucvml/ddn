@@ -65,8 +65,8 @@ class GlobalPseudoHuberPool2d(AbstractDeclarativeNode):
                                     lr=1, # Default: 1
                                     max_iter=100, # Default: 20
                                     max_eval=None, # Default: None
-                                    tolerance_grad=1e-05, # Default: 1e-05
-                                    tolerance_change=1e-09, # Default: 1e-09
+                                    tolerance_grad=1e-09, # Default: 1e-05 (tighter for accurate gradients)
+                                    tolerance_change=1e-14, # Default: 1e-09
                                     history_size=100, # Default: 100
                                     line_search_fn=None # Default: None, Alternative: "strong_wolfe"
                                     )

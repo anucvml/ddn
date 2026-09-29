@@ -377,7 +377,7 @@ class EuclideanProjectionFn(torch.autograd.Function):
     def forward(ctx, input, method, radius):
         output, is_outside = method.project(input, radius.item())
         ctx.method = method
-        ctx.save_for_backward(output.clone(), input.clone(), is_outside)
+        ctx.save_for_backward(output, input, is_outside)
         return output
 
     @staticmethod

@@ -204,17 +204,18 @@ class RobustVectorPool2dFcn(torch.autograd.Function):
         H = k1.sum(dim=2).view(B, 1, 1) * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C) + \
             torch.einsum("bik,bjk->bij", x_minus_y, k2 * x_minus_y)
         try:
-            L = torch.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
+            L = torch.linalg.cholesky(H + ctx.hess_reg * torch.eye(C, dtype=x.dtype, device=x.device).view(1, C, C))
             v = torch.cholesky_solve(y_grad.view(B, C, -1), L).view(B, C)
-        except:
+        except RuntimeError:
             warnings.warn("backward pass encountered a singular matrix for penalty function {}".format(ctx.penalty.__name__))
             v = torch.empty_like(y_grad)
             for b in range(B):
                 try:
-                    L = torch.cholesky(H[b, :, :])
+                    L = torch.linalg.cholesky(H[b, :, :])
                     v[b, :] = torch.cholesky_solve(y_grad[b, :].view(C, 1), L).view(1, C)
-                except:
-                    v[b, :] = torch.lstsq(y_grad[b, :].view(C, 1), H[b, :, :])[0].view(1, C)
+                except RuntimeError:
+                    # minimum-norm least-squares solution (valid for singular H on any device)
+                    v[b, :] = torch.matmul(torch.linalg.pinv(H[b, :, :]), y_grad[b, :].view(C, 1)).view(1, C)
 
 
         w = torch.einsum("bi,bik->bk", v, k2 * x_minus_y)
